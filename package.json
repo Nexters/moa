@@ -8,7 +8,9 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "oxlint",
+    "dev:landing": "bun --filter @moa/landing dev",
+    "dev:app": "bun --filter @moa/app tauri:dev",
+    "lint": "oxlint --type-aware",
     "lint:fix": "oxlint --fix-suggestions",
     "format": "oxfmt",
     "format:check": "oxfmt --check"

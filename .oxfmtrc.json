@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "ignorePatterns": ["bun.lock"],
+  "ignorePatterns": ["dist", "bun.lock", "*.toml"],
 
   "singleQuote": true,
   "semi": true,
@@ -13,15 +13,16 @@
 
   "experimentalSortImports": {
     "groups": [
-      "builtin",
-      "external",
-      "internal",
+      ["builtin"],
+      ["external"],
+      ["internal"],
       ["parent", "sibling", "index"]
     ],
     "internalPattern": ["@repo/", "~/"],
     "newlinesBetween": true
-  },
-  "experimentalTailwindcss": {
-    "functions": ["cn"]
   }
+  // @see https://github.com/oxc-project/oxc/issues/17869
+  // "experimentalTailwindcss": {
+  //   "functions": ["clsx", "cn"]
+  // }
 }

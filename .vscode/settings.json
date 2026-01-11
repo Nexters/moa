@@ -4,5 +4,7 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.oxlint": "explicit"
   },
-  "css.lint.unknownAtRules": "ignore"
+  "css.lint.unknownAtRules": "ignore",
+  "rust-analyzer.linkedProjects": ["apps/app/src-tauri/Cargo.toml"],
+  "rust-analyzer.cargo.buildScripts.enable": true
 }

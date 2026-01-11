@@ -1,0 +1,53 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "모아",
+  "version": "0.1.0",
+  "identifier": "com.moa.app",
+  "build": {
+    "removeUnusedCommands": true,
+    "beforeDevCommand": "bun run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "bun run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "모아",
+        "width": 800,
+        "height": 600
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' tauri: ipc: http://ipc.localhost"
+    },
+    "macOSPrivateApi": true
+  },
+  "bundle": {
+    "createUpdaterArtifacts": true,
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "publisher": "bepyan",
+    "category": "Utility",
+    "shortDescription": "Visualize your accumulated salary in real-time",
+    "longDescription": "A lightweight menu bar/system tray app that visualizes your accumulated salary in real-time.",
+    "copyright": "Copyright © 2026 bepyan. All rights reserved."
+  },
+  "plugins": {
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://github.com/nexters/moa/releases/latest/download/latest.json"
+      ],
+      "dialog": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDc2RjhFOTBCMTFDMkE0RDUKUldUVnBNSVJDK240ZHZLeGM2cGNSWkw1OE9XS0lDQXA3QWJ5cDVWVmcxSkdDRTVEdGFKUUNNcWoK"
+    }
+  }
+}
