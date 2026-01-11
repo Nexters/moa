@@ -10,5 +10,5 @@
 
 ```shell
 turbo dev
-turbo dev --filter=web
+turbo dev --filter=landing
 ```

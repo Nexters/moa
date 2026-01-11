@@ -50,6 +50,7 @@ pnpm-debug.log*
 .cache/
 .parcel-cache/
 .turbo/
+.astro/
 .nx/cache/
 
 # Environment files
