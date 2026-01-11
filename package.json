@@ -8,9 +8,11 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "format": "turbo run format",
-    "check-types": "turbo run check-types"
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix-suggestions",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "types:check": "turbo run types:check"
   },
   "devDependencies": {
     "oxfmt": "^0.23.0",

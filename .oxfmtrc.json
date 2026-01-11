@@ -1,5 +1,7 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": ["bun.lock"],
+
   "singleQuote": true,
   "semi": true,
   "useTabs": false,
@@ -8,8 +10,16 @@
   "printWidth": 80,
   "arrowParens": "always",
   "bracketSpacing": true,
+
   "experimentalSortImports": {
-    "groups": []
+    "groups": [
+      "builtin",
+      "external",
+      "internal",
+      ["parent", "sibling", "index"]
+    ],
+    "internalPattern": ["@repo/", "~/"],
+    "newlinesBetween": true
   },
   "experimentalTailwindcss": {
     "functions": ["cn"]
