@@ -11,12 +11,12 @@
     "lint": "oxlint",
     "lint:fix": "oxlint --fix-suggestions",
     "format": "oxfmt",
-    "format:check": "oxfmt --check",
-    "types:check": "turbo run types:check"
+    "format:check": "oxfmt --check"
   },
   "devDependencies": {
     "oxfmt": "^0.23.0",
     "oxlint": "^1.38.0",
+    "oxlint-tsgolint": "^0.11.0",
     "turbo": "^2.7.3",
     "typescript": "5.9.2"
   },

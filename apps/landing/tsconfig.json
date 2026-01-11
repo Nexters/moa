@@ -4,9 +4,8 @@
   "exclude": ["dist"],
   "compilerOptions": {
     "verbatimModuleSyntax": true,
-    "baseUrl": ".",
     "paths": {
-      "~/*": ["src/*"]
+      "~/*": ["./src/*"]
     }
   }
 }

@@ -7,9 +7,6 @@
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["dist/**", "build/**"]
     },
-    "types:check": {
-      "dependsOn": ["^types:check"]
-    },
     "dev": {
       "cache": false,
       "persistent": true
