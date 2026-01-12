@@ -10,6 +10,7 @@
     "dev": "turbo run dev",
     "dev:landing": "bun --filter @moa/landing dev",
     "dev:app": "bun --filter @moa/app tauri:dev",
+    "release:prepare": "bun --filter @moa/app release:prepare",
     "lint": "oxlint --type-aware",
     "lint:fix": "oxlint --fix-suggestions",
     "format": "oxfmt",

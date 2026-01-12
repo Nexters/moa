@@ -25,6 +25,11 @@
     min-width: 100vw;
     overflow: hidden;
     position: relative;
+
+    color: #fff;
+    background-color: #111;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
   }
 
   svg {

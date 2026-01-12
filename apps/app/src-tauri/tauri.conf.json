@@ -5,17 +5,22 @@
   "identifier": "com.moa.app",
   "build": {
     "removeUnusedCommands": true,
-    "beforeDevCommand": "bun run dev",
+    "beforeDevCommand": "bun dev",
     "devUrl": "http://localhost:1420",
-    "beforeBuildCommand": "bun run build",
+    "beforeBuildCommand": "bun build",
     "frontendDist": "../dist"
   },
   "app": {
     "windows": [
       {
-        "title": "모아",
-        "width": 800,
-        "height": 600
+        "title": "menubar",
+        "width": 350,
+        "height": 400,
+        "fullscreen": false,
+        "resizable": false,
+        "decorations": false,
+        "transparent": true,
+        "visible": false
       }
     ],
     "security": {
