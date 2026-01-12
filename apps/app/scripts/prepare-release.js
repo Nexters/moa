@@ -179,7 +179,7 @@ async function main() {
         '📱 Check GitHub Actions: https://github.com/nexters/moa/actions',
       );
       console.log(
-        '📦 Draft release will appear at: https://github.com/nexters/moa//releases',
+        '📦 Draft release will appear at: https://github.com/nexters/moa/releases',
       );
       console.log(
         '\n⚠️  Remember: You need to manually publish the draft release on GitHub!',
