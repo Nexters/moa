@@ -20,9 +20,8 @@
     ],
     "internalPattern": ["@repo/", "~/"],
     "newlinesBetween": true
+  },
+  "experimentalTailwindcss": {
+    "functions": ["clsx", "cn"]
   }
-  // @see https://github.com/oxc-project/oxc/issues/17869
-  // "experimentalTailwindcss": {
-  //   "functions": ["clsx", "cn"]
-  // }
 }
