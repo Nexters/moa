@@ -12,7 +12,7 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    invoke('init');
+    void invoke('init');
   }, []);
 
   return (

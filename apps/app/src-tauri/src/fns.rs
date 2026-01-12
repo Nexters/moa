@@ -1,4 +1,6 @@
+//! macOS 전용 메뉴바 패널 기능
 #![allow(deprecated)]
+#![cfg(target_os = "macos")]
 
 use std::ffi::CString;
 
