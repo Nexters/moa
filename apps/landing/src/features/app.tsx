@@ -1,6 +1,6 @@
 import { cn } from '~/lib/utils';
 
-const APP_VERSION = '0.1.2';
+import { APP_VERSION, getDownloadUrl } from './app-version';
 
 export function App() {
   return (
@@ -58,9 +58,17 @@ export function App() {
               </span>
             </div>
             <div className="flex flex-col gap-3">
-              <DownloadButton platform="macOS" arch="Apple Silicon" />
-              <DownloadButton platform="macOS" arch="Intel" disabled />
-              <DownloadButton platform="Windows" arch="x64" disabled />
+              <DownloadButton
+                platform="macOS"
+                arch="Apple Silicon"
+                href={getDownloadUrl('mac-aarch64')}
+              />
+              <DownloadButton platform="macOS" arch="Intel" />
+              <DownloadButton
+                platform="Windows"
+                arch="x64"
+                href={getDownloadUrl('windows-x64')}
+              />
             </div>
           </div>
 
@@ -70,12 +78,8 @@ export function App() {
               Mobile
             </h2>
             <div className="flex flex-col gap-3">
-              <DownloadButton platform="iOS" icon={<IOSIcon />} disabled />
-              <DownloadButton
-                platform="Android"
-                icon={<AndroidIcon />}
-                disabled
-              />
+              <DownloadButton platform="iOS" icon={<IOSIcon />} />
+              <DownloadButton platform="Android" icon={<AndroidIcon />} />
             </div>
           </div>
         </section>
@@ -106,35 +110,25 @@ export function App() {
 function DownloadButton({
   platform,
   arch,
-  disabled = false,
+  href,
   icon,
 }: {
   platform: string;
   arch?: string;
-  disabled?: boolean;
+  href?: string;
   icon?: React.ReactNode;
 }) {
-  const baseUrl = `https://github.com/nexters/moa/releases/download/v${APP_VERSION}`;
+  const disabled = !href;
 
-  const getDownloadUrl = () => {
-    if (platform === 'macOS' && arch === 'Apple Silicon') {
-      const filename = encodeURIComponent(`_${APP_VERSION}_aarch64.dmg`);
-      return `${baseUrl}/${filename}`;
+  const handleClick = () => {
+    if (href) {
+      window.open(href, '_blank');
     }
-    if (platform === 'macOS' && arch === 'Intel') {
-      const filename = encodeURIComponent(`_${APP_VERSION}_x64.dmg`);
-      return `${baseUrl}/${filename}`;
-    }
-    return '#';
-  };
-
-  const handleDownload = () => {
-    window.open(getDownloadUrl(), '_blank');
   };
 
   return (
     <button
-      onClick={handleDownload}
+      onClick={handleClick}
       disabled={disabled}
       className={cn(
         'group border-gray-70 flex items-center justify-between border px-4 py-3 transition-all',

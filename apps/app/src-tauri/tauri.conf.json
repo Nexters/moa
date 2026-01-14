@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "모아",
+  "productName": "moa",
   "version": "0.1.2",
   "identifier": "com.moa.app",
   "build": {
@@ -43,7 +43,13 @@
     "category": "Utility",
     "shortDescription": "Visualize your accumulated salary in real-time",
     "longDescription": "A lightweight menu bar/system tray app that visualizes your accumulated salary in real-time.",
-    "copyright": "Copyright © 2026 bepyan. All rights reserved."
+    "copyright": "Copyright © 2026 bepyan. All rights reserved.",
+    "macOS": {
+      "infoPlist": {
+        "CFBundleDisplayName": "모아",
+        "CFBundleName": "모아"
+      }
+    }
   },
   "plugins": {
     "updater": {
