@@ -1,6 +1,6 @@
 [package]
 name = "moa"
-version = "0.1.1"
+version = "0.1.2"
 description = "A lightweight menu bar/system tray app that visualizes your accumulated salary in real-time"
 authors = ["bepyan"]
 edition = "2021"
