@@ -1,4 +1,13 @@
 {
+  "files.watcherExclude": {
+    "*.gen.ts": true
+  },
+  "search.exclude": {
+    "*.gen.ts": true
+  },
+  "files.readonlyInclude": {
+    "*.gen.ts": true
+  },
   "editor.defaultFormatter": "oxc.oxc-vscode",
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {

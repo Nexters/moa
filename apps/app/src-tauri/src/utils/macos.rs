@@ -1,6 +1,9 @@
-//! macOS 전용 메뉴바 패널 기능
+//! macOS-specific menubar panel functionality.
+//!
+//! This module provides NSPanel integration for the menubar panel,
+//! including positioning, appearance, and event handling.
+
 #![allow(deprecated)]
-#![cfg(target_os = "macos")]
 
 use std::ffi::CString;
 
@@ -10,16 +13,16 @@ use tauri_nspanel::{
     cocoa::{
         appkit::{NSMainMenuWindowLevel, NSView, NSWindow, NSWindowCollectionBehavior},
         base::{id, nil},
-        foundation::{NSPoint, NSRect},
     },
-    objc::{class, msg_send, runtime::NO, sel, sel_impl},
+    objc::{class, msg_send, sel, sel_impl},
     panel_delegate, ManagerExt, WebviewWindowExt,
 };
 
 #[allow(non_upper_case_globals)]
 const NSWindowStyleMaskNonActivatingPanel: i32 = 1 << 7;
 
-pub fn swizzle_to_menubar_panel(app_handle: &tauri::AppHandle) {
+/// Converts the main window to an NSPanel with menubar-appropriate behavior.
+pub fn swizzle_to_menubar_panel(app_handle: &AppHandle) {
     let panel_delegate = panel_delegate!(SpotlightPanelDelegate {
         window_did_resign_key
     });
@@ -49,8 +52,9 @@ pub fn swizzle_to_menubar_panel(app_handle: &tauri::AppHandle) {
     panel.set_delegate(panel_delegate);
 }
 
+/// Sets up listeners for hiding the menubar panel when appropriate.
 pub fn setup_menubar_panel_listeners(app_handle: &AppHandle) {
-    fn hide_menubar_panel(app_handle: &tauri::AppHandle) {
+    fn hide_menubar_panel(app_handle: &AppHandle) {
         if check_menubar_frontmost() {
             return;
         }
@@ -83,12 +87,14 @@ pub fn setup_menubar_panel_listeners(app_handle: &AppHandle) {
     );
 }
 
+/// Updates the menubar panel appearance (e.g., corner radius).
 pub fn update_menubar_appearance(app_handle: &AppHandle) {
     let window = app_handle.get_webview_window("main").unwrap();
 
     set_corner_radius(&window, 13.0);
 }
 
+/// Sets the corner radius for a window's content view.
 pub fn set_corner_radius(window: &WebviewWindow, radius: f64) {
     let win: id = window.ns_window().unwrap() as _;
 
@@ -103,46 +109,7 @@ pub fn set_corner_radius(window: &WebviewWindow, radius: f64) {
     }
 }
 
-pub fn position_menubar_panel(app_handle: &tauri::AppHandle, padding_top: f64) {
-    let window = app_handle.get_webview_window("main").unwrap();
-
-    let monitor = monitor::get_monitor_with_cursor().unwrap();
-
-    let scale_factor = monitor.scale_factor();
-
-    let visible_area = monitor.visible_area();
-
-    let monitor_pos = visible_area.position().to_logical::<f64>(scale_factor);
-
-    let monitor_size = visible_area.size().to_logical::<f64>(scale_factor);
-
-    let mouse_location: NSPoint = unsafe { msg_send![class!(NSEvent), mouseLocation] };
-
-    let handle: id = window.ns_window().unwrap() as _;
-
-    let mut win_frame: NSRect = unsafe { msg_send![handle, frame] };
-
-    win_frame.origin.y = (monitor_pos.y + monitor_size.height) - win_frame.size.height;
-
-    win_frame.origin.y -= padding_top;
-
-    win_frame.origin.x = {
-        let top_right = mouse_location.x + (win_frame.size.width / 2.0);
-
-        let is_offscreen = top_right > monitor_pos.x + monitor_size.width;
-
-        if !is_offscreen {
-            mouse_location.x - (win_frame.size.width / 2.0)
-        } else {
-            let diff = top_right - (monitor_pos.x + monitor_size.width);
-
-            mouse_location.x - (win_frame.size.width / 2.0) - diff
-        }
-    };
-
-    let _: () = unsafe { msg_send![handle, setFrame: win_frame display: NO] };
-}
-
+/// Registers a listener for NSWorkspace notifications.
 fn register_workspace_listener(name: String, callback: Box<dyn Fn()>) {
     let workspace: id = unsafe { msg_send![class!(NSWorkspace), sharedWorkspace] };
 
@@ -165,6 +132,7 @@ fn register_workspace_listener(name: String, callback: Box<dyn Fn()>) {
     }
 }
 
+/// Returns the current application's process ID.
 fn app_pid() -> i32 {
     let process_info: id = unsafe { msg_send![class!(NSProcessInfo), processInfo] };
 
@@ -173,6 +141,7 @@ fn app_pid() -> i32 {
     pid
 }
 
+/// Returns the frontmost application's process ID.
 fn get_frontmost_app_pid() -> i32 {
     let workspace: id = unsafe { msg_send![class!(NSWorkspace), sharedWorkspace] };
 
@@ -183,6 +152,7 @@ fn get_frontmost_app_pid() -> i32 {
     pid
 }
 
+/// Checks if the current app is the frontmost application.
 pub fn check_menubar_frontmost() -> bool {
     get_frontmost_app_pid() == app_pid()
 }

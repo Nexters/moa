@@ -1,3 +1,5 @@
+//! System tray/menu bar icon functionality.
+
 use tauri::{
     image::Image,
     tray::{MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent},
@@ -7,9 +9,7 @@ use tauri::{
 #[cfg(target_os = "macos")]
 use tauri_nspanel::ManagerExt;
 
-#[cfg(target_os = "macos")]
-use crate::fns::position_menubar_panel;
-
+/// Creates the system tray icon with click handlers.
 pub fn create(app_handle: &AppHandle) -> tauri::Result<TrayIcon> {
     let icon = Image::from_bytes(include_bytes!("../icons/tray.png"))?;
 
@@ -21,33 +21,45 @@ pub fn create(app_handle: &AppHandle) -> tauri::Result<TrayIcon> {
 
             if let TrayIconEvent::Click { button_state, .. } = event {
                 if button_state == MouseButtonState::Up {
-                    #[cfg(target_os = "macos")]
-                    {
-                        let panel = app_handle.get_webview_panel("main").unwrap();
-
-                        if panel.is_visible() {
-                            panel.order_out(None);
-                            return;
-                        }
-
-                        position_menubar_panel(app_handle, 0.0);
-                        panel.show();
-                    }
-
-                    #[cfg(not(target_os = "macos"))]
-                    {
-                        // Windows: 기본 윈도우 토글
-                        if let Some(window) = app_handle.get_webview_window("main") {
-                            if window.is_visible().unwrap_or(false) {
-                                let _ = window.hide();
-                            } else {
-                                let _ = window.show();
-                                let _ = window.set_focus();
-                            }
-                        }
-                    }
+                    toggle_main_window(app_handle);
                 }
             }
         })
         .build(app_handle)
+}
+
+/// Toggle main window visibility.
+#[cfg(target_os = "macos")]
+fn toggle_main_window(app_handle: &AppHandle) {
+    // Try panel first (after init_menubar was called from frontend)
+    if let Ok(panel) = app_handle.get_webview_panel("main") {
+        if panel.is_visible() {
+            panel.order_out(None);
+        } else {
+            panel.show();
+        }
+        return;
+    }
+
+    // Fallback to regular window
+    if let Some(window) = app_handle.get_webview_window("main") {
+        if window.is_visible().unwrap_or(false) {
+            let _ = window.hide();
+        } else {
+            let _ = window.show();
+            let _ = window.set_focus();
+        }
+    }
+}
+
+#[cfg(not(target_os = "macos"))]
+fn toggle_main_window(app_handle: &AppHandle) {
+    if let Some(window) = app_handle.get_webview_window("main") {
+        if window.is_visible().unwrap_or(false) {
+            let _ = window.hide();
+        } else {
+            let _ = window.show();
+            let _ = window.set_focus();
+        }
+    }
 }

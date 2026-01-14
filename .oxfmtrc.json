@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "ignorePatterns": ["dist", "bun.lock", "*.toml"],
+  "ignorePatterns": ["dist", "bun.lock", "*.toml", "*.gen.ts"],
 
   "singleQuote": true,
   "semi": true,
@@ -18,7 +18,7 @@
       ["internal"],
       ["parent", "sibling", "index"]
     ],
-    "internalPattern": ["@repo/", "~/"],
+    "internalPattern": ["@moa/", "~/"],
     "newlinesBetween": true
   },
   "experimentalTailwindcss": {
