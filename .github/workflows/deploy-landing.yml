@@ -4,10 +4,6 @@ on:
   workflow_dispatch:
   release:
     types: [published]
-  push:
-    branches: [main]
-    paths:
-      - 'apps/landing/**'
 
 permissions:
   contents: read
