@@ -31,11 +31,14 @@ pub fn create(app_handle: &AppHandle) -> tauri::Result<TrayIcon> {
 /// Toggle main window visibility.
 #[cfg(target_os = "macos")]
 fn toggle_main_window(app_handle: &AppHandle) {
+    use crate::utils::macos::position_menubar_panel;
+
     // Try panel first (after init_menubar was called from frontend)
     if let Ok(panel) = app_handle.get_webview_panel("main") {
         if panel.is_visible() {
             panel.order_out(None);
         } else {
+            position_menubar_panel(app_handle, 0.0);
             panel.show();
         }
         return;

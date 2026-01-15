@@ -11,8 +11,9 @@ use tauri::{AppHandle, Emitter, Listener, Manager, WebviewWindow};
 use tauri_nspanel::{
     block::ConcreteBlock,
     cocoa::{
-        appkit::{NSMainMenuWindowLevel, NSView, NSWindow, NSWindowCollectionBehavior},
-        base::{id, nil},
+        appkit::{NSMainMenuWindowLevel, NSScreen, NSView, NSWindow, NSWindowCollectionBehavior},
+        base::{id, nil, NO},
+        foundation::{NSPoint, NSRect},
     },
     objc::{class, msg_send, sel, sel_impl},
     panel_delegate, ManagerExt, WebviewWindowExt,
@@ -106,6 +107,41 @@ pub fn set_corner_radius(window: &WebviewWindow, radius: f64) {
         let layer: id = view.layer();
 
         let _: () = msg_send![layer, setCornerRadius: radius];
+    }
+}
+
+/// Positions the menubar panel below the tray icon.
+///
+/// Uses the mouse location (click point on tray icon) to center the panel,
+/// and places it just below the menu bar.
+pub fn position_menubar_panel(app_handle: &AppHandle, padding_top: f64) {
+    let window = app_handle.get_webview_window("main").unwrap();
+    let handle: id = window.ns_window().unwrap() as _;
+
+    unsafe {
+        // Get mouse position (tray icon click point)
+        let mouse_location: NSPoint = msg_send![class!(NSEvent), mouseLocation];
+
+        // Get screen info
+        let screen: id = NSScreen::mainScreen(nil);
+        let screen_frame: NSRect = NSScreen::frame(screen);
+        let visible_frame: NSRect = msg_send![screen, visibleFrame];
+
+        // Get current window frame
+        let mut win_frame: NSRect = msg_send![handle, frame];
+
+        // Y: Position just below the menu bar
+        win_frame.origin.y =
+            visible_frame.origin.y + visible_frame.size.height - win_frame.size.height - padding_top;
+
+        // X: Center on mouse position, with screen boundary handling
+        let mut x = mouse_location.x - (win_frame.size.width / 2.0);
+        x = x.max(screen_frame.origin.x); // Left boundary
+        x = x.min(screen_frame.origin.x + screen_frame.size.width - win_frame.size.width); // Right boundary
+        win_frame.origin.x = x;
+
+        // Apply the frame
+        let _: () = msg_send![handle, setFrame: win_frame display: NO];
     }
 }
 
