@@ -39,18 +39,16 @@ pub fn run() {
         }));
     }
 
-    // Window state plugin - saves/restores window position and size
-    // Note: Exclude VISIBLE flag for menu bar app (should start hidden)
+    // Window state plugin - saves/restores window size
+    // Note: Exclude VISIBLE and POSITION flags for menu bar app
+    // (should start hidden and position near tray icon)
     #[cfg(desktop)]
     {
         use tauri_plugin_window_state::StateFlags;
         app_builder = app_builder.plugin(
             tauri_plugin_window_state::Builder::new()
                 .with_state_flags(
-                    StateFlags::POSITION
-                        | StateFlags::SIZE
-                        | StateFlags::MAXIMIZED
-                        | StateFlags::FULLSCREEN,
+                    StateFlags::SIZE | StateFlags::MAXIMIZED | StateFlags::FULLSCREEN,
                 )
                 .build(),
         );
@@ -92,6 +90,9 @@ pub fn run() {
     {
         app_builder = app_builder.plugin(tauri_nspanel::init());
     }
+
+    // Add positioner plugin for tray icon positioning
+    app_builder = app_builder.plugin(tauri_plugin_positioner::init());
 
     app_builder
         .plugin(tauri_plugin_fs::init())
