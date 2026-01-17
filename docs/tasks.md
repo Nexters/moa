@@ -9,6 +9,14 @@
 - **Completed tasks** are in tasks-done/
   - Named task-YYYY-MM-DD-name.md with completion date
 
+## Workflow
+
+1. **Plan**: Write spec document and break down into tasks in tasks-todo/. Get admin review before finalizing.
+2. **Start**: Create a new branch from main: `feat/task-N-name`
+3. **Develop**: Work on the task and create a PR when ready
+4. **Review**: Admin reviews PR and merges to main
+5. **Complete**: Verify all acceptance criteria in the task file are met, then run `bun task:complete N`
+
 ## Completing Tasks
 
 When you finish a task, use the completion script.
