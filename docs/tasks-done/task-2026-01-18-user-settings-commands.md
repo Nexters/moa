@@ -124,8 +124,8 @@ await commands.saveUserSettings({
 
 ## 완료 조건
 
-- [ ] `load_user_settings` 커맨드 구현
-- [ ] `save_user_settings` 커맨드 구현
-- [ ] `is_onboarding_completed` 커맨드 구현
-- [ ] `bun tauri:gen` 실행하여 바인딩 생성
-- [ ] 커맨드 테스트
+- [x] `load_user_settings` 커맨드 구현
+- [x] `save_user_settings` 커맨드 구현
+- [x] `is_onboarding_completed` 커맨드 구현
+- [x] `bun rust:bindings` 실행하여 바인딩 생성
+- [x] 커맨드 테스트

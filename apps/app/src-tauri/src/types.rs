@@ -137,8 +137,6 @@ pub const WORK_END_TIME: &str = "18:00";
 pub const WORK_HOURS_PER_DAY: u8 = 9;
 
 /// User settings for salary calculation (MVP)
-/// Will be used in Task 2 (user settings commands)
-#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct UserSettings {
@@ -146,8 +144,8 @@ pub struct UserSettings {
     pub nickname: String,
     /// Company/workplace name (randomly generated)
     pub company_name: String,
-    /// Monthly net salary in KRW
-    pub monthly_net_salary: u64,
+    /// Monthly net salary in KRW (max ~4.2B, sufficient for practical use)
+    pub monthly_net_salary: u32,
     /// Pay day of month (1-31, default: 25)
     pub pay_day: u8,
     /// Whether onboarding is completed
@@ -167,8 +165,7 @@ impl Default for UserSettings {
 }
 
 /// Generates a random nickname combining an adjective and a character
-#[allow(dead_code)]
-pub fn generate_random_nickname() -> String {
+fn generate_random_nickname() -> String {
     use rand::prelude::IndexedRandom;
 
     let adjectives = ["성실한", "부지런한", "열정적인", "꼼꼼한", "유능한", "프로"];
@@ -182,8 +179,7 @@ pub fn generate_random_nickname() -> String {
 }
 
 /// Generates a random company name
-#[allow(dead_code)]
-pub fn generate_random_company() -> String {
+fn generate_random_company() -> String {
     use rand::prelude::IndexedRandom;
 
     let companies = [
@@ -205,8 +201,7 @@ pub fn generate_random_company() -> String {
 }
 
 /// Validates monthly net salary
-#[allow(dead_code)]
-pub fn validate_salary(salary: u64) -> Result<(), String> {
+pub fn validate_salary(salary: u32) -> Result<(), String> {
     if salary == 0 {
         return Err("월 실수령액은 0보다 커야 합니다".to_string());
     }
@@ -214,7 +209,6 @@ pub fn validate_salary(salary: u64) -> Result<(), String> {
 }
 
 /// Validates pay day (1-31)
-#[allow(dead_code)]
 pub fn validate_pay_day(day: u8) -> Result<(), String> {
     if !(1..=31).contains(&day) {
         return Err("월급날은 1~31 사이여야 합니다".to_string());

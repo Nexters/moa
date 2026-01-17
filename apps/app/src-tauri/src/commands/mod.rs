@@ -8,3 +8,4 @@ pub mod notifications;
 pub mod preferences;
 pub mod quick_pane;
 pub mod recovery;
+pub mod user_settings;
