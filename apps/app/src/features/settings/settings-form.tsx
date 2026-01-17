@@ -19,13 +19,37 @@ export function SettingsForm({ settings }: Props) {
       const result = await commands.saveUserSettings(newSettings);
       if (result.status === 'error') throw new Error(result.error);
     },
-    onSuccess: () => {
+    onMutate: async (newSettings: UserSettings) => {
+      // Cancel any outgoing refetches to avoid overwriting optimistic update
+      await queryClient.cancelQueries({ queryKey: ['userSettings'] });
+
+      // Snapshot previous value for rollback
+      const previousSettings = queryClient.getQueryData<UserSettings>([
+        'userSettings',
+      ]);
+
+      // Optimistically update the cache
+      queryClient.setQueryData(['userSettings'], newSettings);
+
+      return { previousSettings };
+    },
+    onError: (_error, _newSettings, context) => {
+      // Rollback to previous value on error
+      if (context?.previousSettings) {
+        queryClient.setQueryData(['userSettings'], context.previousSettings);
+      }
+    },
+    onSettled: () => {
+      // Always refetch to ensure we have authoritative server data
       void queryClient.invalidateQueries({ queryKey: ['userSettings'] });
     },
   });
 
   const handleSave = (partial: Partial<UserSettings>) => {
-    mutation.mutate({ ...settings, ...partial });
+    // Read latest settings from cache to avoid race conditions
+    const currentSettings =
+      queryClient.getQueryData<UserSettings>(['userSettings']) ?? settings;
+    mutation.mutate({ ...currentSettings, ...partial });
   };
 
   return (
