@@ -31,7 +31,6 @@ Read ALL of these files to build complete understanding:
 - `AGENTS.md` - core patterns and rules
 - `docs/developer/architecture-guide.md` - high-level architecture
 - `docs/developer/state-management.md` - state onion pattern
-- `docs/developer/command-system.md` - command patterns
 - `docs/developer/tauri-commands.md` - Rust-React bridge
 - `docs/developer/ui-patterns.md` - CSS and component patterns
 - `docs/developer/keyboard-shortcuts.md` - shortcut handling

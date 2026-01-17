@@ -15,7 +15,6 @@ Technical documentation for building and extending this app. These docs describe
 
 | Document                                      | Description                                     |
 | --------------------------------------------- | ----------------------------------------------- |
-| [Command System](./command-system.md)         | Unified action dispatch, command registration   |
 | [Keyboard Shortcuts](./keyboard-shortcuts.md) | Global shortcut handling, platform modifiers    |
 | [Menus](./menus.md)                           | Native menu building with i18n                  |
 | [Quick Panes](./quick-panes.md)               | Multi-window quick entry pattern                |
