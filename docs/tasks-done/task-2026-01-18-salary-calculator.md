@@ -68,7 +68,10 @@ export function useSalaryCalculator(
 
       // 1. 이번 급여 주기의 월 근무일수 계산
       const payPeriod = getPayPeriod(now, settings.payDay);
-      const workDaysInPeriod = getWorkDaysInPeriod(payPeriod.start, payPeriod.end);
+      const workDaysInPeriod = getWorkDaysInPeriod(
+        payPeriod.start,
+        payPeriod.end,
+      );
 
       // 2. 일급, 시급, 초당 금액 계산
       const dailyRate = settings.monthlyNetSalary / workDaysInPeriod;

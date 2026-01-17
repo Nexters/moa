@@ -13,13 +13,13 @@ P0에서 구현한 미니멀 UI를 피그마 디자인 시스템 기반으로 �
 
 ### 적용 대상 화면
 
-| 화면       | P0 상태        | P1 목표                    |
-| ---------- | -------------- | -------------------------- |
-| 메인 패널  | 기본 스타일    | RunCat 스타일 2컬럼 레이아웃 |
-| 설정 패널  | 기본 폼        | 디자인 시스템 적용         |
-| 온보딩     | 기본 스텝 UI   | 애니메이션, 일러스트 적용  |
-| 축하 화면  | 미구현         | Confetti + 축하 UI 구현    |
-| 트레이 아이콘 | 기본 아이콘  | 커스텀 아이콘 (활성/비활성) |
+| 화면          | P0 상태      | P1 목표                      |
+| ------------- | ------------ | ---------------------------- |
+| 메인 패널     | 기본 스타일  | RunCat 스타일 2컬럼 레이아웃 |
+| 설정 패널     | 기본 폼      | 디자인 시스템 적용           |
+| 온보딩        | 기본 스텝 UI | 애니메이션, 일러스트 적용    |
+| 축하 화면     | 미구현       | Confetti + 축하 UI 구현      |
+| 트레이 아이콘 | 기본 아이콘  | 커스텀 아이콘 (활성/비활성)  |
 
 ## 구현 내용
 
@@ -29,26 +29,27 @@ Tailwind CSS를 활용하여 `src/styles/theme.css` 단일 파일로 테마 관�
 
 ```css
 /* src/styles/theme.css */
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   /* Colors - 다크모드 고정 */
-  --color-primary: #007AFF;
-  --color-success: #34C759;
-  --color-warning: #FF9500;
+  --color-primary: #007aff;
+  --color-success: #34c759;
+  --color-warning: #ff9500;
 
-  --color-text-primary: #FFFFFF;
-  --color-text-secondary: #8E8E93;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #8e8e93;
 
-  --color-bg-panel: #1C1C1E;
-  --color-bg-input: #2C2C2E;
-  --color-bg-hover: #3A3A3C;
+  --color-bg-panel: #1c1c1e;
+  --color-bg-input: #2c2c2e;
+  --color-bg-hover: #3a3a3c;
 
-  --color-border: #38383A;
-  --color-divider: #38383A;
+  --color-border: #38383a;
+  --color-divider: #38383a;
 
   /* Typography */
-  --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-sans:
+    'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 
   /* Shadows */
   --shadow-panel: 0 4px 24px rgba(0, 0, 0, 0.4);
@@ -93,6 +94,7 @@ Tailwind CSS를 활용하여 `src/styles/theme.css` 단일 파일로 테마 관�
 ```
 
 **구현 사항**:
+
 - 2컬럼 레이아웃 (70% 정보 / 30% 메뉴)
 - 섹션별 구분선
 - 금액 증가 애니메이션 (부드러운 카운트업)

@@ -10,11 +10,11 @@
 
 ## 온보딩 단계
 
-| 단계 | 항목             | 설명                                                 |
-| ---- | ---------------- | ---------------------------------------------------- |
-| 1    | 닉네임 확인      | 랜덤 생성된 닉네임 표시 (다시 뽑기 가능)             |
-| 2    | 회사명 확인      | 랜덤 생성된 회사명 표시 (다시 뽑기 가능)             |
-| 3    | 월 실수령액 입력 | 세후 실제 받는 금액 입력                             |
+| 단계 | 항목             | 설명                                     |
+| ---- | ---------------- | ---------------------------------------- |
+| 1    | 닉네임 확인      | 랜덤 생성된 닉네임 표시 (다시 뽑기 가능) |
+| 2    | 회사명 확인      | 랜덤 생성된 회사명 표시 (다시 뽑기 가능) |
+| 3    | 월 실수령액 입력 | 세후 실제 받는 금액 입력                 |
 
 > **참고**: 근무 요일(월~금), 출퇴근 시간(09:00~18:00), 월급날(25일)은 기본값으로 자동 설정됩니다.
 
@@ -43,8 +43,22 @@ interface OnboardingState {
 
 // 랜덤 생성 함수
 function generateRandomNickname(): string {
-  const adjectives = ['성실한', '부지런한', '열정적인', '꼼꼼한', '유능한', '프로'];
-  const characters = ['뚱이', '징징이', '다람이', '핑핑이', '보노보노', '포차코'];
+  const adjectives = [
+    '성실한',
+    '부지런한',
+    '열정적인',
+    '꼼꼼한',
+    '유능한',
+    '프로',
+  ];
+  const characters = [
+    '뚱이',
+    '징징이',
+    '다람이',
+    '핑핑이',
+    '보노보노',
+    '포차코',
+  ];
   const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
   const char = characters[Math.floor(Math.random() * characters.length)];
   return `${adj} ${char}`;
@@ -52,8 +66,14 @@ function generateRandomNickname(): string {
 
 function generateRandomCompany(): string {
   const companies = [
-    '집게리아', '버거왕국', '초코파이공장', '별다방',
-    '감자튀김연구소', '햄버거학교', '피자왕국', '치킨나라',
+    '집게리아',
+    '버거왕국',
+    '초코파이공장',
+    '별다방',
+    '감자튀김연구소',
+    '햄버거학교',
+    '피자왕국',
+    '치킨나라',
   ];
   return companies[Math.floor(Math.random() * companies.length)];
 }

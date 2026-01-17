@@ -47,6 +47,7 @@ Example: `git checkout -b feat/task-2-user-settings-commands`
 ### 5. Create PR
 
 PR must include:
+
 - All code commits
 - Final commit with task file moved to tasks-done/
 
