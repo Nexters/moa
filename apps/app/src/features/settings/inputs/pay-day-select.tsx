@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Props {
   value: number;
@@ -9,6 +9,11 @@ export function PayDaySelect({ value, onSave }: Props) {
   const [localValue, setLocalValue] = useState(value);
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
   const hasChanged = localValue !== value;
+
+  // Sync local state when prop changes (e.g., after save + cache invalidation)
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
 
   return (
     <div className="flex gap-2">
