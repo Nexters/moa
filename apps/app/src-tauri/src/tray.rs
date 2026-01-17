@@ -5,6 +5,7 @@ use tauri::{
     tray::{MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent},
     AppHandle, Manager,
 };
+use tauri_plugin_positioner::{Position, WindowExt};
 
 #[cfg(target_os = "macos")]
 use tauri_nspanel::ManagerExt;
@@ -17,6 +18,9 @@ pub fn create(app_handle: &AppHandle) -> tauri::Result<TrayIcon> {
         .icon(icon)
         .icon_as_template(true)
         .on_tray_icon_event(|tray, event| {
+            // Let positioner handle tray events for positioning
+            tauri_plugin_positioner::on_tray_event(tray.app_handle(), &event);
+
             let app_handle = tray.app_handle();
 
             if let TrayIconEvent::Click { button_state, .. } = event {
@@ -36,6 +40,10 @@ fn toggle_main_window(app_handle: &AppHandle) {
         if panel.is_visible() {
             panel.order_out(None);
         } else {
+            // Position window at tray icon before showing
+            if let Some(window) = app_handle.get_webview_window("main") {
+                let _ = window.move_window(Position::TrayBottomCenter);
+            }
             panel.show();
         }
         return;
@@ -46,6 +54,7 @@ fn toggle_main_window(app_handle: &AppHandle) {
         if window.is_visible().unwrap_or(false) {
             let _ = window.hide();
         } else {
+            let _ = window.move_window(Position::TrayBottomCenter);
             let _ = window.show();
             let _ = window.set_focus();
         }
@@ -58,6 +67,7 @@ fn toggle_main_window(app_handle: &AppHandle) {
         if window.is_visible().unwrap_or(false) {
             let _ = window.hide();
         } else {
+            let _ = window.move_window(Position::TrayBottomCenter);
             let _ = window.show();
             let _ = window.set_focus();
         }

@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { useEffect, useState } from 'react';
 
+import { MenubarPanel } from './features/menubar/menubar-panel';
 import { Onboarding } from './features/onboarding';
 import { checkForUpdates } from './lib/check-for-updates';
 import { commands, unwrapResult } from './lib/tauri-bindings';
@@ -58,8 +59,8 @@ export function App() {
   }
 
   return (
-    <main className="flex h-screen w-full flex-col overflow-hidden rounded-xl">
-      <h1>Welcome to Tauri + React</h1>
+    <main className="flex h-screen w-full flex-col items-center justify-center overflow-hidden rounded-xl">
+      <MenubarPanel />
     </main>
   );
 }
