@@ -16,13 +16,14 @@ export function InfoSection({ settings, salaryInfo }: Props) {
     weekday: 'short',
   });
 
-  const statusConfig = {
+  const defaultStatus = { icon: '⚪', label: '근무종료' };
+  const statusConfig: Record<string, { icon: string; label: string }> = {
     working: { icon: '🟢', label: '근무중' },
     'not-working': { icon: '⚪', label: '근무종료' },
     'day-off': { icon: '🔵', label: '휴일' },
   };
 
-  const status = statusConfig[salaryInfo.workStatus];
+  const status = statusConfig[salaryInfo.workStatus] ?? defaultStatus;
 
   return (
     <div className="flex flex-1 flex-col">

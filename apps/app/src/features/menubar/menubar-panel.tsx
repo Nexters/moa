@@ -36,16 +36,35 @@ function SettingsPanel() {
 }
 
 export function MenubarPanel() {
-  const { data: settings } = useUserSettings();
-  const salaryInfo = useSalaryCalculator(settings ?? null);
+  const { data: settings, isLoading } = useUserSettings();
   const showSettings = useUIStore((s) => s.showSettings);
 
-  if (!settings?.onboardingCompleted || !salaryInfo) {
+  // 로딩 중에는 빈 상태 표시
+  if (isLoading) {
+    return null;
+  }
+
+  // 온보딩 미완료 시 안내 표시
+  if (!settings?.onboardingCompleted) {
     return <OnboardingPrompt />;
   }
 
   if (showSettings) {
     return <SettingsPanel />;
+  }
+
+  return <MainPanel settings={settings} />;
+}
+
+function MainPanel({
+  settings,
+}: {
+  settings: NonNullable<ReturnType<typeof useUserSettings>['data']>;
+}) {
+  const salaryInfo = useSalaryCalculator(settings);
+
+  if (!salaryInfo) {
+    return null;
   }
 
   return (
