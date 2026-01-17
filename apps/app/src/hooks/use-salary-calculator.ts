@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+
 import type { UserSettings } from '~/lib/tauri-bindings';
 
 // 근무 설정 상수
@@ -6,6 +7,9 @@ const WORK_DAYS = [1, 2, 3, 4, 5]; // 월~금
 const WORK_START_MINUTES = 9 * 60; // 09:00
 const WORK_END_MINUTES = 18 * 60; // 18:00
 const WORK_HOURS_PER_DAY = 9;
+
+/** 근무 상태 */
+type WorkStatus = 'working' | 'not-working' | 'day-off';
 
 interface SalaryInfo {
   /** 일급 (원) */
@@ -19,14 +23,14 @@ interface SalaryInfo {
   /** 오늘 번 금액 (원) */
   todayEarnings: number;
   /** 근무 상태 */
-  workStatus: 'working' | 'not-working' | 'day-off';
+  workStatus: WorkStatus;
   /** 오늘이 근무일인지 */
   isWorkDay: boolean;
   /** 월급날부터 근무한 일수 */
   workedDays: number;
 }
 
-export type { SalaryInfo };
+export type { SalaryInfo, WorkStatus };
 
 export function useSalaryCalculator(
   settings: UserSettings | null,
@@ -41,7 +45,10 @@ export function useSalaryCalculator(
 
       // 1. 이번 급여 주기의 월 근무일수 계산
       const payPeriod = getPayPeriod(now, settings.payDay);
-      const workDaysInPeriod = getWorkDaysInPeriod(payPeriod.start, payPeriod.end);
+      const workDaysInPeriod = getWorkDaysInPeriod(
+        payPeriod.start,
+        payPeriod.end,
+      );
 
       // 2. 일급, 시급, 초당 금액 계산
       const dailyRate = settings.monthlyNetSalary / workDaysInPeriod;
@@ -55,7 +62,7 @@ export function useSalaryCalculator(
 
       // 4. 오늘 번 금액 계산
       let todayEarnings = 0;
-      let workStatus: SalaryInfo['workStatus'] = 'day-off';
+      let workStatus: WorkStatus = 'day-off';
 
       if (isWorkDay) {
         if (currentMinutes < WORK_START_MINUTES) {
