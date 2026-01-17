@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Props {
   value: number;
@@ -7,6 +7,11 @@ interface Props {
 
 export function SalaryInput({ value, onSave }: Props) {
   const [localValue, setLocalValue] = useState(value.toLocaleString());
+
+  // Sync local state when prop changes (e.g., after save + cache invalidation)
+  useEffect(() => {
+    setLocalValue(value.toLocaleString());
+  }, [value]);
 
   const handleSave = () => {
     const num = parseInt(localValue.replace(/,/g, ''), 10);
