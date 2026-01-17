@@ -139,12 +139,6 @@ icons/
 - [ ] 애니메이션/트랜지션 적용
 - [ ] 피그마 디자인과 픽셀 퍼펙트 검수
 
-## 의존성
-
-- [Task 5: 메뉴바 팝업 UI](task-5-menubar-popup-ui.md) - P0 완료 필요
-- [Task 6: 설정 화면 UI](task-6-settings-ui.md) - P0 완료 필요
-- [Task 8: 월급날 축하 기능](task-8-payday-celebration.md) - 축하 화면 연계
-
 ## 참고
 
 - 피그마 파일: (링크 추가 예정)

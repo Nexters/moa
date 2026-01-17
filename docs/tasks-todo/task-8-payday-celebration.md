@@ -398,11 +398,6 @@ src/
 - [ ] 메뉴바 팝업에 축하 화면 통합
 - [ ] 근무시간 내 표시 조건 구현
 
-## 의존성
-
-- [Task 3: 급여 계산 엔진](task-3-salary-calculator.md)
-- [Task 5: 메뉴바 팝업 UI](task-5-menubar-popup-ui.md)
-
 ## 참고
 
 - Confetti 라이브러리: [canvas-confetti](https://www.npmjs.com/package/canvas-confetti) 사용 검토

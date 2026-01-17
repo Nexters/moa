@@ -188,11 +188,6 @@ apps/app/
 - [ ] 근무 시작/종료 시점 아이콘 전환 테스트
 - [ ] macOS/Windows 양쪽 테스트
 
-## 의존성
-
-- [Task 3: 급여 계산 엔진](task-3-salary-calculator.md)
-- [Task 5: 메뉴바 팝업 UI](task-5-menubar-popup-ui.md)
-
 ## 완료 후
 
 MVP 1차 기능 완료!
