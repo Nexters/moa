@@ -155,6 +155,39 @@ async updateQuickPaneShortcut(shortcut: string | null) : Promise<Result<null, st
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+/**
+ * 사용자 설정 불러오기
+ */
+async loadUserSettings() : Promise<Result<UserSettings, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("load_user_settings") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * 사용자 설정 저장
+ */
+async saveUserSettings(settings: UserSettings) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("save_user_settings", { settings }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * 온보딩 완료 여부 확인
+ */
+async isOnboardingCompleted() : Promise<Result<boolean, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("is_onboarding_completed") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -208,6 +241,30 @@ export type RecoveryError =
  * JSON serialization/deserialization error
  */
 { type: "ParseError"; message: string }
+/**
+ * User settings for salary calculation (MVP)
+ */
+export type UserSettings = { 
+/**
+ * Nickname (randomly generated)
+ */
+nickname: string; 
+/**
+ * Company/workplace name (randomly generated)
+ */
+companyName: string; 
+/**
+ * Monthly net salary in KRW (max ~4.2B, sufficient for practical use)
+ */
+monthlyNetSalary: number; 
+/**
+ * Pay day of month (1-31, default: 25)
+ */
+payDay: number; 
+/**
+ * Whether onboarding is completed
+ */
+onboardingCompleted: boolean }
 
 /** tauri-specta globals **/
 

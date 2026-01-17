@@ -1,7 +1,9 @@
 use tauri_specta::{collect_commands, Builder};
 
 pub fn generate_bindings() -> Builder<tauri::Wry> {
-    use crate::commands::{menubar, notifications, preferences, quick_pane, recovery};
+    use crate::commands::{
+        menubar, notifications, preferences, quick_pane, recovery, user_settings,
+    };
 
     Builder::<tauri::Wry>::new().commands(collect_commands![
         // Menubar panel
@@ -23,6 +25,10 @@ pub fn generate_bindings() -> Builder<tauri::Wry> {
         quick_pane::toggle_quick_pane,
         quick_pane::get_default_quick_pane_shortcut,
         quick_pane::update_quick_pane_shortcut,
+        // User settings
+        user_settings::load_user_settings,
+        user_settings::save_user_settings,
+        user_settings::is_onboarding_completed,
     ])
 }
 
