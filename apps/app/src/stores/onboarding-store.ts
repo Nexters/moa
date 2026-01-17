@@ -42,7 +42,6 @@ interface OnboardingData {
 interface OnboardingState {
   currentStep: number;
   data: OnboardingData;
-  setStep: (step: number) => void;
   nextStep: () => void;
   prevStep: () => void;
   updateData: (partial: Partial<OnboardingData>) => void;
@@ -60,8 +59,6 @@ const createInitialData = (): OnboardingData => ({
 export const useOnboardingStore = create<OnboardingState>((set) => ({
   currentStep: 1,
   data: createInitialData(),
-
-  setStep: (step) => set({ currentStep: step }),
 
   nextStep: () => set((s) => ({ currentStep: Math.min(s.currentStep + 1, 3) })),
 
