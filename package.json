@@ -22,11 +22,21 @@
   "devDependencies": {
     "@types/node": "^25.0.8",
     "bun-types": "^1.3.6",
+    "lint-staged": "^16.2.7",
     "oxfmt": "^0.24.0",
     "oxlint": "^1.39.0",
     "oxlint-tsgolint": "^0.11.0",
     "turbo": "^2.7.3",
     "typescript": "5.9.2"
+  },
+  "lint-staged": {
+    "*": [
+      "bun lint:fix",
+      "bun format"
+    ],
+    "*.rs": [
+      "bun --filter @moa/app rust:fmt:check"
+    ]
   },
   "engines": {
     "node": ">=18"
