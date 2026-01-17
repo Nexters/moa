@@ -117,6 +117,11 @@ export function useSalaryCalculator(
 
 // 헬퍼 함수들
 
+/** 해당 월의 일수 반환 */
+function daysInMonth(year: number, month: number): number {
+  return new Date(year, month + 1, 0).getDate();
+}
+
 /** 급여 주기 (이전 월급날 ~ 다음 월급날) 계산 */
 function getPayPeriod(now: Date, payDay: number): { start: Date; end: Date } {
   const year = now.getFullYear();
@@ -128,12 +133,16 @@ function getPayPeriod(now: Date, payDay: number): { start: Date; end: Date } {
 
   if (day >= payDay) {
     // 이번 달 월급날 이후 → 이번 달 월급날 ~ 다음 달 월급날
-    start = new Date(year, month, payDay);
-    end = new Date(year, month + 1, payDay);
+    const startDay = Math.min(payDay, daysInMonth(year, month));
+    const endDay = Math.min(payDay, daysInMonth(year, month + 1));
+    start = new Date(year, month, startDay);
+    end = new Date(year, month + 1, endDay);
   } else {
     // 이번 달 월급날 이전 → 지난 달 월급날 ~ 이번 달 월급날
-    start = new Date(year, month - 1, payDay);
-    end = new Date(year, month, payDay);
+    const startDay = Math.min(payDay, daysInMonth(year, month - 1));
+    const endDay = Math.min(payDay, daysInMonth(year, month));
+    start = new Date(year, month - 1, startDay);
+    end = new Date(year, month, endDay);
   }
 
   return { start, end };
