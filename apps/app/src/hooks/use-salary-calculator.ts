@@ -38,7 +38,10 @@ export function useSalaryCalculator(
   const [info, setInfo] = useState<SalaryInfo | null>(null);
 
   useEffect(() => {
-    if (!settings || !settings.onboardingCompleted) return;
+    if (!settings || !settings.onboardingCompleted) {
+      setInfo(null);
+      return;
+    }
 
     const calculate = () => {
       const now = new Date();
