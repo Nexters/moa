@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Props {
   value: string;
@@ -8,6 +8,11 @@ interface Props {
 export function TextInput({ value, onSave }: Props) {
   const [localValue, setLocalValue] = useState(value);
   const hasChanged = localValue !== value && localValue.trim() !== '';
+
+  // Sync local state when prop changes (e.g., after save + cache invalidation)
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
 
   return (
     <div className="flex gap-2">
