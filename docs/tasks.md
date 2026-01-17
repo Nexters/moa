@@ -11,11 +11,53 @@
 
 ## Workflow
 
-1. **Plan**: Write spec document and break down into tasks in tasks-todo/. Get admin review before finalizing.
-2. **Start**: Create a new branch from main: `feat/task-N-name`
-3. **Develop**: Work on the task and create a PR when ready
-4. **Review**: Admin reviews PR and merges to main
-5. **Complete**: Verify all acceptance criteria in the task file are met, then run `bun task:complete N`
+### 1. Plan
+
+- Write spec document and break down into tasks in tasks-todo/
+- Get admin review before finalizing
+
+### 2. Start (CRITICAL: Do this BEFORE any code changes)
+
+```bash
+git checkout main
+git pull origin main
+git checkout -b feat/task-N-name
+```
+
+Example: `git checkout -b feat/task-2-user-settings-commands`
+
+### 3. Develop
+
+- Work on the task implementation
+- Commit in meaningful units (per feature, per acceptance criterion, etc.)
+- Run `bun check:all` to verify quality
+
+### 4. Complete Task (CRITICAL: Do this BEFORE PR)
+
+1. Open the task file in tasks-todo/
+2. Mark ALL items in "완료 조건" with `[x]`:
+   ```markdown
+   - [x] `load_user_settings` 커맨드 구현
+   - [x] `save_user_settings` 커맨드 구현
+   - [x] 커맨드 테스트
+   ```
+3. Run `bun task:complete N` to move task file to tasks-done/
+4. Commit the task file move (this should be the final commit)
+
+### 5. Create PR
+
+PR must include:
+- All code commits
+- Final commit with task file moved to tasks-done/
+
+```bash
+git push -u origin feat/task-N-name
+gh pr create
+```
+
+### 6. Review & Merge
+
+- Admin reviews PR and merges to main
 
 ## Completing Tasks
 
