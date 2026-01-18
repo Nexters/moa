@@ -47,9 +47,7 @@ pub fn run() {
         use tauri_plugin_window_state::StateFlags;
         app_builder = app_builder.plugin(
             tauri_plugin_window_state::Builder::new()
-                .with_state_flags(
-                    StateFlags::SIZE | StateFlags::MAXIMIZED | StateFlags::FULLSCREEN,
-                )
+                .with_state_flags(StateFlags::SIZE | StateFlags::MAXIMIZED | StateFlags::FULLSCREEN)
                 .build(),
         );
     }
