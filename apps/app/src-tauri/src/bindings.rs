@@ -4,6 +4,7 @@ pub fn generate_bindings() -> Builder<tauri::Wry> {
     use crate::commands::{
         menubar, notifications, preferences, quick_pane, recovery, user_settings,
     };
+    use crate::tray;
 
     Builder::<tauri::Wry>::new().commands(collect_commands![
         // Menubar panel
@@ -29,6 +30,8 @@ pub fn generate_bindings() -> Builder<tauri::Wry> {
         user_settings::load_user_settings,
         user_settings::save_user_settings,
         user_settings::is_onboarding_completed,
+        // Tray icon
+        tray::set_tray_icon_state,
     ])
 }
 

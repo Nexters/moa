@@ -1,5 +1,9 @@
 import { SettingsPanel } from '~/features/settings';
-import { useSalaryCalculator } from '~/hooks/use-salary-calculator';
+import {
+  useSalaryCalculator,
+  type SalaryInfo,
+} from '~/hooks/use-salary-calculator';
+import { useTrayIconSync } from '~/hooks/use-tray-icon-sync';
 import { useUserSettings } from '~/hooks/use-user-settings';
 import { useUIStore } from '~/stores/ui-store';
 
@@ -17,6 +21,11 @@ function OnboardingPrompt() {
 export function MenubarPanel() {
   const { data: settings, isLoading } = useUserSettings();
   const showSettings = useUIStore((s) => s.showSettings);
+  const salaryInfo = useSalaryCalculator(settings ?? null);
+
+  // 트레이 아이콘 상태 동기화 (설정 화면에서도 동작)
+  const isWorking = salaryInfo ? salaryInfo.workStatus === 'working' : null;
+  useTrayIconSync(isWorking);
 
   // 로딩 중에는 빈 상태 표시
   if (isLoading) {
@@ -32,16 +41,16 @@ export function MenubarPanel() {
     return <SettingsPanel />;
   }
 
-  return <MainPanel settings={settings} />;
+  return <MainPanel settings={settings} salaryInfo={salaryInfo} />;
 }
 
 function MainPanel({
   settings,
+  salaryInfo,
 }: {
   settings: NonNullable<ReturnType<typeof useUserSettings>['data']>;
+  salaryInfo: SalaryInfo | null;
 }) {
-  const salaryInfo = useSalaryCalculator(settings);
-
   if (!salaryInfo) {
     return null;
   }

@@ -10,6 +10,10 @@ use tauri_plugin_positioner::{Position, WindowExt};
 #[cfg(target_os = "macos")]
 use tauri_nspanel::ManagerExt;
 
+/// Embedded tray icons for different states
+static TRAY_ICON_ACTIVE: &[u8] = include_bytes!("../icons/tray-active.png");
+static TRAY_ICON_IDLE: &[u8] = include_bytes!("../icons/tray-idle.png");
+
 /// Creates the system tray icon with click handlers.
 pub fn create(app_handle: &AppHandle) -> tauri::Result<TrayIcon> {
     let icon = Image::from_bytes(include_bytes!("../icons/tray.png"))?;
@@ -72,4 +76,30 @@ fn toggle_main_window(app_handle: &AppHandle) {
             let _ = window.set_focus();
         }
     }
+}
+
+/// 트레이 아이콘 상태 변경 (근무중/비근무)
+#[tauri::command]
+#[specta::specta]
+pub fn set_tray_icon_state(app: AppHandle, is_working: bool) -> Result<(), String> {
+    let icon_bytes = if is_working {
+        TRAY_ICON_ACTIVE
+    } else {
+        TRAY_ICON_IDLE
+    };
+
+    let tray = app
+        .tray_by_id("tray")
+        .ok_or("트레이 아이콘을 찾을 수 없습니다")?;
+
+    let icon = Image::from_bytes(icon_bytes).map_err(|e| format!("아이콘 로드 실패: {e}"))?;
+
+    tray.set_icon(Some(icon))
+        .map_err(|e| format!("아이콘 설정 실패: {e}"))?;
+
+    log::debug!(
+        "트레이 아이콘 상태 변경: {}",
+        if is_working { "활성" } else { "비활성" }
+    );
+    Ok(())
 }
