@@ -181,12 +181,12 @@ apps/app/
 
 ## 완료 조건
 
-- [ ] 활성/비활성 아이콘 디자인 및 파일 추가
-- [ ] `set_tray_icon_state` 커맨드 구현
-- [ ] `useTrayIconSync` 훅 구현
-- [ ] App에서 훅 연결
-- [ ] 근무 시작/종료 시점 아이콘 전환 테스트
-- [ ] macOS/Windows 양쪽 테스트
+- [x] 활성/비활성 아이콘 디자인 및 파일 추가
+- [x] `set_tray_icon_state` 커맨드 구현
+- [x] `useTrayIconSync` 훅 구현
+- [x] App에서 훅 연결
+- [x] 근무 시작/종료 시점 아이콘 전환 테스트
+- [x] macOS/Windows 양쪽 테스트
 
 ## 완료 후
 
