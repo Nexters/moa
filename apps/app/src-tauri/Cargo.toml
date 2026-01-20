@@ -53,6 +53,7 @@ tauri-plugin-positioner = { version = "2", features = ["tray-icon"] }
 # macOS-only: NSPanel for native panel behavior (fullscreen overlay, click-outside dismiss)
 [target.'cfg(target_os = "macos")'.dependencies]
 tauri-nspanel = { git = "https://github.com/ahkohd/tauri-nspanel", branch = "v2" }
+monitor = { git = "https://github.com/ahkohd/tauri-toolkit", branch = "v2" }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem

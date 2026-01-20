@@ -2407,6 +2407,7 @@ name = "moa"
 version = "0.1.4"
 dependencies = [
  "log",
+ "monitor",
  "rand 0.9.2",
  "regex",
  "serde",
@@ -2432,6 +2433,20 @@ dependencies = [
  "tauri-plugin-updater",
  "tauri-plugin-window-state",
  "tauri-specta",
+]
+
+[[package]]
+name = "monitor"
+version = "0.1.0"
+source = "git+https://github.com/ahkohd/tauri-toolkit?branch=v2#5a8255e79ea739398787df009be385f8d296834e"
+dependencies = [
+ "cocoa",
+ "core-foundation",
+ "core-graphics 0.24.0",
+ "objc",
+ "serde",
+ "tauri",
+ "thiserror 2.0.17",
 ]
 
 [[package]]

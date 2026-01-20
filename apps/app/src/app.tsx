@@ -1,4 +1,3 @@
-import { invoke } from '@tauri-apps/api/core';
 import { useEffect, useState } from 'react';
 
 import { MenubarPanel } from './features/menubar/menubar-panel';
@@ -18,8 +17,9 @@ export function App() {
     return () => clearTimeout(updateTimer);
   }, []);
 
+  // 메뉴바 패널 초기화
   useEffect(() => {
-    void invoke('init');
+    void commands.initMenubar();
   }, []);
 
   useEffect(() => {

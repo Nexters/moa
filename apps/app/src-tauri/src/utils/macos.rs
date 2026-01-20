@@ -13,8 +13,9 @@ use tauri_nspanel::{
     cocoa::{
         appkit::{NSMainMenuWindowLevel, NSView, NSWindow, NSWindowCollectionBehavior},
         base::{id, nil},
+        foundation::{NSPoint, NSRect},
     },
-    objc::{class, msg_send, sel, sel_impl},
+    objc::{class, msg_send, runtime::NO, sel, sel_impl},
     panel_delegate, ManagerExt, WebviewWindowExt,
 };
 
@@ -155,4 +156,45 @@ fn get_frontmost_app_pid() -> i32 {
 /// Checks if the current app is the frontmost application.
 pub fn check_menubar_frontmost() -> bool {
     get_frontmost_app_pid() == app_pid()
+}
+
+/// Positions the menubar panel below the menu bar, centered on the mouse cursor.
+pub fn position_menubar_panel(app_handle: &AppHandle, padding_top: f64) {
+    let window = app_handle.get_webview_window("main").unwrap();
+
+    let monitor = monitor::get_monitor_with_cursor().unwrap();
+
+    let scale_factor = monitor.scale_factor();
+
+    let visible_area = monitor.visible_area();
+
+    let monitor_pos = visible_area.position().to_logical::<f64>(scale_factor);
+
+    let monitor_size = visible_area.size().to_logical::<f64>(scale_factor);
+
+    let mouse_location: NSPoint = unsafe { msg_send![class!(NSEvent), mouseLocation] };
+
+    let handle: id = window.ns_window().unwrap() as _;
+
+    let mut win_frame: NSRect = unsafe { msg_send![handle, frame] };
+
+    win_frame.origin.y = (monitor_pos.y + monitor_size.height) - win_frame.size.height;
+
+    win_frame.origin.y -= padding_top;
+
+    win_frame.origin.x = {
+        let top_right = mouse_location.x + (win_frame.size.width / 2.0);
+
+        let is_offscreen = top_right > monitor_pos.x + monitor_size.width;
+
+        if !is_offscreen {
+            mouse_location.x - (win_frame.size.width / 2.0)
+        } else {
+            let diff = top_right - (monitor_pos.x + monitor_size.width);
+
+            mouse_location.x - (win_frame.size.width / 2.0) - diff
+        }
+    };
+
+    let _: () = unsafe { msg_send![handle, setFrame: win_frame display: NO] };
 }
