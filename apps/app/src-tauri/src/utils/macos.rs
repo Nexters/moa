@@ -24,21 +24,9 @@ const NSWindowStyleMaskNonActivatingPanel: i32 = 1 << 7;
 
 /// Converts the main window to an NSPanel with menubar-appropriate behavior.
 pub fn swizzle_to_menubar_panel(app_handle: &AppHandle) {
-    let panel_delegate = panel_delegate!(SpotlightPanelDelegate {
-        window_did_resign_key
-    });
-
-    let window = app_handle.get_webview_window("main").unwrap();
-
-    let panel = window.to_panel().unwrap();
-
     let handle = app_handle.clone();
-
-    panel_delegate.set_listener(Box::new(move |delegate_name: String| {
-        if delegate_name.as_str() == "window_did_resign_key" {
-            let _ = handle.emit("menubar_panel_did_resign_key", ());
-        }
-    }));
+    let window = app_handle.get_webview_window("main").unwrap();
+    let panel = window.to_panel().unwrap();
 
     panel.set_level(NSMainMenuWindowLevel + 1);
 
@@ -50,6 +38,14 @@ pub fn swizzle_to_menubar_panel(app_handle: &AppHandle) {
             | NSWindowCollectionBehavior::NSWindowCollectionBehaviorFullScreenAuxiliary,
     );
 
+    let panel_delegate = panel_delegate!(SpotlightPanelDelegate {
+        window_did_resign_key
+    });
+    panel_delegate.set_listener(Box::new(move |delegate_name: String| {
+        if delegate_name.as_str() == "window_did_resign_key" {
+            let _ = handle.emit("menubar_panel_did_resign_key", ());
+        }
+    }));
     panel.set_delegate(panel_delegate);
 }
 
@@ -161,38 +157,33 @@ pub fn check_menubar_frontmost() -> bool {
 /// Positions the menubar panel below the menu bar, centered on the mouse cursor.
 pub fn position_menubar_panel(app_handle: &AppHandle, padding_top: f64) {
     let window = app_handle.get_webview_window("main").unwrap();
-
     let monitor = monitor::get_monitor_with_cursor().unwrap();
 
     let scale_factor = monitor.scale_factor();
-
     let visible_area = monitor.visible_area();
-
     let monitor_pos = visible_area.position().to_logical::<f64>(scale_factor);
-
     let monitor_size = visible_area.size().to_logical::<f64>(scale_factor);
 
     let mouse_location: NSPoint = unsafe { msg_send![class!(NSEvent), mouseLocation] };
 
     let handle: id = window.ns_window().unwrap() as _;
-
     let mut win_frame: NSRect = unsafe { msg_send![handle, frame] };
 
+    // Y축: 화면 최상단에서 padding_top만큼 아래로 배치
     win_frame.origin.y = (monitor_pos.y + monitor_size.height) - win_frame.size.height;
-
     win_frame.origin.y -= padding_top;
 
+    // X축: 마우스 중앙 정렬
     win_frame.origin.x = {
-        let top_right = mouse_location.x + (win_frame.size.width / 2.0);
+        let half_width = win_frame.size.width / 2.0;
+        let centered_x = mouse_location.x - half_width;
+        let right_edge = mouse_location.x + half_width;
+        let screen_right = monitor_pos.x + monitor_size.width;
 
-        let is_offscreen = top_right > monitor_pos.x + monitor_size.width;
-
-        if !is_offscreen {
-            mouse_location.x - (win_frame.size.width / 2.0)
+        if right_edge > screen_right {
+            screen_right - win_frame.size.width
         } else {
-            let diff = top_right - (monitor_pos.x + monitor_size.width);
-
-            mouse_location.x - (win_frame.size.width / 2.0) - diff
+            centered_x
         }
     };
 
