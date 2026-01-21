@@ -1,10 +1,10 @@
-import { cn } from '~/lib/utils';
+import { cn } from '@moa/shared';
 
 import { APP_VERSION, getDownloadUrl } from './app-version';
 
 export function App() {
   return (
-    <main className="bg-gray-90 text-gray-0 min-h-dvh px-6 py-12 md:px-12 md:py-16">
+    <main className="min-h-dvh px-6 py-12 md:px-12 md:py-16">
       {/* Grid Container */}
       <div className="mx-auto max-w-5xl">
         {/* Hero Section */}

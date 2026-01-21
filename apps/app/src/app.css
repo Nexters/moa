@@ -1,7 +1,4 @@
-@import 'tailwindcss';
-@import 'tw-animate-css';
-
-@custom-variant dark (&:is(.dark *));
+@import '@moa/shared/theme.css';
 
 @layer base {
   * {

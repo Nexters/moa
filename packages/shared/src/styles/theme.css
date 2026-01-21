@@ -1,0 +1,55 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@theme {
+  /* Typography */
+  --font-sans:
+    'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
+    system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo',
+    'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', sans-serif;
+
+  /* Primary - Green */
+  --color-green-70: #0a4b30;
+  --color-green-60: #0f7449;
+  --color-green-50: #17a968;
+  --color-green-40: #1fd683;
+  --color-green-30: #6de9b1;
+  --color-green-20: #affad8;
+  --color-green-10: #dffef0;
+
+  /* Secondary - Chips */
+  --color-blue: #348cff;
+  --color-blue-light: #a5e3ff;
+  --color-pink: #ff3cb3;
+  --color-pink-light: #ffcdec;
+  --color-yellow: #ffc11f;
+  --color-yellow-light: #ffe39c;
+
+  /* Grayscale */
+  --color-gray-90: #141414;
+  --color-gray-80: #353738;
+  --color-gray-70: #5d5f63;
+  --color-gray-60: #818489;
+  --color-gray-50: #a5a9af;
+  --color-gray-40: #bec3ca;
+  --color-gray-30: #cfd5de;
+  --color-gray-20: #e4e8ee;
+  --color-gray-10: #d7dbe3;
+  --color-gray-5: #f0f3f8;
+  --color-gray-0: #ffffff;
+
+  /* Semantic */
+  --color-error: #ff3127;
+  --color-error-light: #ffdbda;
+
+  /* Dim */
+  --color-dim-light: rgb(0 0 0 / 40%);
+  --color-dim-dark: rgb(0 0 0 / 60%);
+}
+
+html,
+body {
+  background-color: var(--color-gray-90);
+  color: var(--color-gray-0);
+}
