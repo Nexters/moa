@@ -2,12 +2,7 @@
 @import 'tw-animate-css';
 
 @theme {
-  /* Typography */
-  --font-sans:
-    'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
-    system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo',
-    'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji',
-    'Segoe UI Symbol', sans-serif;
+  /* ===== Colors ===== */
 
   /* Primary - Green */
   --color-green-70: #0a4b30;
@@ -28,28 +23,260 @@
 
   /* Grayscale */
   --color-gray-90: #141414;
-  --color-gray-80: #353738;
-  --color-gray-70: #5d5f63;
-  --color-gray-60: #818489;
-  --color-gray-50: #a5a9af;
-  --color-gray-40: #bec3ca;
-  --color-gray-30: #cfd5de;
-  --color-gray-20: #e4e8ee;
-  --color-gray-10: #d7dbe3;
-  --color-gray-5: #f0f3f8;
+  --color-gray-80: #212224;
+  --color-gray-70: #343639;
+  --color-gray-60: #484a4d;
+  --color-gray-50: #63656a;
+  --color-gray-40: #898d93;
+  --color-gray-30: #b9bec5;
+  --color-gray-20: #e3e6ed;
+  --color-gray-10: #f0f3f8;
   --color-gray-0: #ffffff;
 
-  /* Semantic */
-  --color-error: #ff3127;
+  /* ===== Semantic Colors ===== */
+
+  /* Background: 배경색에 사용합니다. */
+  --color-bg-primary: var(--color-gray-90);
+  --color-bg-secondary: var(--color-gray-80);
+
+  /* Container: 카드, 바텀시트 등 프레임 배경에 사용합니다. */
+  --color-container-primary: var(--color-gray-80);
+  --color-container-secondary: var(--color-gray-70);
+
+  /* Text & Icon */
+  --color-text-high: var(--color-gray-0);
+  --color-text-medium: rgb(255 255 255 / 60%);
+  --color-text-low: rgb(255 255 255 / 40%);
+  --color-text-disabled: rgb(255 255 255 / 28%);
+  --color-text-high-reverse: var(--color-gray-90);
+
+  /* Semantic Status */
+  --color-error: #ff4037;
   --color-error-light: #ffdbda;
+  --color-success: var(--color-green-40);
+  --color-info: var(--color-blue);
+
+  /* Divider */
+  --color-divider-primary: var(--color-gray-80);
+  --color-divider-secondary: var(--color-gray-70);
 
   /* Dim */
   --color-dim-light: rgb(0 0 0 / 40%);
   --color-dim-dark: rgb(0 0 0 / 60%);
+
+  /* Button - Primary (Green) */
+  --color-btn-primary-enable: var(--color-green-40);
+  --color-btn-primary-pressed: var(--color-green-50);
+  --color-btn-primary-disabled: var(--color-gray-70);
+
+  /* Button - Secondary */
+  --color-btn-secondary-enable: var(--color-gray-60);
+  --color-btn-secondary-pressed: var(--color-gray-70);
+  --color-btn-secondary-disabled: var(--color-gray-70);
+
+  /* Button - Tertiary */
+  --color-btn-tertiary-enable: var(--color-gray-0);
+  --color-btn-tertiary-pressed: var(--color-gray-20);
+  --color-btn-tertiary-disabled: var(--color-gray-70);
+
+  /* ===== Border Radius ===== */
+
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-full: 999px;
+
+  /* ===== Typography ===== */
+
+  --font-sans:
+    'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont,
+    system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo',
+    'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', sans-serif;
 }
 
-html,
-body {
-  background-color: var(--color-gray-90);
-  color: var(--color-gray-0);
+/* ===== Typography Utilities ===== */
+
+@utility text-h1-700 {
+  font-size: 40px;
+  line-height: 50px;
+  letter-spacing: -0.2px;
+  font-weight: 700;
+}
+
+@utility text-h2-700 {
+  font-size: 36px;
+  line-height: 48px;
+  letter-spacing: -0.2px;
+  font-weight: 700;
+}
+
+@utility text-h2-500 {
+  font-size: 36px;
+  line-height: 48px;
+  letter-spacing: -0.2px;
+  font-weight: 500;
+}
+
+@utility text-h3-700 {
+  font-size: 28px;
+  line-height: 38px;
+  letter-spacing: -0.2px;
+  font-weight: 700;
+}
+
+@utility text-h3-500 {
+  font-size: 28px;
+  line-height: 38px;
+  letter-spacing: -0.2px;
+  font-weight: 500;
+}
+
+@utility text-t1-700 {
+  font-size: 24px;
+  line-height: 34px;
+  letter-spacing: -0.2px;
+  font-weight: 700;
+}
+
+@utility text-t1-500 {
+  font-size: 24px;
+  line-height: 34px;
+  letter-spacing: -0.2px;
+  font-weight: 500;
+}
+
+@utility text-t1-400 {
+  font-size: 24px;
+  line-height: 34px;
+  letter-spacing: -0.2px;
+  font-weight: 400;
+}
+
+@utility text-t2-700 {
+  font-size: 20px;
+  line-height: 28px;
+  letter-spacing: -0.2px;
+  font-weight: 700;
+}
+
+@utility text-t2-500 {
+  font-size: 20px;
+  line-height: 28px;
+  letter-spacing: -0.2px;
+  font-weight: 500;
+}
+
+@utility text-t2-400 {
+  font-size: 20px;
+  line-height: 28px;
+  letter-spacing: -0.2px;
+  font-weight: 400;
+}
+
+@utility text-t3-700 {
+  font-size: 18px;
+  line-height: 26px;
+  letter-spacing: -0.2px;
+  font-weight: 700;
+}
+
+@utility text-t3-500 {
+  font-size: 18px;
+  line-height: 26px;
+  letter-spacing: -0.2px;
+  font-weight: 500;
+}
+
+@utility text-t3-400 {
+  font-size: 18px;
+  line-height: 26px;
+  letter-spacing: -0.2px;
+  font-weight: 400;
+}
+
+@utility text-b1-600 {
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: -0.2px;
+  font-weight: 600;
+}
+
+@utility text-b1-500 {
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: -0.2px;
+  font-weight: 500;
+}
+
+@utility text-b1-400 {
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: -0.2px;
+  font-weight: 400;
+}
+
+@utility text-b2-600 {
+  font-size: 14px;
+  line-height: 21px;
+  letter-spacing: -0.2px;
+  font-weight: 600;
+}
+
+@utility text-b2-500 {
+  font-size: 14px;
+  line-height: 21px;
+  letter-spacing: -0.2px;
+  font-weight: 500;
+}
+
+@utility text-b2-400 {
+  font-size: 14px;
+  line-height: 21px;
+  letter-spacing: -0.2px;
+  font-weight: 400;
+}
+
+@utility text-c1-600 {
+  font-size: 12px;
+  line-height: 18px;
+  letter-spacing: -0.2px;
+  font-weight: 600;
+}
+
+@utility text-c1-500 {
+  font-size: 12px;
+  line-height: 18px;
+  letter-spacing: -0.2px;
+  font-weight: 500;
+}
+
+@utility text-c1-400 {
+  font-size: 12px;
+  line-height: 18px;
+  letter-spacing: -0.2px;
+  font-weight: 400;
+}
+
+@utility text-c2-600 {
+  font-size: 10px;
+  line-height: 15px;
+  letter-spacing: -0.2px;
+  font-weight: 600;
+}
+
+@utility text-c2-500 {
+  font-size: 10px;
+  line-height: 15px;
+  letter-spacing: -0.2px;
+  font-weight: 500;
+}
+
+@utility text-c2-400 {
+  font-size: 10px;
+  line-height: 15px;
+  letter-spacing: -0.2px;
+  font-weight: 400;
 }
