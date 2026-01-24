@@ -12,8 +12,6 @@ mod utils;
 
 use tauri::Manager;
 
-// Re-export only what's needed externally
-pub use types::DEFAULT_QUICK_PANE_SHORTCUT;
 
 /// Application entry point. Sets up all plugins and initializes the app.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -97,7 +95,6 @@ pub fn run() {
         .plugin(tauri_plugin_persisted_scope::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_clipboard_manager::init())
-        .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_os::init())
         .setup(|app| {
             log::info!("Application starting up");
@@ -117,38 +114,6 @@ pub fn run() {
 
             // Create system tray icon
             tray::create(app.handle())?;
-
-            // Set up global shortcut plugin (without any shortcuts - we register them separately)
-            #[cfg(desktop)]
-            {
-                use tauri_plugin_global_shortcut::Builder;
-
-                app.handle().plugin(Builder::new().build())?;
-            }
-
-            // Load saved preferences and register the quick pane shortcut
-            #[cfg(desktop)]
-            {
-                let saved_shortcut = commands::preferences::load_quick_pane_shortcut(app.handle());
-                let shortcut_to_register = saved_shortcut
-                    .as_deref()
-                    .unwrap_or(DEFAULT_QUICK_PANE_SHORTCUT);
-
-                log::info!("Registering quick pane shortcut: {shortcut_to_register}");
-                commands::quick_pane::register_quick_pane_shortcut(
-                    app.handle(),
-                    shortcut_to_register,
-                )?;
-            }
-
-            // Create the quick pane window (hidden) - must be done on main thread
-            if let Err(e) = commands::quick_pane::init_quick_pane(app.handle()) {
-                log::error!("Failed to create quick pane: {e}");
-                // Non-fatal: app can still run without quick pane
-            }
-
-            // NOTE: Application menu is built from JavaScript for i18n support
-            // See src/lib/menu.ts for the menu implementation
 
             Ok(())
         })

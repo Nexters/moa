@@ -4,18 +4,18 @@ Patterns for saving and loading data to disk.
 
 ## Choosing a Storage Method
 
-| Need               | Solution           | When to Use                                                           |
-| ------------------ | ------------------ | --------------------------------------------------------------------- |
-| App preferences    | Preferences System | Strongly-typed settings (theme, shortcuts)                            |
-| Emergency recovery | Recovery System    | Crash recovery, backup before risky operations                        |
-| Relational data    | SQLite             | User data requiring queries, relationships                            |
-| External API data  | TanStack Query     | Remote data with caching (see [external-apis.md](./external-apis.md)) |
+| Need               | Solution           | When to Use                                    |
+| ------------------ | ------------------ | ---------------------------------------------- |
+| App preferences    | Preferences System | Strongly-typed settings (theme, shortcuts)     |
+| Emergency recovery | Recovery System    | Crash recovery, backup before risky operations |
+| Relational data    | SQLite             | User data requiring queries, relationships     |
+| External API data  | TanStack Query     | Remote data with caching                       |
 
 ```
 Need to persist data?
 ├─ App settings? → Preferences (Rust struct + TanStack Query)
 ├─ User data with queries/relationships? → SQLite (see below)
-├─ Remote API data? → external-apis.md
+├─ Remote API data? → TanStack Query with caching
 └─ Emergency/crash recovery? → Recovery System
 ```
 

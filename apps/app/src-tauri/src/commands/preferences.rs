@@ -21,22 +21,6 @@ fn get_preferences_path(app: &AppHandle) -> Result<PathBuf, String> {
     Ok(app_data_dir.join("preferences.json"))
 }
 
-/// Load the saved quick pane shortcut from preferences, returning None on any failure.
-/// Used at startup before the full preferences system is available.
-pub fn load_quick_pane_shortcut(app: &AppHandle) -> Option<String> {
-    let path = get_preferences_path(app).ok()?;
-    if !path.exists() {
-        return None;
-    }
-    let contents = std::fs::read_to_string(&path)
-        .inspect_err(|e| log::warn!("Failed to read preferences: {e}"))
-        .ok()?;
-    let prefs: AppPreferences = serde_json::from_str(&contents)
-        .inspect_err(|e| log::warn!("Failed to parse preferences: {e}"))
-        .ok()?;
-    prefs.quick_pane_shortcut
-}
-
 /// Simple greeting command for demonstration purposes.
 #[tauri::command]
 #[specta::specta]

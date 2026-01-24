@@ -5,9 +5,6 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 use std::sync::LazyLock;
 
-/// Default shortcut for the quick pane
-pub const DEFAULT_QUICK_PANE_SHORTCUT: &str = "CommandOrControl+Shift+.";
-
 /// Maximum size for recovery data files (10MB)
 pub const MAX_RECOVERY_DATA_BYTES: u32 = 10_485_760;
 
@@ -27,9 +24,6 @@ pub static FILENAME_PATTERN: LazyLock<Regex> = LazyLock::new(|| {
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 pub struct AppPreferences {
     pub theme: String,
-    /// Global shortcut for quick pane (e.g., "CommandOrControl+Shift+.")
-    /// If None, uses the default shortcut
-    pub quick_pane_shortcut: Option<String>,
     /// User's preferred language (e.g., "en", "es", "de")
     /// If None, uses system locale detection
     pub language: Option<String>,
@@ -39,8 +33,7 @@ impl Default for AppPreferences {
     fn default() -> Self {
         Self {
             theme: "system".to_string(),
-            quick_pane_shortcut: None, // None means use default
-            language: None,            // None means use system locale
+            language: None, // None means use system locale
         }
     }
 }
