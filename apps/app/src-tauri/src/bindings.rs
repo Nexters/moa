@@ -22,6 +22,7 @@ pub fn generate_bindings() -> Builder<tauri::Wry> {
         user_settings::load_user_settings,
         user_settings::save_user_settings,
         user_settings::is_onboarding_completed,
+        user_settings::reset_all_data,
         // Tray icon
         tray::set_tray_icon_state,
     ])

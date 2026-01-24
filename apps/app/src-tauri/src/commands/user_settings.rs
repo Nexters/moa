@@ -67,3 +67,25 @@ pub async fn is_onboarding_completed(app: AppHandle) -> Result<bool, String> {
     let settings = load_user_settings(app).await?;
     Ok(settings.onboarding_completed)
 }
+
+/// 모든 사용자 데이터 초기화
+#[tauri::command]
+#[specta::specta]
+pub async fn reset_all_data(app: AppHandle) -> Result<(), String> {
+    let app_data_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("앱 데이터 디렉토리 접근 실패: {e}"))?;
+
+    let files_to_delete = ["user-settings.json", "preferences.json"];
+
+    for filename in files_to_delete {
+        let file_path = app_data_dir.join(filename);
+        if file_path.exists() {
+            std::fs::remove_file(&file_path).map_err(|e| format!("{filename} 삭제 실패: {e}"))?;
+        }
+    }
+
+    log::info!("모든 사용자 데이터 초기화 완료");
+    Ok(())
+}

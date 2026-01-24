@@ -138,6 +138,17 @@ async isOnboardingCompleted() : Promise<Result<boolean, string>> {
 }
 },
 /**
+ * 모든 사용자 데이터 초기화
+ */
+async resetAllData() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("reset_all_data") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * 트레이 아이콘 상태 변경 (근무중/비근무)
  */
 async setTrayIconState(isWorking: boolean) : Promise<Result<null, string>> {

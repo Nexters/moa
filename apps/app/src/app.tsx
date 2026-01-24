@@ -4,18 +4,26 @@ import { MenubarPanel } from './features/menubar/menubar-panel';
 import { Onboarding } from './features/onboarding';
 import { checkForUpdates } from './lib/check-for-updates';
 import { commands, unwrapResult } from './lib/tauri-bindings';
+import { useUIStore } from './stores/ui-store';
 import './app.css';
 
 type AppState = 'loading' | 'onboarding' | 'main';
 
 export function App() {
   const [appState, setAppState] = useState<AppState>('loading');
+  const setOnResetApp = useUIStore((s) => s.setOnResetApp);
 
   useEffect(() => {
     // Check for updates 5 seconds after app loads
     const updateTimer = setTimeout(checkForUpdates, 5000);
     return () => clearTimeout(updateTimer);
   }, []);
+
+  // 리셋 콜백 등록
+  useEffect(() => {
+    setOnResetApp(() => setAppState('onboarding'));
+    return () => setOnResetApp(null);
+  }, [setOnResetApp]);
 
   // 메뉴바 패널 초기화
   useEffect(() => {

@@ -12,7 +12,6 @@ mod utils;
 
 use tauri::Manager;
 
-
 /// Application entry point. Sets up all plugins and initializes the app.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

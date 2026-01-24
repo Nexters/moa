@@ -15,7 +15,7 @@ export function SettingsPanel() {
   }
 
   return (
-    <div className="flex w-80 flex-col rounded-xl bg-neutral-900 shadow-lg">
+    <div className="flex max-h-[80vh] w-80 flex-col rounded-xl bg-neutral-900 shadow-lg">
       <SettingsHeader />
       <SettingsForm settings={settings} />
     </div>

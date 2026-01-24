@@ -5,6 +5,7 @@ import { commands, type UserSettings } from '~/lib/tauri-bindings';
 import { PayDaySelect } from './inputs/pay-day-select';
 import { SalaryInput } from './inputs/salary-input';
 import { TextInput } from './inputs/text-input';
+import { ResetDataButton } from './reset-data-button';
 import { SettingField } from './setting-field';
 
 interface Props {
@@ -53,7 +54,7 @@ export function SettingsForm({ settings }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4 overflow-y-auto p-4">
       {/* 닉네임 */}
       <SettingField label="닉네임">
         <TextInput
@@ -84,6 +85,14 @@ export function SettingsForm({ settings }: Props) {
           value={settings.payDay}
           onSave={(value) => handleSave({ payDay: value })}
         />
+      </SettingField>
+
+      {/* 구분선 */}
+      <div className="my-2 border-t border-white/10" />
+
+      {/* 데이터 초기화 */}
+      <SettingField label="위험 영역">
+        <ResetDataButton />
       </SettingField>
     </div>
   );
