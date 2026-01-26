@@ -105,3 +105,28 @@ pub fn set_tray_icon_state(app: AppHandle, is_working: bool) -> Result<(), Strin
     );
     Ok(())
 }
+
+/// 트레이 타이틀 설정 (macOS 전용 - 메뉴바에 텍스트 표시)
+#[tauri::command]
+#[specta::specta]
+pub fn set_tray_title(app: AppHandle, title: Option<String>) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    {
+        let tray = app
+            .tray_by_id("tray")
+            .ok_or("트레이 아이콘을 찾을 수 없습니다")?;
+
+        tray.set_title(title.as_deref())
+            .map_err(|e| format!("타이틀 설정 실패: {e}"))?;
+
+        log::debug!("트레이 타이틀 변경: {:?}", title);
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = title; // Windows/Linux에서는 미지원
+        log::debug!("트레이 타이틀은 macOS에서만 지원됩니다");
+    }
+
+    Ok(())
+}

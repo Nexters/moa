@@ -158,6 +158,17 @@ async setTrayIconState(isWorking: boolean) : Promise<Result<null, string>> {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+/**
+ * 트레이 타이틀 설정 (macOS 전용 - 메뉴바에 텍스트 표시)
+ */
+async setTrayTitle(title: string | null) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("set_tray_title", { title }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 

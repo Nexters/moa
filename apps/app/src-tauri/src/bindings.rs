@@ -25,6 +25,7 @@ pub fn generate_bindings() -> Builder<tauri::Wry> {
         user_settings::reset_all_data,
         // Tray icon
         tray::set_tray_icon_state,
+        tray::set_tray_title,
     ])
 }
 

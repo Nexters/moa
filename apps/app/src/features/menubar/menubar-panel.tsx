@@ -4,6 +4,7 @@ import {
   type SalaryInfo,
 } from '~/hooks/use-salary-calculator';
 import { useTrayIconSync } from '~/hooks/use-tray-icon-sync';
+import { useTrayTitleSync } from '~/hooks/use-tray-title-sync';
 import { useUserSettings } from '~/hooks/use-user-settings';
 import { useUIStore } from '~/stores/ui-store';
 
@@ -26,6 +27,9 @@ export function MenubarPanel() {
   // 트레이 아이콘 상태 동기화 (설정 화면에서도 동작)
   const isWorking = salaryInfo ? salaryInfo.workStatus === 'working' : null;
   useTrayIconSync(isWorking);
+
+  // 트레이 타이틀에 누적 월급 표시 (macOS 전용)
+  useTrayTitleSync(salaryInfo?.accumulatedEarnings ?? null);
 
   // 로딩 중에는 빈 상태 표시
   if (isLoading) {
