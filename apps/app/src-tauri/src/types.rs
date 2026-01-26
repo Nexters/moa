@@ -143,6 +143,13 @@ pub struct UserSettings {
     pub pay_day: u8,
     /// Whether onboarding is completed
     pub onboarding_completed: bool,
+    /// Whether to show accumulated salary in menubar (macOS only)
+    #[serde(default = "default_show_menubar_salary")]
+    pub show_menubar_salary: bool,
+}
+
+fn default_show_menubar_salary() -> bool {
+    true
 }
 
 impl Default for UserSettings {
@@ -153,6 +160,7 @@ impl Default for UserSettings {
             monthly_net_salary: 0,
             pay_day: 25,
             onboarding_completed: false,
+            show_menubar_salary: true,
         }
     }
 }

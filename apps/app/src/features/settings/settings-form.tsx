@@ -5,6 +5,7 @@ import { commands, type UserSettings } from '~/lib/tauri-bindings';
 import { PayDaySelect } from './inputs/pay-day-select';
 import { SalaryInput } from './inputs/salary-input';
 import { TextInput } from './inputs/text-input';
+import { ToggleInput } from './inputs/toggle-input';
 import { ResetDataButton } from './reset-data-button';
 import { SettingField } from './setting-field';
 
@@ -84,6 +85,14 @@ export function SettingsForm({ settings }: Props) {
         <PayDaySelect
           value={settings.payDay}
           onSave={(value) => handleSave({ payDay: value })}
+        />
+      </SettingField>
+
+      {/* 상태바 금액 표시 */}
+      <SettingField label="상태바 금액 표시">
+        <ToggleInput
+          value={settings.showMenubarSalary ?? true}
+          onSave={(value) => handleSave({ showMenubarSalary: value })}
         />
       </SettingField>
 

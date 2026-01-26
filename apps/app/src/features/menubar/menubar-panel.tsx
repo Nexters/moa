@@ -29,7 +29,10 @@ export function MenubarPanel() {
   useTrayIconSync(isWorking);
 
   // 트레이 타이틀에 누적 월급 표시 (macOS 전용)
-  useTrayTitleSync(salaryInfo?.accumulatedEarnings ?? null);
+  useTrayTitleSync(
+    salaryInfo?.accumulatedEarnings ?? null,
+    settings?.showMenubarSalary ?? true,
+  );
 
   // 로딩 중에는 빈 상태 표시
   if (isLoading) {

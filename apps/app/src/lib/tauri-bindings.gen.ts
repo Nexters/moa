@@ -240,7 +240,11 @@ payDay: number;
 /**
  * Whether onboarding is completed
  */
-onboardingCompleted: boolean }
+onboardingCompleted: boolean; 
+/**
+ * Whether to show accumulated salary in menubar (macOS only)
+ */
+showMenubarSalary?: boolean }
 
 /** tauri-specta globals **/
 
