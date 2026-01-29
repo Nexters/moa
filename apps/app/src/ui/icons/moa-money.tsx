@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react';
 import { cn } from 'tailwind-variants';
 
-type MoaMoneyIconVariant = 'default' | 'active';
+type MoaMoneyIconVariant = 'empty' | 'partial' | 'full';
 
 interface MoaMoneyIconProps extends Omit<ComponentProps<'svg'>, 'children'> {
   variant?: MoaMoneyIconVariant;
@@ -11,12 +11,17 @@ const variantColors: Record<
   MoaMoneyIconVariant,
   { fill: string; stroke: string; detail: string }
 > = {
-  default: {
+  empty: {
     fill: '#484A4D',
     stroke: '#343639',
     detail: '#343639',
   },
-  active: {
+  partial: {
+    fill: '#48B477',
+    stroke: '#3D9A65',
+    detail: '#3D9A65',
+  },
+  full: {
     fill: '#48B477',
     stroke: '#3D9A65',
     detail: '#3D9A65',
@@ -24,7 +29,7 @@ const variantColors: Record<
 };
 
 export function MoaMoneyIcon({
-  variant = 'default',
+  variant = 'empty',
   className,
   ...props
 }: MoaMoneyIconProps) {

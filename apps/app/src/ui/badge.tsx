@@ -11,7 +11,7 @@ export const badgeVariants = tv({
   ],
   variants: {
     variant: {
-      green: 'bg-green-40 text-green-70',
+      green: 'bg-green-70 text-green-40',
       blue: 'text-blue-light bg-[#348CFF47]',
       pink: 'bg-pink text-pink-light',
       yellow: 'bg-yellow text-yellow-light',

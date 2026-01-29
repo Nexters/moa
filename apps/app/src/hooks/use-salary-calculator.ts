@@ -14,7 +14,7 @@ function timeToMinutes(time: string): number {
 }
 
 /** 근무 상태 */
-type WorkStatus = 'working' | 'not-working' | 'day-off';
+type WorkStatus = 'before-work' | 'working' | 'completed' | 'day-off';
 
 interface SalaryInfo {
   /** 일급 (원) */
@@ -90,11 +90,11 @@ export function useSalaryCalculator(
       if (isWorkDay) {
         if (currentMinutes < workStartMinutes) {
           // 출근 전
-          workStatus = 'not-working';
+          workStatus = 'before-work';
           todayEarnings = 0;
         } else if (currentMinutes >= workEndMinutes) {
-          // 퇴근 후
-          workStatus = 'not-working';
+          // 퇴근 후 (근무 완료)
+          workStatus = 'completed';
           todayEarnings = dailyRate;
         } else {
           // 근무 중
