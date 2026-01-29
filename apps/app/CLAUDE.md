@@ -273,6 +273,7 @@ For in-depth topics, see `docs/`:
 
 | Document                          | Content                       |
 | --------------------------------- | ----------------------------- |
+| `advanced/autostart.md`           | Login items, system settings  |
 | `advanced/data-persistence.md`    | File storage, atomic writes   |
 | `advanced/releases.md`            | Release process, auto-updates |
 | `advanced/bundle-optimization.md` | Bundle size management        |

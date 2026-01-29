@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getVersion } from '@tauri-apps/api/app';
-import { useState } from 'react';
+import { enable, disable, isEnabled } from '@tauri-apps/plugin-autostart';
 
 import { useUIStore } from '~/stores/ui-store';
 import { AppBar } from '~/ui';
@@ -17,6 +17,7 @@ interface Props {
 
 export function SettingsScreen({ onNavigate }: Props) {
   const navigate = useUIStore((s) => s.navigate);
+  const queryClient = useQueryClient();
 
   const { data: version } = useQuery({
     queryKey: ['appVersion'],
@@ -24,7 +25,25 @@ export function SettingsScreen({ onNavigate }: Props) {
     staleTime: Infinity,
   });
 
-  const [autoStart, setAutoStart] = useState(false);
+  const { data: autoStartEnabled = false, isLoading: isAutoStartLoading } =
+    useQuery({
+      queryKey: ['autostart'],
+      queryFn: isEnabled,
+      staleTime: Infinity,
+    });
+
+  const autoStartMutation = useMutation({
+    mutationFn: async (enabled: boolean) => {
+      if (enabled) {
+        await enable();
+      } else {
+        await disable();
+      }
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['autostart'] });
+    },
+  });
 
   return (
     <div className="bg-bg-primary flex h-full flex-col">
@@ -46,9 +65,9 @@ export function SettingsScreen({ onNavigate }: Props) {
         <SettingsSection title="자동 실행">
           <SettingsToggleItem
             label="로그인 시 MOA 자동 실행"
-            value={autoStart}
-            onChange={setAutoStart}
-            disabled
+            value={autoStartEnabled}
+            onChange={(enabled) => autoStartMutation.mutate(enabled)}
+            disabled={isAutoStartLoading || autoStartMutation.isPending}
           />
         </SettingsSection>
 

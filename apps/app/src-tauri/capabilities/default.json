@@ -11,6 +11,9 @@
     "core:app:default",
     "core:resources:default",
     "core:menu:default",
-    "core:tray:default"
+    "core:tray:default",
+    "autostart:allow-enable",
+    "autostart:allow-disable",
+    "autostart:allow-is-enabled"
   ]
 }
