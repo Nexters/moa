@@ -29,7 +29,53 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+  notify:
+    needs: [build, deploy]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Discord Notification
+        continue-on-error: true
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DEPLOY_RESULT: ${{ needs.deploy.result }}
+          PAGE_URL: ${{ needs.deploy.outputs.page_url }}
+          VERSION: ${{ github.event.release.tag_name || 'manual' }}
+          RELEASE_URL: ${{ github.event.release.html_url || '' }}
+        run: |
+          if [ "$DEPLOY_RESULT" == "success" ]; then
+            COLOR=5763719
+            TITLE="✅ Landing $VERSION 배포 성공"
+          else
+            COLOR=15548997
+            TITLE="❌ Landing $VERSION 배포 실패"
+          fi
+
+          # 릴리스 URL 필드 (있을 때만)
+          if [ -n "$RELEASE_URL" ]; then
+            RELEASE_FIELD=',{"name": "릴리스 노트", "value": "'"$RELEASE_URL"'"}'
+          else
+            RELEASE_FIELD=""
+          fi
+
+          curl -f -H "Content-Type: application/json" \
+            -d '{
+              "embeds": [{
+                "title": "'"$TITLE"'",
+                "color": '"$COLOR"',
+                "fields": [
+                  {"name": "버전", "value": "'"$VERSION"'", "inline": true},
+                  {"name": "배포자", "value": "${{ github.actor }}", "inline": true},
+                  {"name": "배포 URL", "value": "'"$PAGE_URL"'"}
+                  '"$RELEASE_FIELD"'
+                ],
+                "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
+              }]
+            }' \
+            $DISCORD_WEBHOOK
