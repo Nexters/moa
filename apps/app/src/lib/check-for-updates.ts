@@ -1,5 +1,6 @@
 import { relaunch } from '@tauri-apps/plugin-process';
 import { check } from '@tauri-apps/plugin-updater';
+import { useEffect } from 'react';
 
 import { logger } from '~/lib/logger';
 
@@ -48,4 +49,11 @@ export async function checkForUpdates() {
     logger.error(`Update check failed: ${String(checkError)}`);
     // Silent fail for update checks - don't bother user with network issues
   }
+}
+
+export function useCheckForUpdates({ delay = 5000 }: { delay?: number } = {}) {
+  useEffect(() => {
+    const updateTimer = setTimeout(checkForUpdates, delay);
+    return () => clearTimeout(updateTimer);
+  }, [delay]);
 }

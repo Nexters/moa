@@ -4,7 +4,7 @@ import type { OnboardingScreenProps } from './hooks/use-onboarding-screen';
 
 export function WelcomeScreen({ onNext }: OnboardingScreenProps) {
   return (
-    <div className="flex flex-1 flex-col">
+    <main className="flex flex-1 flex-col">
       <AppBar type="main" onSettings={() => {}} />
 
       <div className="flex flex-col items-center gap-5 px-5 pt-9">
@@ -32,6 +32,6 @@ export function WelcomeScreen({ onNext }: OnboardingScreenProps) {
           월급 정보 등록하기
         </Button>
       </div>
-    </div>
+    </main>
   );
 }

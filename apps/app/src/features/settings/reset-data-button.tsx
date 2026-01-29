@@ -5,8 +5,7 @@ import { useUIStore } from '~/stores/ui-store';
 
 export function ResetDataButton() {
   const queryClient = useQueryClient();
-  const onResetApp = useUIStore((s) => s.onResetApp);
-  const setShowSettings = useUIStore((s) => s.setShowSettings);
+  const navigate = useUIStore((s) => s.navigate);
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -15,8 +14,7 @@ export function ResetDataButton() {
     },
     onSuccess: () => {
       queryClient.clear();
-      setShowSettings(false);
-      onResetApp?.();
+      navigate('onboarding');
     },
   });
 
@@ -25,9 +23,9 @@ export function ResetDataButton() {
       type="button"
       onClick={() => mutation.mutate()}
       disabled={mutation.isPending}
-      className="rounded-lg bg-red-500/20 px-3 py-1.5 text-sm text-red-400 transition-colors hover:bg-red-500/30 disabled:opacity-50"
+      className="text-b2-400 text-error hover:bg-interactive-hover flex w-full items-center justify-between px-4 py-3.5 transition-colors first:rounded-t-md last:rounded-b-md disabled:cursor-not-allowed disabled:opacity-50"
     >
-      {mutation.isPending ? '초기화 중...' : '데이터 초기화'}
+      <span>{mutation.isPending ? '초기화 중...' : '데이터 초기화'}</span>
     </button>
   );
 }

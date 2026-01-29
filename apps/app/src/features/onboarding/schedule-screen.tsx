@@ -15,7 +15,7 @@ export function ScheduleScreen({
   onNext,
 }: OnboardingScreenProps) {
   return (
-    <div className="flex flex-1 flex-col">
+    <main className="flex flex-1 flex-col">
       <AppBar type="detail" onBack={onBack} />
 
       <div className="flex flex-1 flex-col px-6 pt-4">
@@ -134,6 +134,6 @@ export function ScheduleScreen({
           }}
         </form.Subscribe>
       </div>
-    </div>
+    </main>
   );
 }

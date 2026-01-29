@@ -1,4 +1,5 @@
 import { useForm } from '@tanstack/react-form';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { commands, type SalaryType } from '~/lib/tauri-bindings';
 
@@ -30,6 +31,8 @@ const DEFAULT_VALUES: OnboardingFormValues = {
 };
 
 export function useOnboardingForm() {
+  const queryClient = useQueryClient();
+
   const form = useForm({
     defaultValues: DEFAULT_VALUES,
     validators: {
@@ -88,6 +91,8 @@ export function useOnboardingForm() {
       if (result.status === 'error') {
         throw new Error(result.error);
       }
+
+      await queryClient.invalidateQueries({ queryKey: ['userSettings'] });
     },
   });
 

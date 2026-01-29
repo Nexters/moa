@@ -5,6 +5,7 @@ export { Field } from './field';
 export { IconButton } from './icon-button';
 export { NumberInput } from './number-input';
 export { SelectInput } from './select-input';
+export { SwitchInput } from './switch-input';
 export { TimeInput } from './time-input';
 export { TooltipBubble } from './tooltip-bubble';
 export * from './icons';

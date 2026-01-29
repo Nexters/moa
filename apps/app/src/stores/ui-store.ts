@@ -1,20 +1,19 @@
 import { create } from 'zustand';
 
+export type AppRoute = 'loading' | 'onboarding' | 'home' | 'settings';
+
 interface UIState {
   preferencesOpen: boolean;
-  showSettings: boolean;
-  onResetApp: (() => void) | null;
+  currentRoute: AppRoute;
 
   togglePreferences: () => void;
   setPreferencesOpen: (open: boolean) => void;
-  setShowSettings: (show: boolean) => void;
-  setOnResetApp: (callback: (() => void) | null) => void;
+  navigate: (route: AppRoute) => void;
 }
 
 export const useUIStore = create<UIState>((set) => ({
   preferencesOpen: false,
-  showSettings: false,
-  onResetApp: null,
+  currentRoute: 'loading',
 
   togglePreferences: () => {
     set((state) => ({ preferencesOpen: !state.preferencesOpen }));
@@ -22,10 +21,7 @@ export const useUIStore = create<UIState>((set) => ({
   setPreferencesOpen: (open) => {
     set({ preferencesOpen: open });
   },
-  setShowSettings: (show) => {
-    set({ showSettings: show });
-  },
-  setOnResetApp: (callback) => {
-    set({ onResetApp: callback });
+  navigate: (route) => {
+    set({ currentRoute: route });
   },
 }));

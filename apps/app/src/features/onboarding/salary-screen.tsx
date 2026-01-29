@@ -6,7 +6,7 @@ import type { OnboardingScreenProps } from './hooks/use-onboarding-screen';
 
 export function SalaryScreen({ form, onNext, onBack }: OnboardingScreenProps) {
   return (
-    <div className="flex flex-1 flex-col">
+    <main className="flex flex-1 flex-col">
       <AppBar type="detail" onBack={onBack} />
 
       <div className="flex flex-1 flex-col px-6 pt-4">
@@ -106,6 +106,6 @@ export function SalaryScreen({ form, onNext, onBack }: OnboardingScreenProps) {
           }}
         </form.Subscribe>
       </div>
-    </div>
+    </main>
   );
 }

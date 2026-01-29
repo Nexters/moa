@@ -1,14 +1,21 @@
 import { useConfetti } from '~/hooks/use-confetti';
+import { useUIStore } from '~/stores/ui-store';
 import { AppBar, Button } from '~/ui';
 
 import type { OnboardingScreenProps } from './hooks/use-onboarding-screen';
 
-export function CompletionScreen({ onComplete }: OnboardingScreenProps) {
+export function CompletionScreen(_props: OnboardingScreenProps) {
+  const navigate = useUIStore((s) => s.navigate);
+
   useConfetti();
 
+  const handleComplete = () => {
+    navigate('home');
+  };
+
   return (
-    <div className="flex flex-1 flex-col">
-      <AppBar type="detail" onBack={onComplete} />
+    <main className="flex flex-1 flex-col">
+      <AppBar type="detail" onBack={handleComplete} />
 
       {/* 컨텐츠 영역 */}
       <div className="relative z-10 flex flex-1 flex-col items-center px-6 pt-32">
@@ -28,10 +35,15 @@ export function CompletionScreen({ onComplete }: OnboardingScreenProps) {
 
       {/* 완료 버튼 */}
       <div className="absolute inset-x-0 bottom-9 flex justify-center">
-        <Button rounded="full" size="lg" className="w-60" onClick={onComplete}>
+        <Button
+          rounded="full"
+          size="lg"
+          className="w-60"
+          onClick={handleComplete}
+        >
           완료
         </Button>
       </div>
-    </div>
+    </main>
   );
 }

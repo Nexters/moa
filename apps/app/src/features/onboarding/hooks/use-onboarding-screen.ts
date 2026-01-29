@@ -20,7 +20,6 @@ export interface OnboardingScreenProps {
   form: OnboardingForm;
   onNext: () => void;
   onBack: () => void;
-  onComplete: () => void;
   isFirstScreen: boolean;
   isLastScreen: boolean;
 }
@@ -38,13 +37,9 @@ const SCREEN_COMPONENTS: Record<
 
 interface UseOnboardingScreenOptions {
   form: OnboardingForm;
-  onComplete: () => void;
 }
 
-export function useOnboardingScreen({
-  form,
-  onComplete,
-}: UseOnboardingScreenOptions) {
+export function useOnboardingScreen({ form }: UseOnboardingScreenOptions) {
   const [currentScreen, setCurrentScreen] =
     useState<OnboardingScreen>('welcome');
 
@@ -95,7 +90,6 @@ export function useOnboardingScreen({
       form,
       onNext: goToNext,
       onBack: goToPrevious,
-      onComplete,
       isFirstScreen,
       isLastScreen,
     } satisfies OnboardingScreenProps,
