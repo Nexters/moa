@@ -9,9 +9,10 @@ interface UIState {
   togglePreferences: () => void;
   setPreferencesOpen: (open: boolean) => void;
   navigate: (route: AppRoute) => void;
+  resetToHome: () => void;
 }
 
-export const useUIStore = create<UIState>((set) => ({
+export const useUIStore = create<UIState>((set, get) => ({
   preferencesOpen: false,
   currentRoute: 'loading',
 
@@ -23,5 +24,12 @@ export const useUIStore = create<UIState>((set) => ({
   },
   navigate: (route) => {
     set({ currentRoute: route });
+  },
+  resetToHome: () => {
+    const { currentRoute } = get();
+
+    if (currentRoute !== 'onboarding') {
+      set({ currentRoute: 'home' });
+    }
   },
 }));

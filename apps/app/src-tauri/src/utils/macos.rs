@@ -39,11 +39,18 @@ pub fn swizzle_to_menubar_panel(app_handle: &AppHandle) {
     );
 
     let panel_delegate = panel_delegate!(SpotlightPanelDelegate {
-        window_did_resign_key
+        window_did_resign_key,
+        window_did_become_key
     });
     panel_delegate.set_listener(Box::new(move |delegate_name: String| {
-        if delegate_name.as_str() == "window_did_resign_key" {
-            let _ = handle.emit("menubar_panel_did_resign_key", ());
+        match delegate_name.as_str() {
+            "window_did_resign_key" => {
+                let _ = handle.emit("menubar_panel_did_resign_key", ());
+            }
+            "window_did_become_key" => {
+                let _ = handle.emit("menubar_panel_did_open", ());
+            }
+            _ => {}
         }
     }));
     panel.set_delegate(panel_delegate);

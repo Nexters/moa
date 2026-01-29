@@ -1,3 +1,4 @@
+import { listen } from '@tauri-apps/api/event';
 import { useEffect } from 'react';
 
 import { useCheckForUpdates } from '~/lib/check-for-updates';
@@ -13,12 +14,22 @@ import './app.css';
 export function App() {
   const currentRoute = useUIStore((s) => s.currentRoute);
   const navigate = useUIStore((s) => s.navigate);
+  const resetToHome = useUIStore((s) => s.resetToHome);
 
   useCheckForUpdates();
 
   useEffect(() => {
     void commands.initMenubar();
   }, []);
+
+  useEffect(() => {
+    const cleanListen = listen('menubar_panel_did_open', () => {
+      resetToHome();
+    });
+    return () => {
+      void cleanListen.then((fn) => fn());
+    };
+  }, [resetToHome]);
 
   useEffect(() => {
     const checkOnboarding = async () => {
