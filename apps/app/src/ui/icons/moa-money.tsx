@@ -1,6 +1,5 @@
 import type { ComponentProps } from 'react';
-
-import { cn } from '@moa/shared';
+import { cn } from 'tailwind-variants';
 
 type MoaMoneyIconVariant = 'default' | 'active';
 

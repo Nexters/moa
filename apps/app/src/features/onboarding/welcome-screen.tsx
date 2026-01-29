@@ -17,12 +17,10 @@ export function WelcomeScreen({ onNext }: OnboardingScreenProps) {
         <MoaMoneyIcon className="size-20" />
 
         <div className="flex flex-col items-center gap-[2px]">
-          <span className="text-b1-400 text-text-medium">
-            나는 얼마나 벌까?
-          </span>
+          <span className="b1-400 text-text-medium">나는 얼마나 벌까?</span>
           <div className="flex items-end gap-1">
-            <span className="text-h1-700 text-green-40">0,00</span>
-            <span className="text-t2-400 text-text-medium pb-2">원</span>
+            <span className="h1-700 text-green-40">0,00</span>
+            <span className="t2-400 text-text-medium pb-2">원</span>
           </div>
         </div>
       </div>

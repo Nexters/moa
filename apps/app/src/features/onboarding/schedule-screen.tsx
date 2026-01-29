@@ -19,7 +19,7 @@ export function ScheduleScreen({
       <AppBar type="detail" onBack={onBack} />
 
       <div className="flex flex-1 flex-col px-6 pt-4">
-        <h1 className="text-t2-700 text-text-high">언제 근무하나요?</h1>
+        <h1 className="t2-700 text-text-high">언제 근무하나요?</h1>
 
         <div className="mt-8 flex flex-col gap-8">
           {/* 근무 요일 */}

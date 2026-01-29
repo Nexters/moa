@@ -1,6 +1,5 @@
 import { Switch } from '@base-ui/react/switch';
-
-import { cn } from '@moa/shared';
+import { cn } from 'tailwind-variants';
 
 interface SwitchInputProps {
   value: boolean;

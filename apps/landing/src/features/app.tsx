@@ -1,4 +1,4 @@
-import { cn } from '@moa/shared';
+import { cn } from 'tailwind-variants';
 
 import { APP_VERSION, getDownloadUrl } from './app-version';
 
@@ -11,10 +11,8 @@ export function App() {
         <section className="grid grid-cols-4 gap-4 md:grid-cols-12 md:gap-6">
           {/* Title Block */}
           <div className="col-span-4 mb-8 md:col-span-8 md:mb-16">
-            <h1 className="text-h2-700 md:text-h1-700 mb-4 md:text-8xl">
-              모아
-            </h1>
-            <p className="text-t3-400 md:text-t2-400 text-text-medium max-w-md">
+            <h1 className="h2-700 md:h1-700 mb-4 md:text-8xl">모아</h1>
+            <p className="t3-400 md:t2-400 text-text-medium max-w-md">
               실시간 월급 체감 서비스
             </p>
           </div>
@@ -26,7 +24,7 @@ export function App() {
                 href="https://github.com/nexters/moa"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-b2-400 hover:text-green-40 text-text-medium transition-colors"
+                className="b2-400 hover:text-green-40 text-text-medium transition-colors"
               >
                 GitHub
               </a>
@@ -34,7 +32,7 @@ export function App() {
                 href="https://github.com/nexters/moa/releases"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-b2-400 hover:text-green-40 text-text-medium transition-colors"
+                className="b2-400 hover:text-green-40 text-text-medium transition-colors"
               >
                 Releases
               </a>
@@ -50,8 +48,8 @@ export function App() {
           {/* Desktop */}
           <div className="col-span-4 md:col-span-6">
             <div className="mb-4 flex items-baseline justify-between">
-              <h2 className="text-c1-500 text-text-low uppercase">Desktop</h2>
-              <span className="text-b2-500 text-green-40 font-mono">
+              <h2 className="c1-500 text-text-low uppercase">Desktop</h2>
+              <span className="b2-500 text-green-40 font-mono">
                 v{APP_VERSION}
               </span>
             </div>
@@ -72,7 +70,7 @@ export function App() {
 
           {/* Mobile */}
           <div className="col-span-4 md:col-span-6">
-            <h2 className="text-c1-500 text-text-low mb-4 uppercase">Mobile</h2>
+            <h2 className="c1-500 text-text-low mb-4 uppercase">Mobile</h2>
             <div className="flex flex-col gap-3">
               <DownloadButton platform="iOS" icon={<IOSIcon />} />
               <DownloadButton platform="Android" icon={<AndroidIcon />} />
@@ -84,7 +82,7 @@ export function App() {
         <footer className="border-gray-80 mt-16 border-t pt-8 md:mt-24">
           <div className="grid grid-cols-4 gap-4 md:grid-cols-12">
             <div className="col-span-4 md:col-span-6">
-              <p className="text-b2-400 text-text-low">
+              <p className="b2-400 text-text-low">
                 © 2025 Built with <span className="text-green-40">💚</span>{' '}
                 by&nbsp;
                 <a
@@ -134,12 +132,12 @@ function DownloadButton({
           : 'hover:bg-gray-80 cursor-pointer hover:border-green-50',
       )}
     >
-      <span className="text-b2-400 flex items-center gap-2">
+      <span className="b2-400 flex items-center gap-2">
         {icon}
         {platform} {arch && <span className="text-text-low">({arch})</span>}
       </span>
       {disabled ? (
-        <span className="text-c1-400">Coming Soon</span>
+        <span className="c1-400">Coming Soon</span>
       ) : (
         <svg
           className="text-text-low group-hover:text-green-40 h-4 w-4 transition-colors"

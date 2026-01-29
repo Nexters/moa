@@ -41,7 +41,7 @@ export function SalaryInfoScreen({ onBack }: Props) {
   const { data: settings } = useUserSettings();
 
   return (
-    <div className="bg-bg-primary flex h-full flex-col">
+    <main className="flex flex-1 flex-col">
       <AppBar type="detail" title="월급 · 근무 정보" onBack={onBack} />
 
       <div className="flex flex-col gap-5 overflow-y-auto p-4">
@@ -91,6 +91,6 @@ export function SalaryInfoScreen({ onBack }: Props) {
           />
         </SettingsSection>
       </div>
-    </div>
+    </main>
   );
 }

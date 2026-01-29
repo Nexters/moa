@@ -22,6 +22,6 @@
     "newlinesBetween": true
   },
   "experimentalTailwindcss": {
-    "functions": ["clsx", "cn"]
+    "functions": ["clsx", "cn", "tv"]
   }
 }

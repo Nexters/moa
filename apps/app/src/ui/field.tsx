@@ -1,6 +1,5 @@
 import { Field as BaseField } from '@base-ui/react/field';
-
-import { cn } from '@moa/shared';
+import { cn } from 'tailwind-variants';
 
 function Root({
   className,
@@ -20,7 +19,7 @@ function Label({
 }: React.ComponentProps<typeof BaseField.Label>) {
   return (
     <BaseField.Label
-      className={cn('text-b2-500 text-text-medium', className)}
+      className={cn('b2-500 text-text-medium', className)}
       {...props}
     />
   );
@@ -32,7 +31,7 @@ function Error({
 }: React.ComponentProps<typeof BaseField.Error>) {
   return (
     <BaseField.Error
-      className={cn('text-b3-400 text-error', className)}
+      className={cn('b3-400 text-error', className)}
       {...props}
     />
   );

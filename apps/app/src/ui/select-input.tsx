@@ -1,6 +1,5 @@
 import { Select } from '@base-ui/react/select';
-
-import { cn } from '@moa/shared';
+import { cn } from 'tailwind-variants';
 
 import { CheckIcon, ChevronDownIcon } from './icons';
 
@@ -25,7 +24,7 @@ export function SelectInput({
     <Select.Root items={options} {...props}>
       <Select.Trigger
         className={cn(
-          'bg-container-primary text-b1-600 text-text-high focus:border-green-40 flex w-full cursor-pointer items-center justify-between rounded-sm border border-transparent px-4 py-3 transition-colors focus:outline-none',
+          'bg-container-primary b1-600 text-text-high focus:border-green-40 flex w-full cursor-pointer items-center justify-between rounded-sm border border-transparent px-4 py-3 transition-colors focus:outline-none',
           className,
         )}
       >
@@ -47,8 +46,8 @@ export function SelectInput({
                   key={option.value}
                   value={option.value}
                   className={cn(
-                    'text-b1-400 text-text-medium flex cursor-pointer items-center justify-between rounded-xs px-4 py-2 outline-none',
-                    'data-highlighted:bg-container-secondary data-highlighted:text-b1-600 data-highlighted:text-text-high',
+                    'b1-400 text-text-medium flex cursor-pointer items-center justify-between rounded-xs px-4 py-2 outline-none',
+                    'data-highlighted:bg-container-secondary data-highlighted:b1-600 data-highlighted:text-text-high',
                   )}
                 >
                   <Select.ItemText>{option.label}</Select.ItemText>

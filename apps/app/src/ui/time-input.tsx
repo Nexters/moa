@@ -15,7 +15,7 @@ export function TimeInput({ value, onChange, ...props }: TimeInputProps) {
       type="time"
       value={value}
       onChange={(e: ChangeEvent<HTMLInputElement>) => onChange(e.target.value)}
-      className="bg-container-primary text-b1-500 text-text-high w-full rounded-md px-4 py-3 scheme-dark focus:outline-none"
+      className="bg-container-primary b1-500 text-text-high w-full rounded-md px-4 py-3 scheme-dark focus:outline-none"
       {...props}
     />
   );

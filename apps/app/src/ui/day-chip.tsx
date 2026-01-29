@@ -1,4 +1,4 @@
-import { cn } from '@moa/shared';
+import { cn } from 'tailwind-variants';
 
 interface DayChipProps {
   day: number;
@@ -13,7 +13,7 @@ export function DayChip({ day, label, selected, onToggle }: DayChipProps) {
       type="button"
       onClick={() => onToggle(day)}
       className={cn(
-        'text-b2-600 flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm transition-colors',
+        'b2-600 flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm transition-colors',
         selected
           ? 'bg-text-high text-text-high-reverse'
           : 'bg-container-primary text-text-disabled',

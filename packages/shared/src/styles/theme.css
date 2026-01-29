@@ -86,182 +86,182 @@
 
 /* ===== Typography Utilities ===== */
 
-@utility text-h1-700 {
+@utility h1-700 {
   font-size: 40px;
   line-height: 50px;
   letter-spacing: -0.2px;
   font-weight: 700;
 }
 
-@utility text-h2-700 {
+@utility h2-700 {
   font-size: 36px;
   line-height: 48px;
   letter-spacing: -0.2px;
   font-weight: 700;
 }
 
-@utility text-h2-500 {
+@utility h2-500 {
   font-size: 36px;
   line-height: 48px;
   letter-spacing: -0.2px;
   font-weight: 500;
 }
 
-@utility text-h3-700 {
+@utility h3-700 {
   font-size: 28px;
   line-height: 38px;
   letter-spacing: -0.2px;
   font-weight: 700;
 }
 
-@utility text-h3-500 {
+@utility h3-500 {
   font-size: 28px;
   line-height: 38px;
   letter-spacing: -0.2px;
   font-weight: 500;
 }
 
-@utility text-t1-700 {
+@utility t1-700 {
   font-size: 24px;
   line-height: 34px;
   letter-spacing: -0.2px;
   font-weight: 700;
 }
 
-@utility text-t1-500 {
+@utility t1-500 {
   font-size: 24px;
   line-height: 34px;
   letter-spacing: -0.2px;
   font-weight: 500;
 }
 
-@utility text-t1-400 {
+@utility t1-400 {
   font-size: 24px;
   line-height: 34px;
   letter-spacing: -0.2px;
   font-weight: 400;
 }
 
-@utility text-t2-700 {
+@utility t2-700 {
   font-size: 20px;
   line-height: 28px;
   letter-spacing: -0.2px;
   font-weight: 700;
 }
 
-@utility text-t2-500 {
+@utility t2-500 {
   font-size: 20px;
   line-height: 28px;
   letter-spacing: -0.2px;
   font-weight: 500;
 }
 
-@utility text-t2-400 {
+@utility t2-400 {
   font-size: 20px;
   line-height: 28px;
   letter-spacing: -0.2px;
   font-weight: 400;
 }
 
-@utility text-t3-700 {
+@utility t3-700 {
   font-size: 18px;
   line-height: 26px;
   letter-spacing: -0.2px;
   font-weight: 700;
 }
 
-@utility text-t3-500 {
+@utility t3-500 {
   font-size: 18px;
   line-height: 26px;
   letter-spacing: -0.2px;
   font-weight: 500;
 }
 
-@utility text-t3-400 {
+@utility t3-400 {
   font-size: 18px;
   line-height: 26px;
   letter-spacing: -0.2px;
   font-weight: 400;
 }
 
-@utility text-b1-600 {
+@utility b1-600 {
   font-size: 16px;
   line-height: 24px;
   letter-spacing: -0.2px;
   font-weight: 600;
 }
 
-@utility text-b1-500 {
+@utility b1-500 {
   font-size: 16px;
   line-height: 24px;
   letter-spacing: -0.2px;
   font-weight: 500;
 }
 
-@utility text-b1-400 {
+@utility b1-400 {
   font-size: 16px;
   line-height: 24px;
   letter-spacing: -0.2px;
   font-weight: 400;
 }
 
-@utility text-b2-600 {
+@utility b2-600 {
   font-size: 14px;
   line-height: 21px;
   letter-spacing: -0.2px;
   font-weight: 600;
 }
 
-@utility text-b2-500 {
+@utility b2-500 {
   font-size: 14px;
   line-height: 21px;
   letter-spacing: -0.2px;
   font-weight: 500;
 }
 
-@utility text-b2-400 {
+@utility b2-400 {
   font-size: 14px;
   line-height: 21px;
   letter-spacing: -0.2px;
   font-weight: 400;
 }
 
-@utility text-c1-600 {
+@utility c1-600 {
   font-size: 12px;
   line-height: 18px;
   letter-spacing: -0.2px;
   font-weight: 600;
 }
 
-@utility text-c1-500 {
+@utility c1-500 {
   font-size: 12px;
   line-height: 18px;
   letter-spacing: -0.2px;
   font-weight: 500;
 }
 
-@utility text-c1-400 {
+@utility c1-400 {
   font-size: 12px;
   line-height: 18px;
   letter-spacing: -0.2px;
   font-weight: 400;
 }
 
-@utility text-c2-600 {
+@utility c2-600 {
   font-size: 10px;
   line-height: 15px;
   letter-spacing: -0.2px;
   font-weight: 600;
 }
 
-@utility text-c2-500 {
+@utility c2-500 {
   font-size: 10px;
   line-height: 15px;
   letter-spacing: -0.2px;
   font-weight: 500;
 }
 
-@utility text-c2-400 {
+@utility c2-400 {
   font-size: 10px;
   line-height: 15px;
   letter-spacing: -0.2px;

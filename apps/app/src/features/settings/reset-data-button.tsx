@@ -23,7 +23,7 @@ export function ResetDataButton() {
       type="button"
       onClick={() => mutation.mutate()}
       disabled={mutation.isPending}
-      className="text-b2-400 text-error hover:bg-interactive-hover flex w-full items-center justify-between px-4 py-3.5 transition-colors first:rounded-t-md last:rounded-b-md disabled:cursor-not-allowed disabled:opacity-50"
+      className="b2-400 text-error hover:bg-interactive-hover flex w-full items-center justify-between px-4 py-3.5 transition-colors first:rounded-t-md last:rounded-b-md disabled:cursor-not-allowed disabled:opacity-50"
     >
       <span>{mutation.isPending ? '초기화 중...' : '데이터 초기화'}</span>
     </button>

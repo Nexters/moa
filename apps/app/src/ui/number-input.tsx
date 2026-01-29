@@ -1,7 +1,6 @@
 import { NumberField } from '@base-ui/react/number-field';
 import type { ComponentProps } from 'react';
-
-import { cn } from '@moa/shared';
+import { cn } from 'tailwind-variants';
 
 interface NumberInputProps extends ComponentProps<typeof NumberField.Root> {
   suffix?: string;
@@ -24,9 +23,9 @@ export function NumberInput({
         className,
       )}
     >
-      <NumberField.Input className="text-b1-600 text-text-high placeholder:text-text-low w-full bg-transparent px-4 py-3 pr-10 text-right focus:outline-none" />
+      <NumberField.Input className="b1-600 text-text-high placeholder:text-text-low w-full bg-transparent px-4 py-3 pr-10 text-right focus:outline-none" />
       {suffix && (
-        <span className="text-b1-600 text-text-medium pointer-events-none absolute top-1/2 right-4 -translate-y-1/2">
+        <span className="b1-600 text-text-medium pointer-events-none absolute top-1/2 right-4 -translate-y-1/2">
           {suffix}
         </span>
       )}

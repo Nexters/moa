@@ -4,10 +4,11 @@ import {
   type WorkStatus,
 } from '~/hooks/use-salary-calculator';
 import { useUserSettings } from '~/hooks/use-user-settings';
-import { formatCurrency } from '~/lib/format';
+import { formatCurrency, formatNumber } from '~/lib/format';
 import type { UserSettings } from '~/lib/tauri-bindings';
 import { useUIStore } from '~/stores/ui-store';
 import { AppBar } from '~/ui/app-bar';
+import { Badge } from '~/ui/badge';
 import { Button } from '~/ui/button';
 import { MoaMoneyIcon } from '~/ui/icons';
 
@@ -43,12 +44,20 @@ function MainPanel({ settings, salaryInfo, onSettings }: MainPanelProps) {
   return (
     <main className="flex flex-1 flex-col">
       <AppBar type="main" onSettings={onSettings} />
-      <div className="flex flex-col gap-4 p-4">
+
+      <div className="flex flex-1 flex-col gap-7 px-5 pt-3">
         <HeroSection salaryInfo={salaryInfo} />
         <InfoCard settings={settings} salaryInfo={salaryInfo} />
-        <Button variant="tertiary" rounded="full" fullWidth disabled>
-          근무 종료
-        </Button>
+        <div className="flex justify-center">
+          <Button
+            variant="tertiary"
+            rounded="full"
+            size="lg"
+            className="w-[240px]"
+          >
+            근무 종료
+          </Button>
+        </div>
       </div>
     </main>
   );
@@ -64,10 +73,13 @@ function HeroSection({ salaryInfo }: HeroSectionProps) {
   return (
     <div className="flex flex-col items-center gap-2 py-4">
       <MoaMoneyIcon variant={isWorking ? 'active' : 'default'} />
-      <p className="text-b2-400 text-text-medium">오늘 쌓은 월급</p>
-      <p className="text-h1-700 text-success tabular-nums">
-        {formatCurrency(salaryInfo.todayEarnings)}
-      </p>
+      <p className="b2-400 text-text-medium">오늘 쌓은 월급</p>
+      <div className="flex items-end justify-center gap-1">
+        <p className="h1-700 text-green-40 tabular-nums">
+          {formatNumber(salaryInfo.todayEarnings)}
+        </p>
+        <p className="h3-500 text-text-medium">원</p>
+      </div>
     </div>
   );
 }
@@ -82,11 +94,15 @@ function InfoCard({ settings, salaryInfo }: InfoCardProps) {
   const workEnd = settings.workEndTime ?? '18:00';
 
   return (
-    <div className="bg-container-secondary flex flex-col divide-y divide-white/5 rounded-xl">
+    <div className="bg-container-primary flex flex-col gap-3.5 rounded-lg p-4">
       <InfoRow label="근무 상태">
-        <WorkStatusBadge status={salaryInfo.workStatus} />
+        <Badge variant={salaryInfo.workStatus === 'working' ? 'green' : 'blue'}>
+          {salaryInfo.workStatus === 'working' ? '근무 중' : '근무 종료'}
+        </Badge>
       </InfoRow>
-      <InfoRow label="오늘 근무 시간" value={`${workStart}-${workEnd}`} />
+      <hr className="border-divider-secondary" />
+      <InfoRow label="오늘 근무 시간" value={`${workStart} - ${workEnd}`} />
+      <hr className="border-divider-secondary" />
       <InfoRow
         label="이번달 누적 월급"
         value={formatCurrency(salaryInfo.accumulatedEarnings)}
@@ -103,30 +119,9 @@ interface InfoRowProps {
 
 function InfoRow({ label, value, children }: InfoRowProps) {
   return (
-    <div className="flex items-center justify-between px-4 py-3">
-      <span className="text-b2-400 text-text-medium">{label}</span>
-      {children ?? <span className="text-b2-500 text-text-high">{value}</span>}
+    <div className="flex h-6 items-center justify-between">
+      <span className="b1-400 text-text-medium">{label}</span>
+      {children ?? <span className="b1-600 text-text-high">{value}</span>}
     </div>
-  );
-}
-
-interface WorkStatusBadgeProps {
-  status: WorkStatus;
-}
-
-function WorkStatusBadge({ status }: WorkStatusBadgeProps) {
-  const config: Record<WorkStatus, { color: string; label: string }> = {
-    working: { color: 'bg-success', label: '근무 중' },
-    'not-working': { color: 'bg-gray-60', label: '근무 종료' },
-    'day-off': { color: 'bg-info', label: '휴일' },
-  };
-
-  const { color, label } = config[status];
-
-  return (
-    <span className="text-b2-500 text-text-high flex items-center gap-1.5">
-      <span className={`size-2 rounded-full ${color}`} />
-      {label}
-    </span>
   );
 }

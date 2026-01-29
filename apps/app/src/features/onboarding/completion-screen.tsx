@@ -22,11 +22,11 @@ export function CompletionScreen(_props: OnboardingScreenProps) {
         {/* 이미지 placeholder */}
         <div className="bg-container-secondary size-[150px] rounded-2xl" />
 
-        <h1 className="text-t2-700 text-text-high mt-6 text-center">
+        <h1 className="t2-700 text-text-high mt-6 text-center">
           모든 준비가 끝났어요!
         </h1>
 
-        <p className="text-b1-400 text-text-medium mt-3 text-center">
+        <p className="b1-400 text-text-medium mt-3 text-center">
           월급 정보 입력을 성공적으로 마쳤어요.
           <br />
           이제 근무를 시작해볼까요?

@@ -8,7 +8,7 @@ export function TooltipBubble({ children }: TooltipBubbleProps) {
   return (
     <div className="relative flex flex-col items-center">
       <div className="bg-container-secondary rounded-xl px-5 py-2">
-        <p className="text-b2-400 text-text-high text-center">{children}</p>
+        <p className="b2-400 text-text-high text-center">{children}</p>
       </div>
       <svg
         className="text-container-secondary"
