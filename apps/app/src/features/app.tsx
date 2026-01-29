@@ -51,6 +51,7 @@ export function App() {
 
   return (
     <>
+      <div tabIndex={0}>{/* 초기 포커스 방지 */}</div>
       <TraySync />
       {renderRoute()}
     </>
