@@ -1,8 +1,7 @@
 import { useUserSettings } from '~/hooks/use-user-settings';
 import { type SalaryType } from '~/lib/tauri-bindings';
-import { AppBar } from '~/ui';
+import { AppBar, InfoRow } from '~/ui';
 
-import { SalaryInfoItem } from './salary-info-item';
 import { SettingsSection } from './settings-section';
 
 interface Props {
@@ -46,49 +45,43 @@ export function SalaryInfoScreen({ onBack }: Props) {
 
       <div className="flex flex-col gap-5 overflow-y-auto p-4">
         <SettingsSection title="월급 정보">
-          <SalaryInfoItem
-            label="급여"
-            value={
-              settings
+          <InfoRow as="button" label="급여" disabled>
+            <span className="text-green-40">
+              {settings
                 ? formatSalary(settings.salaryType, settings.salaryAmount)
-                : '-'
-            }
-            disabled
-          />
-          <SalaryInfoItem
-            label="월급일"
-            value={settings ? `${settings.payDay}일` : '-'}
-            disabled
-          />
+                : '-'}
+            </span>
+          </InfoRow>
+          <InfoRow as="button" label="월급일" disabled>
+            <span className="text-green-40">
+              {settings ? `${settings.payDay}일` : '-'}
+            </span>
+          </InfoRow>
         </SettingsSection>
 
         <SettingsSection title="근무 정보">
-          <SalaryInfoItem
-            label="근무 요일"
-            value={settings ? formatWorkDays(settings.workDays) : '-'}
-            disabled
-          />
-          <SalaryInfoItem
-            label="근무 시간"
-            value={
-              settings
+          <InfoRow as="button" label="근무 요일" disabled>
+            <span className="text-green-40">
+              {settings ? formatWorkDays(settings.workDays) : '-'}
+            </span>
+          </InfoRow>
+          <InfoRow as="button" label="근무 시간" disabled>
+            <span className="text-green-40">
+              {settings
                 ? formatTimeRange(settings.workStartTime, settings.workEndTime)
-                : '-'
-            }
-            disabled
-          />
-          <SalaryInfoItem
-            label="점심 시간"
-            value={
-              settings
+                : '-'}
+            </span>
+          </InfoRow>
+          <InfoRow as="button" label="점심 시간" disabled>
+            <span className="text-green-40">
+              {settings
                 ? formatTimeRange(
                     settings.lunchStartTime,
                     settings.lunchEndTime,
                   )
-                : '-'
-            }
-            disabled
-          />
+                : '-'}
+            </span>
+          </InfoRow>
         </SettingsSection>
       </div>
     </main>

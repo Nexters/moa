@@ -3,6 +3,7 @@ export { Button } from './button';
 export { DayChip, DayChipGroup } from './day-chip';
 export { Field } from './field';
 export { IconButton } from './icon-button';
+export { InfoRow } from './info-row';
 export { NumberInput } from './number-input';
 export { SelectInput } from './select-input';
 export { SwitchInput } from './switch-input';
