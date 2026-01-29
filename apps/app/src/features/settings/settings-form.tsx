@@ -4,7 +4,6 @@ import { commands, type UserSettings } from '~/lib/tauri-bindings';
 
 import { PayDaySelect } from './inputs/pay-day-select';
 import { SalaryInput } from './inputs/salary-input';
-import { TextInput } from './inputs/text-input';
 import { ToggleInput } from './inputs/toggle-input';
 import { ResetDataButton } from './reset-data-button';
 import { SettingField } from './setting-field';
@@ -56,27 +55,11 @@ export function SettingsForm({ settings }: Props) {
 
   return (
     <div className="flex flex-col gap-4 overflow-y-auto p-4">
-      {/* 닉네임 */}
-      <SettingField label="닉네임">
-        <TextInput
-          value={settings.nickname}
-          onSave={(value) => handleSave({ nickname: value })}
-        />
-      </SettingField>
-
-      {/* 회사명 */}
-      <SettingField label="회사명">
-        <TextInput
-          value={settings.companyName}
-          onSave={(value) => handleSave({ companyName: value })}
-        />
-      </SettingField>
-
-      {/* 월 실수령액 */}
-      <SettingField label="월 실수령액">
+      {/* 급여 금액 */}
+      <SettingField label="급여 금액">
         <SalaryInput
-          value={settings.monthlyNetSalary}
-          onSave={(value) => handleSave({ monthlyNetSalary: value })}
+          value={settings.salaryAmount}
+          onSave={(value) => handleSave({ salaryAmount: value })}
         />
       </SettingField>
 

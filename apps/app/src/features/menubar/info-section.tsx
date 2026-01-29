@@ -24,17 +24,14 @@ export function InfoSection({ settings, salaryInfo }: Props) {
   };
 
   const status = statusConfig[salaryInfo.workStatus] ?? defaultStatus;
+  const workStart = settings.workStartTime ?? '09:00';
+  const workEnd = settings.workEndTime ?? '18:00';
 
   return (
     <div className="flex flex-1 flex-col">
-      {/* 헤더: 날짜 & 사용자 정보 */}
+      {/* 헤더: 날짜 */}
       <div className="border-b border-white/10 p-4">
         <p className="text-sm text-gray-400">{dateStr}</p>
-        <p className="mt-1 font-medium">
-          {settings.nickname}
-          <span className="text-gray-500"> @ </span>
-          {settings.companyName}
-        </p>
       </div>
 
       {/* 메인: 누적 금액 */}
@@ -54,7 +51,9 @@ export function InfoSection({ settings, salaryInfo }: Props) {
         <p className="font-medium">
           {status.icon} {status.label}
         </p>
-        <p className="mt-1 text-sm text-gray-400">09:00 ~ 18:00</p>
+        <p className="mt-1 text-sm text-gray-400">
+          {workStart} ~ {workEnd}
+        </p>
       </div>
     </div>
   );

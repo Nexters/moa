@@ -14,8 +14,8 @@
     "windows": [
       {
         "title": "menubar",
-        "width": 350,
-        "height": 400,
+        "width": 400,
+        "height": 580,
         "fullscreen": false,
         "resizable": false,
         "decorations": false,

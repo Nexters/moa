@@ -218,25 +218,45 @@ export type RecoveryError =
  */
 { type: "ParseError"; message: string }
 /**
+ * Salary type for user settings
+ */
+export type SalaryType = "monthly" | "yearly"
+/**
  * User settings for salary calculation (MVP)
  */
 export type UserSettings = { 
 /**
- * Nickname (randomly generated)
+ * Salary type (monthly or yearly)
  */
-nickname: string; 
+salaryType?: SalaryType; 
 /**
- * Company/workplace name (randomly generated)
+ * Salary amount in KRW (monthly net salary or yearly salary)
  */
-companyName: string; 
-/**
- * Monthly net salary in KRW (max ~4.2B, sufficient for practical use)
- */
-monthlyNetSalary: number; 
+salaryAmount: number; 
 /**
  * Pay day of month (1-31, default: 25)
  */
 payDay: number; 
+/**
+ * Work days (0=Sunday, 1=Monday, ..., 6=Saturday)
+ */
+workDays?: number[]; 
+/**
+ * Work start time (HH:MM format, default: "09:00")
+ */
+workStartTime?: string; 
+/**
+ * Work end time (HH:MM format, default: "18:00")
+ */
+workEndTime?: string; 
+/**
+ * Lunch start time (HH:MM format, default: "12:00")
+ */
+lunchStartTime?: string; 
+/**
+ * Lunch end time (HH:MM format, default: "13:00")
+ */
+lunchEndTime?: string; 
 /**
  * Whether onboarding is completed
  */

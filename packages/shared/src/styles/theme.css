@@ -53,31 +53,18 @@
   /* Semantic Status */
   --color-error: #ff4037;
   --color-error-light: #ffdbda;
-  --color-success: var(--color-green-40);
-  --color-info: var(--color-blue);
 
   /* Divider */
   --color-divider-primary: var(--color-gray-80);
   --color-divider-secondary: var(--color-gray-70);
 
+  /* Interactive States: hover, active 등 상호작용 상태에 사용합니다. */
+  --color-interactive-hover: var(--color-gray-70);
+  --color-interactive-active: var(--color-gray-60);
+
   /* Dim */
   --color-dim-light: rgb(0 0 0 / 40%);
   --color-dim-dark: rgb(0 0 0 / 60%);
-
-  /* Button - Primary (Green) */
-  --color-btn-primary-enable: var(--color-green-40);
-  --color-btn-primary-pressed: var(--color-green-50);
-  --color-btn-primary-disabled: var(--color-gray-70);
-
-  /* Button - Secondary */
-  --color-btn-secondary-enable: var(--color-gray-60);
-  --color-btn-secondary-pressed: var(--color-gray-70);
-  --color-btn-secondary-disabled: var(--color-gray-70);
-
-  /* Button - Tertiary */
-  --color-btn-tertiary-enable: var(--color-gray-0);
-  --color-btn-tertiary-pressed: var(--color-gray-20);
-  --color-btn-tertiary-disabled: var(--color-gray-70);
 
   /* ===== Border Radius ===== */
 

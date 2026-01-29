@@ -2,11 +2,16 @@ import { useState, useEffect } from 'react';
 
 import type { UserSettings } from '~/lib/tauri-bindings';
 
-// 근무 설정 상수
-const WORK_DAYS = [1, 2, 3, 4, 5]; // 월~금
-const WORK_START_MINUTES = 9 * 60; // 09:00
-const WORK_END_MINUTES = 18 * 60; // 18:00
-const WORK_HOURS_PER_DAY = 9;
+// 기본 근무 설정
+const DEFAULT_WORK_DAYS = [1, 2, 3, 4, 5]; // 월~금
+const DEFAULT_WORK_START = '09:00';
+const DEFAULT_WORK_END = '18:00';
+
+/** 시간 문자열을 분으로 변환 (HH:MM -> minutes) */
+function timeToMinutes(time: string): number {
+  const [hours, minutes] = time.split(':').map(Number);
+  return hours * 60 + minutes;
+}
 
 /** 근무 상태 */
 type WorkStatus = 'working' | 'not-working' | 'day-off';
@@ -46,21 +51,36 @@ export function useSalaryCalculator(
     const calculate = () => {
       const now = new Date();
 
+      // 설정에서 근무 정보 가져오기 (기본값 사용)
+      const workDays = settings.workDays ?? DEFAULT_WORK_DAYS;
+      const workStartTime = settings.workStartTime ?? DEFAULT_WORK_START;
+      const workEndTime = settings.workEndTime ?? DEFAULT_WORK_END;
+      const workStartMinutes = timeToMinutes(workStartTime);
+      const workEndMinutes = timeToMinutes(workEndTime);
+      const workHoursPerDay = (workEndMinutes - workStartMinutes) / 60;
+
+      // 연봉인 경우 월급으로 변환 (12로 나눔)
+      const monthlySalary =
+        settings.salaryType === 'yearly'
+          ? settings.salaryAmount / 12
+          : settings.salaryAmount;
+
       // 1. 이번 급여 주기의 월 근무일수 계산
       const payPeriod = getPayPeriod(now, settings.payDay);
       const workDaysInPeriod = getWorkDaysInPeriod(
         payPeriod.start,
         payPeriod.end,
+        workDays,
       );
 
       // 2. 일급, 시급, 초당 금액 계산
-      const dailyRate = settings.monthlyNetSalary / workDaysInPeriod;
-      const hourlyRate = dailyRate / WORK_HOURS_PER_DAY;
+      const dailyRate = monthlySalary / workDaysInPeriod;
+      const hourlyRate = dailyRate / workHoursPerDay;
       const perSecond = hourlyRate / 3600;
 
       // 3. 오늘 근무 상태 확인
       const dayOfWeek = now.getDay();
-      const isWorkDay = WORK_DAYS.includes(dayOfWeek);
+      const isWorkDay = workDays.includes(dayOfWeek);
       const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
       // 4. 오늘 번 금액 계산
@@ -68,25 +88,29 @@ export function useSalaryCalculator(
       let workStatus: WorkStatus = 'day-off';
 
       if (isWorkDay) {
-        if (currentMinutes < WORK_START_MINUTES) {
+        if (currentMinutes < workStartMinutes) {
           // 출근 전
           workStatus = 'not-working';
           todayEarnings = 0;
-        } else if (currentMinutes >= WORK_END_MINUTES) {
+        } else if (currentMinutes >= workEndMinutes) {
           // 퇴근 후
           workStatus = 'not-working';
           todayEarnings = dailyRate;
         } else {
           // 근무 중
           workStatus = 'working';
-          const workedMinutes = currentMinutes - WORK_START_MINUTES;
+          const workedMinutes = currentMinutes - workStartMinutes;
           const workedSeconds = workedMinutes * 60 + now.getSeconds();
           todayEarnings = perSecond * workedSeconds;
         }
       }
 
       // 5. 월급날부터 어제까지 근무한 일수
-      const workedDays = getWorkedDaysSincePayDay(payPeriod.start, now);
+      const workedDays = getWorkedDaysSincePayDay(
+        payPeriod.start,
+        now,
+        workDays,
+      );
 
       // 6. 누적 금액 계산
       const accumulatedEarnings = workedDays * dailyRate + todayEarnings;
@@ -149,12 +173,16 @@ function getPayPeriod(now: Date, payDay: number): { start: Date; end: Date } {
 }
 
 /** 기간 내 근무일수 계산 */
-function getWorkDaysInPeriod(start: Date, end: Date): number {
+function getWorkDaysInPeriod(
+  start: Date,
+  end: Date,
+  workDays: number[],
+): number {
   let count = 0;
   const current = new Date(start);
 
   while (current < end) {
-    if (WORK_DAYS.includes(current.getDay())) {
+    if (workDays.includes(current.getDay())) {
       count++;
     }
     current.setDate(current.getDate() + 1);
@@ -164,13 +192,17 @@ function getWorkDaysInPeriod(start: Date, end: Date): number {
 }
 
 /** 월급날부터 어제까지 근무한 일수 */
-function getWorkedDaysSincePayDay(payDayStart: Date, now: Date): number {
+function getWorkedDaysSincePayDay(
+  payDayStart: Date,
+  now: Date,
+  workDays: number[],
+): number {
   let count = 0;
   const current = new Date(payDayStart);
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   while (current < today) {
-    if (WORK_DAYS.includes(current.getDay())) {
+    if (workDays.includes(current.getDay())) {
       count++;
     }
     current.setDate(current.getDate() + 1);

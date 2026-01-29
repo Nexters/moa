@@ -26,6 +26,7 @@ export type {
   AppPreferences,
   JsonValue,
   RecoveryError,
+  SalaryType,
   UserSettings,
 } from './tauri-bindings.gen';
 

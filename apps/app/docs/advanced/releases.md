@@ -120,7 +120,7 @@ App Launch → (5s delay) → Check GitHub → Show Dialog → Download → Inst
 ### Implementation
 
 ```typescript
-// src/App.tsx
+// app.tsx
 import { check } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 

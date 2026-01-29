@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 
-import { MenubarPanel } from './features/menubar/menubar-panel';
-import { Onboarding } from './features/onboarding';
-import { checkForUpdates } from './lib/check-for-updates';
-import { commands, unwrapResult } from './lib/tauri-bindings';
-import { useUIStore } from './stores/ui-store';
+import { checkForUpdates } from '~/lib/check-for-updates';
+import { commands, unwrapResult } from '~/lib/tauri-bindings';
+import { useUIStore } from '~/stores/ui-store';
+
+import { MenubarPanel } from './menubar/menubar-panel';
+import { Onboarding } from './onboarding';
 import './app.css';
 
 type AppState = 'loading' | 'onboarding' | 'main';

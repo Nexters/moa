@@ -118,29 +118,41 @@ pub fn validate_theme(theme: &str) -> Result<(), String> {
 // User Settings (MVP)
 // ============================================================================
 
-/// Work schedule constants (fixed for MVP)
-/// Will be used in Task 3 (salary calculator)
-#[allow(dead_code)]
-pub const WORK_DAYS: [u8; 5] = [1, 2, 3, 4, 5]; // Mon-Fri (1=Mon, 7=Sun)
-#[allow(dead_code)]
-pub const WORK_START_TIME: &str = "09:00";
-#[allow(dead_code)]
-pub const WORK_END_TIME: &str = "18:00";
-#[allow(dead_code)]
-pub const WORK_HOURS_PER_DAY: u8 = 9;
+/// Salary type for user settings
+#[derive(Debug, Clone, Serialize, Deserialize, Type, Default, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum SalaryType {
+    #[default]
+    Monthly,
+    Yearly,
+}
 
 /// User settings for salary calculation (MVP)
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
 pub struct UserSettings {
-    /// Nickname (randomly generated)
-    pub nickname: String,
-    /// Company/workplace name (randomly generated)
-    pub company_name: String,
-    /// Monthly net salary in KRW (max ~4.2B, sufficient for practical use)
-    pub monthly_net_salary: u32,
+    /// Salary type (monthly or yearly)
+    #[serde(default)]
+    pub salary_type: SalaryType,
+    /// Salary amount in KRW (monthly net salary or yearly salary)
+    pub salary_amount: u32,
     /// Pay day of month (1-31, default: 25)
     pub pay_day: u8,
+    /// Work days (0=Sunday, 1=Monday, ..., 6=Saturday)
+    #[serde(default = "default_work_days")]
+    pub work_days: Vec<u8>,
+    /// Work start time (HH:MM format, default: "09:00")
+    #[serde(default = "default_work_start_time")]
+    pub work_start_time: String,
+    /// Work end time (HH:MM format, default: "18:00")
+    #[serde(default = "default_work_end_time")]
+    pub work_end_time: String,
+    /// Lunch start time (HH:MM format, default: "12:00")
+    #[serde(default = "default_lunch_start_time")]
+    pub lunch_start_time: String,
+    /// Lunch end time (HH:MM format, default: "13:00")
+    #[serde(default = "default_lunch_end_time")]
+    pub lunch_end_time: String,
     /// Whether onboarding is completed
     pub onboarding_completed: bool,
     /// Whether to show accumulated salary in menubar (macOS only)
@@ -152,59 +164,47 @@ fn default_show_menubar_salary() -> bool {
     true
 }
 
+fn default_work_days() -> Vec<u8> {
+    vec![1, 2, 3, 4, 5] // Mon-Fri (1=Mon, 5=Fri)
+}
+
+fn default_work_start_time() -> String {
+    "09:00".to_string()
+}
+
+fn default_work_end_time() -> String {
+    "18:00".to_string()
+}
+
+fn default_lunch_start_time() -> String {
+    "12:00".to_string()
+}
+
+fn default_lunch_end_time() -> String {
+    "13:00".to_string()
+}
+
 impl Default for UserSettings {
     fn default() -> Self {
         Self {
-            nickname: generate_random_nickname(),
-            company_name: generate_random_company(),
-            monthly_net_salary: 0,
+            salary_type: SalaryType::default(),
+            salary_amount: 0,
             pay_day: 25,
+            work_days: default_work_days(),
+            work_start_time: default_work_start_time(),
+            work_end_time: default_work_end_time(),
+            lunch_start_time: default_lunch_start_time(),
+            lunch_end_time: default_lunch_end_time(),
             onboarding_completed: false,
             show_menubar_salary: true,
         }
     }
 }
 
-/// Generates a random nickname combining an adjective and a character
-fn generate_random_nickname() -> String {
-    use rand::prelude::IndexedRandom;
-
-    let adjectives = ["성실한", "부지런한", "열정적인", "꼼꼼한", "유능한", "프로"];
-    let characters = ["뚱이", "징징이", "다람이", "핑핑이", "보노보노", "포차코"];
-
-    let mut rng = rand::rng();
-    let adj = adjectives.choose(&mut rng).unwrap_or(&"성실한");
-    let char = characters.choose(&mut rng).unwrap_or(&"뚱이");
-
-    format!("{adj} {char}")
-}
-
-/// Generates a random company name
-fn generate_random_company() -> String {
-    use rand::prelude::IndexedRandom;
-
-    let companies = [
-        "집게리아",
-        "버거왕국",
-        "초코파이공장",
-        "별다방",
-        "감자튀김연구소",
-        "햄버거학교",
-        "피자왕국",
-        "치킨나라",
-    ];
-
-    let mut rng = rand::rng();
-    companies
-        .choose(&mut rng)
-        .unwrap_or(&"집게리아")
-        .to_string()
-}
-
-/// Validates monthly net salary
-pub fn validate_salary(salary: u32) -> Result<(), String> {
-    if salary == 0 {
-        return Err("월 실수령액은 0보다 커야 합니다".to_string());
+/// Validates salary amount (monthly net salary or hourly wage)
+pub fn validate_salary_amount(amount: u32) -> Result<(), String> {
+    if amount == 0 {
+        return Err("급여 금액은 0보다 커야 합니다".to_string());
     }
     Ok(())
 }

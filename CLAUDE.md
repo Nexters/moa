@@ -15,12 +15,9 @@
 | **app**     | Tauri menubar app   | `apps/app/`     |
 | **landing** | Static landing page | `apps/landing/` |
 
-## Detailed Guides
+## App-Specific Instructions
 
-| Document             | Content                        |
-| -------------------- | ------------------------------ |
-| `apps/app/docs/`     | Tauri app development patterns |
-| `apps/app/CLAUDE.md` | App-specific instructions      |
+See `apps/app/CLAUDE.md` for comprehensive Tauri app development guidelines.
 
 ## Quick Reference
 

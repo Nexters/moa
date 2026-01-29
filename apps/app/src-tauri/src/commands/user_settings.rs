@@ -3,7 +3,7 @@
 use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
 
-use crate::types::{validate_pay_day, validate_salary, UserSettings};
+use crate::types::{validate_pay_day, validate_salary_amount, UserSettings};
 
 /// 사용자 설정 파일 경로
 fn get_user_settings_path(app: &AppHandle) -> Result<PathBuf, String> {
@@ -43,7 +43,7 @@ pub async fn load_user_settings(app: AppHandle) -> Result<UserSettings, String> 
 #[specta::specta]
 pub async fn save_user_settings(app: AppHandle, settings: UserSettings) -> Result<(), String> {
     // Validation
-    validate_salary(settings.monthly_net_salary)?;
+    validate_salary_amount(settings.salary_amount)?;
     validate_pay_day(settings.pay_day)?;
 
     let path = get_user_settings_path(&app)?;
