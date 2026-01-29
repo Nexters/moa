@@ -6,6 +6,7 @@ import { AppBar } from '~/ui/app-bar';
 
 import { BeforeWorkScreen } from './screens/before-work-screen';
 import { CompletedScreen } from './screens/completed-screen';
+import { HolidayScreen } from './screens/holiday-screen';
 import { WorkingScreen } from './screens/working-screen';
 
 export function Home() {
@@ -16,6 +17,7 @@ export function Home() {
     isOnVacation,
     isLoading: vacationLoading,
     setVacation,
+    clearVacation,
   } = useVacation();
 
   if (isLoading || vacationLoading || !settings || !salaryInfo) {
@@ -27,6 +29,10 @@ export function Home() {
     // 현재는 placeholder
   };
 
+  const handleTodayWork = () => {
+    clearVacation();
+  };
+
   const handleVacation = () => {
     void setVacation();
   };
@@ -35,13 +41,7 @@ export function Home() {
     // 휴가 우선 체크
     if (isOnVacation || salaryInfo.workStatus === 'day-off') {
       return (
-        <BeforeWorkScreen
-          settings={settings}
-          salaryInfo={salaryInfo}
-          isDayOff
-          onVacation={handleVacation}
-          onClose={handleClose}
-        />
+        <HolidayScreen salaryInfo={salaryInfo} onClose={handleTodayWork} />
       );
     }
 

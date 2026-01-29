@@ -1,6 +1,6 @@
 import { AppBar, Button, MoaMoneyIcon, TooltipBubble } from '~/ui';
 
-import type { OnboardingScreenProps } from './hooks/use-onboarding-screen';
+import type { OnboardingScreenProps } from '../hooks/use-onboarding-screen';
 
 export function WelcomeScreen({ onNext }: OnboardingScreenProps) {
   return (

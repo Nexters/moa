@@ -11,3 +11,8 @@ export function formatCurrency(amount: number): string {
 export function formatNumber(amount: number): string {
   return NUMBER_FORMATTER.format(Math.floor(amount));
 }
+
+export function formatMonth(date = new Date()): string {
+  const month = date.getMonth() + 1;
+  return `${month}월`;
+}

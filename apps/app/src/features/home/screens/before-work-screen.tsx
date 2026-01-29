@@ -1,7 +1,13 @@
 import type { SalaryInfo } from '~/hooks/use-salary-calculator';
-import { formatCurrency } from '~/lib/format';
+import { formatCurrency, formatMonth } from '~/lib/format';
 import type { UserSettings } from '~/lib/tauri-bindings';
-import { Button, InfoCard, InfoCardDivider, InfoCardRow } from '~/ui';
+import {
+  AppFooter,
+  Button,
+  InfoCard,
+  InfoCardDivider,
+  InfoCardRow,
+} from '~/ui';
 
 import { HeroSection } from '../components/hero-section';
 
@@ -13,11 +19,6 @@ interface BeforeWorkScreenProps {
   onClose?: () => void;
 }
 
-function getMonthLabel(): string {
-  const month = new Date().getMonth() + 1;
-  return `${month}월`;
-}
-
 export function BeforeWorkScreen({
   settings,
   salaryInfo,
@@ -27,13 +28,12 @@ export function BeforeWorkScreen({
 }: BeforeWorkScreenProps) {
   const workStart = settings.workStartTime ?? '09:00';
   const workEnd = settings.workEndTime ?? '18:00';
-  const monthLabel = getMonthLabel();
 
   return (
     <div className="flex flex-1 flex-col gap-7">
       <HeroSection
         variant="empty"
-        label={`${monthLabel} 누적 월급`}
+        label={`${formatMonth()} 누적 월급`}
         amount={salaryInfo.accumulatedEarnings}
       />
       <InfoCard>
@@ -47,22 +47,24 @@ export function BeforeWorkScreen({
           value={isDayOff ? '휴무' : `${workStart} - ${workEnd}`}
         />
       </InfoCard>
-      <div className="flex flex-col items-center gap-3">
-        <Button
-          variant="primary"
-          rounded="full"
-          size="lg"
-          className="w-[240px]"
-          onClick={onClose}
-        >
-          돈 벌러 가기
-        </Button>
-        {!isDayOff && (
-          <Button variant="link" size="md" onClick={onVacation}>
-            오늘 휴가예요
+      <AppFooter>
+        <div className="flex flex-col items-center gap-3">
+          <Button
+            variant="primary"
+            rounded="full"
+            size="lg"
+            className="w-[240px]"
+            onClick={onClose}
+          >
+            돈 벌러 가기
           </Button>
-        )}
-      </div>
+          {!isDayOff && (
+            <Button variant="link" size="md" onClick={onVacation}>
+              오늘 휴가예요
+            </Button>
+          )}
+        </div>
+      </AppFooter>
     </div>
   );
 }

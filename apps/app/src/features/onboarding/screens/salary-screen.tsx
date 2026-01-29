@@ -1,8 +1,15 @@
 import type { SalaryType } from '~/lib/tauri-bindings';
-import { AppBar, Button, Field, NumberInput, SelectInput } from '~/ui';
+import {
+  AppBar,
+  AppFooter,
+  Button,
+  Field,
+  NumberInput,
+  SelectInput,
+} from '~/ui';
 
-import { SALARY_TYPE_OPTIONS } from './hooks/use-onboarding-form';
-import type { OnboardingScreenProps } from './hooks/use-onboarding-screen';
+import { SALARY_TYPE_OPTIONS } from '../hooks/use-onboarding-form';
+import type { OnboardingScreenProps } from '../hooks/use-onboarding-screen';
 
 export function SalaryScreen({ form, onNext, onBack }: OnboardingScreenProps) {
   return (
@@ -91,7 +98,7 @@ export function SalaryScreen({ form, onNext, onBack }: OnboardingScreenProps) {
             const isValid = salaryAmount > 0 && payDay >= 1 && payDay <= 31;
 
             return (
-              <div className="absolute inset-x-0 bottom-9 flex justify-center">
+              <AppFooter>
                 <Button
                   rounded="full"
                   size="lg"
@@ -101,7 +108,7 @@ export function SalaryScreen({ form, onNext, onBack }: OnboardingScreenProps) {
                 >
                   다음
                 </Button>
-              </div>
+              </AppFooter>
             );
           }}
         </form.Subscribe>

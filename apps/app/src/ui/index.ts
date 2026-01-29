@@ -1,4 +1,5 @@
 export * from './app-bar';
+export * from './app-footer';
 export * from './badge';
 export * from './button';
 export * from './day-chip';

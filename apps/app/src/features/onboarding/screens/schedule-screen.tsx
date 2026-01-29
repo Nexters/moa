@@ -1,5 +1,6 @@
 import {
   AppBar,
+  AppFooter,
   ArrowRightIcon,
   Button,
   DayChipGroup,
@@ -7,7 +8,7 @@ import {
   TimeInput,
 } from '~/ui';
 
-import type { OnboardingScreenProps } from './hooks/use-onboarding-screen';
+import type { OnboardingScreenProps } from '../hooks/use-onboarding-screen';
 
 export function ScheduleScreen({
   form,
@@ -119,7 +120,7 @@ export function ScheduleScreen({
             };
 
             return (
-              <div className="absolute inset-x-0 bottom-9 flex justify-center">
+              <AppFooter>
                 <Button
                   rounded="full"
                   size="lg"
@@ -129,7 +130,7 @@ export function ScheduleScreen({
                 >
                   {isSubmitting ? '저장 중...' : '다음'}
                 </Button>
-              </div>
+              </AppFooter>
             );
           }}
         </form.Subscribe>

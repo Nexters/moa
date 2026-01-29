@@ -1,45 +1,33 @@
-import { useConfetti } from '~/hooks/use-confetti';
-import type { SalaryInfo } from '~/hooks/use-salary-calculator';
+import { SalaryInfo } from '~/hooks/use-salary-calculator';
 import { formatCurrency } from '~/lib/format';
-import type { UserSettings } from '~/lib/tauri-bindings';
 import {
+  InfoCard,
+  InfoCardRow,
+  InfoCardDivider,
   AppFooter,
   Button,
-  InfoCard,
-  InfoCardDivider,
-  InfoCardRow,
+  Badge,
 } from '~/ui';
 
 import { HeroSection } from '../components/hero-section';
 
-interface CompletedScreenProps {
-  settings: UserSettings;
+interface HolidayScreenProps {
   salaryInfo: SalaryInfo;
   onClose?: () => void;
 }
 
-export function CompletedScreen({
-  settings,
-  salaryInfo,
-  onClose,
-}: CompletedScreenProps) {
-  useConfetti();
-
-  const workStart = settings.workStartTime ?? '09:00';
-  const workEnd = settings.workEndTime ?? '18:00';
-
+export function HolidayScreen({ salaryInfo, onClose }: HolidayScreenProps) {
   return (
     <div className="flex flex-1 flex-col gap-7">
       <HeroSection
-        variant="full"
-        label="오늘 쌓은 월급"
+        variant="holiday"
+        label="휴가 중 쌓은 월급"
         amount={salaryInfo.todayEarnings}
       />
       <InfoCard>
-        <InfoCardRow
-          label="오늘 근무 시간"
-          value={`${workStart} - ${workEnd}`}
-        />
+        <InfoCardRow label="오늘 근무 시간">
+          <Badge variant="blue">휴가</Badge>
+        </InfoCardRow>
         <InfoCardDivider />
         <InfoCardRow
           label="이번달 누적 월급"
@@ -48,13 +36,13 @@ export function CompletedScreen({
       </InfoCard>
       <AppFooter>
         <Button
-          variant="primary"
+          variant="tertiary"
           rounded="full"
           size="lg"
           className="w-[240px]"
           onClick={onClose}
         >
-          완료
+          오늘 출근했어요
         </Button>
       </AppFooter>
     </div>

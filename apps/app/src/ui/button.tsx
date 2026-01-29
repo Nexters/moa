@@ -13,7 +13,7 @@ export const buttonVariants = tv({
         'bg-gray-60 text-gray-0 active:bg-gray-70 disabled:bg-gray-70 disabled:text-text-disabled',
       tertiary:
         'bg-gray-0 text-gray-90 active:bg-gray-20 disabled:bg-gray-70 disabled:text-text-disabled',
-      link: 'text-text-medium hover:text-text-high active:text-text-low disabled:text-text-disabled bg-transparent px-0 underline underline-offset-2 disabled:no-underline',
+      link: 'b2-600 text-text-medium hover:text-text-high active:text-text-low disabled:text-text-disabled bg-transparent px-0 underline underline-offset-2 disabled:no-underline',
     },
     rounded: {
       md: 'rounded-md',

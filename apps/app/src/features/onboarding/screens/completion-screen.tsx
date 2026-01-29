@@ -1,8 +1,8 @@
 import { useConfetti } from '~/hooks/use-confetti';
 import { useUIStore } from '~/stores/ui-store';
-import { AppBar, Button } from '~/ui';
+import { AppBar, AppFooter, Button } from '~/ui';
 
-import type { OnboardingScreenProps } from './hooks/use-onboarding-screen';
+import type { OnboardingScreenProps } from '../hooks/use-onboarding-screen';
 
 export function CompletionScreen(_props: OnboardingScreenProps) {
   const navigate = useUIStore((s) => s.navigate);
@@ -34,7 +34,7 @@ export function CompletionScreen(_props: OnboardingScreenProps) {
       </div>
 
       {/* 완료 버튼 */}
-      <div className="absolute inset-x-0 bottom-9 flex justify-center">
+      <AppFooter>
         <Button
           rounded="full"
           size="lg"
@@ -43,7 +43,7 @@ export function CompletionScreen(_props: OnboardingScreenProps) {
         >
           완료
         </Button>
-      </div>
+      </AppFooter>
     </main>
   );
 }

@@ -1,9 +1,9 @@
 import { useState, type ComponentType } from 'react';
 
-import { CompletionScreen } from '../completion-screen';
-import { SalaryScreen } from '../salary-screen';
-import { ScheduleScreen } from '../schedule-screen';
-import { WelcomeScreen } from '../welcome-screen';
+import { CompletionScreen } from '../screens/completion-screen';
+import { SalaryScreen } from '../screens/salary-screen';
+import { ScheduleScreen } from '../screens/schedule-screen';
+import { WelcomeScreen } from '../screens/welcome-screen';
 import type { OnboardingForm } from './use-onboarding-form';
 
 export type OnboardingScreen = 'welcome' | 'salary' | 'schedule' | 'completion';
