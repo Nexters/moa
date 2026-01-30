@@ -37,8 +37,14 @@ interface SalaryInfo {
 
 export type { SalaryInfo, WorkStatus };
 
+export interface TodayTimeOverride {
+  workStartTime: string;
+  workEndTime: string;
+}
+
 export function useSalaryCalculator(
   settings: UserSettings | null,
+  todayOverride?: TodayTimeOverride | null,
 ): SalaryInfo | null {
   const [info, setInfo] = useState<SalaryInfo | null>(null);
 
@@ -53,8 +59,13 @@ export function useSalaryCalculator(
 
       // 설정에서 근무 정보 가져오기 (기본값 사용)
       const workDays = settings.workDays ?? DEFAULT_WORK_DAYS;
-      const workStartTime = settings.workStartTime ?? DEFAULT_WORK_START;
-      const workEndTime = settings.workEndTime ?? DEFAULT_WORK_END;
+      // 오늘 오버라이드가 있으면 해당 시간 사용
+      const workStartTime =
+        todayOverride?.workStartTime ??
+        settings.workStartTime ??
+        DEFAULT_WORK_START;
+      const workEndTime =
+        todayOverride?.workEndTime ?? settings.workEndTime ?? DEFAULT_WORK_END;
       const workStartMinutes = timeToMinutes(workStartTime);
       const workEndMinutes = timeToMinutes(workEndTime);
       const workHoursPerDay = (workEndMinutes - workStartMinutes) / 60;
@@ -134,7 +145,7 @@ export function useSalaryCalculator(
     const interval = setInterval(calculate, 1000);
 
     return () => clearInterval(interval);
-  }, [settings]);
+  }, [settings, todayOverride]);
 
   return info;
 }

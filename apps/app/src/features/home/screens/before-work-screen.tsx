@@ -1,4 +1,5 @@
 import type { SalaryInfo } from '~/hooks/use-salary-calculator';
+import type { TodayWorkSchedule } from '~/hooks/use-today-work-schedule';
 import { formatCurrency, formatMonth } from '~/lib/format';
 import type { UserSettings } from '~/lib/tauri-bindings';
 import {
@@ -14,20 +15,23 @@ import { HeroSection } from '../components/hero-section';
 interface BeforeWorkScreenProps {
   settings: UserSettings;
   salaryInfo: SalaryInfo;
+  todaySchedule: TodayWorkSchedule | null;
   isDayOff?: boolean;
   onVacation: () => void;
-  onClose?: () => void;
+  onStartWork: () => void;
 }
 
 export function BeforeWorkScreen({
   settings,
   salaryInfo,
+  todaySchedule,
   isDayOff,
   onVacation,
-  onClose,
+  onStartWork,
 }: BeforeWorkScreenProps) {
-  const workStart = settings.workStartTime ?? '09:00';
-  const workEnd = settings.workEndTime ?? '18:00';
+  const workStart =
+    todaySchedule?.workStartTime ?? settings.workStartTime ?? '09:00';
+  const workEnd = todaySchedule?.workEndTime ?? settings.workEndTime ?? '18:00';
 
   return (
     <div className="flex flex-1 flex-col gap-7">
@@ -54,7 +58,7 @@ export function BeforeWorkScreen({
             rounded="full"
             size="lg"
             className="w-[240px]"
-            onClick={onClose}
+            onClick={onStartWork}
           >
             돈 벌러 가기
           </Button>

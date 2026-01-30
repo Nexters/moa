@@ -13,10 +13,10 @@ import { HeroSection } from '../components/hero-section';
 
 interface HolidayScreenProps {
   salaryInfo: SalaryInfo;
-  onClose?: () => void;
+  onTodayWork?: () => void;
 }
 
-export function HolidayScreen({ salaryInfo, onClose }: HolidayScreenProps) {
+export function HolidayScreen({ salaryInfo, onTodayWork }: HolidayScreenProps) {
   return (
     <div className="flex flex-1 flex-col gap-7">
       <HeroSection
@@ -40,7 +40,7 @@ export function HolidayScreen({ salaryInfo, onClose }: HolidayScreenProps) {
           rounded="full"
           size="lg"
           className="w-[240px]"
-          onClick={onClose}
+          onClick={onTodayWork}
         >
           오늘 출근했어요
         </Button>
