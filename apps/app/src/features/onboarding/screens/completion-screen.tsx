@@ -18,7 +18,7 @@ export function CompletionScreen(_props: OnboardingScreenProps) {
       <AppBar type="detail" onBack={handleComplete} />
 
       {/* 컨텐츠 영역 */}
-      <div className="relative z-10 flex flex-1 flex-col items-center px-6 pt-32">
+      <div className="relative flex flex-1 flex-col items-center px-6 pt-16">
         {/* 이미지 placeholder */}
         <div className="bg-container-secondary size-[150px] rounded-2xl" />
 
