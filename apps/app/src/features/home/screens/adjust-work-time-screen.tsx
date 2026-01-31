@@ -1,6 +1,11 @@
 import { useState } from 'react';
 
-import { AppBar, AppFooter, Button, Field, TimeInput } from '~/ui';
+import { AppBar, AppFooter, Button, Field } from '~/ui';
+import {
+  TimePeriodInput,
+  isTimePeriodValid,
+  type TimePeriodValue,
+} from '~/ui/time-period-input';
 
 interface AdjustWorkTimeScreenProps {
   defaultStartTime: string;
@@ -15,11 +20,13 @@ export function AdjustWorkTimeScreen({
   onConfirm,
   onBack,
 }: AdjustWorkTimeScreenProps) {
-  const [startTime, setStartTime] = useState(defaultStartTime);
-  const [endTime, setEndTime] = useState(defaultEndTime);
+  const [timePeriod, setTimePeriod] = useState<TimePeriodValue>({
+    startTime: defaultStartTime,
+    endTime: defaultEndTime,
+  });
 
   const handleConfirm = () => {
-    onConfirm(startTime, endTime);
+    onConfirm(timePeriod.startTime, timePeriod.endTime);
   };
 
   return (
@@ -34,16 +41,15 @@ export function AdjustWorkTimeScreen({
           </p>
         </div>
 
-        <div className="flex flex-col gap-5">
-          <Field.Root>
-            <Field.Label>출근 시간</Field.Label>
-            <TimeInput value={startTime} onChange={setStartTime} />
-          </Field.Root>
-          <Field.Root>
-            <Field.Label>퇴근 시간</Field.Label>
-            <TimeInput value={endTime} onChange={setEndTime} />
-          </Field.Root>
-        </div>
+        <Field.Root invalid={!isTimePeriodValid(timePeriod)}>
+          <Field.Label>근무 시간</Field.Label>
+          <TimePeriodInput
+            value={timePeriod}
+            onChange={setTimePeriod}
+            autoFocus
+          />
+          <Field.Error>시작 시간이 종료 시간보다 늦을 수 없습니다.</Field.Error>
+        </Field.Root>
       </div>
 
       <AppFooter>
@@ -52,6 +58,7 @@ export function AdjustWorkTimeScreen({
           rounded="full"
           size="lg"
           className="w-[240px]"
+          disabled={!isTimePeriodValid(timePeriod)}
           onClick={handleConfirm}
         >
           확인
