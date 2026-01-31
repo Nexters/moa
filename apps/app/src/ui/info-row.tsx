@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { tv } from 'tailwind-variants';
 
-import { ArrowRightIcon } from './icons';
+import { ChevronRightIcon } from './icons';
 
 const infoRowVariants = tv({
   base: 'b2-400 flex items-center justify-between px-4 py-3.5 first:rounded-t-md last:rounded-b-md',
@@ -41,7 +41,7 @@ export function InfoRow({
       {(children || isButton) && (
         <span className="flex items-center gap-1">
           {children}
-          {isButton && <ArrowRightIcon className="text-text-low size-4" />}
+          {isButton && <ChevronRightIcon className="text-text-low size-4" />}
         </span>
       )}
     </Component>
