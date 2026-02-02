@@ -1,37 +1,25 @@
-import type { SalaryInfo } from '~/hooks/use-salary-calculator';
-import type { TodayWorkSchedule } from '~/hooks/use-today-work-schedule';
 import { formatCurrency, formatMonth } from '~/lib/format';
-import type { UserSettings } from '~/lib/tauri-bindings';
 import {
   AppFooter,
   Button,
   InfoCard,
   InfoCardDivider,
   InfoCardRow,
+  TooltipBubble,
 } from '~/ui';
 
 import { HeroSection } from '../components/hero-section';
-
-interface BeforeWorkScreenProps {
-  settings: UserSettings;
-  salaryInfo: SalaryInfo;
-  todaySchedule: TodayWorkSchedule | null;
-  isDayOff?: boolean;
-  onVacation: () => void;
-  onStartWork: () => void;
-}
+import { HomeMainScreen } from '../hooks/use-home-screen';
 
 export function BeforeWorkScreen({
   settings,
   salaryInfo,
   todaySchedule,
-  isDayOff,
   onVacation,
   onStartWork,
-}: BeforeWorkScreenProps) {
-  const workStart =
-    todaySchedule?.workStartTime ?? settings.workStartTime ?? '09:00';
-  const workEnd = todaySchedule?.workEndTime ?? settings.workEndTime ?? '18:00';
+}: Extract<HomeMainScreen, { screen: 'before-work' }>) {
+  const workStart = todaySchedule?.workStartTime ?? settings.workStartTime;
+  const workEnd = todaySchedule?.workEndTime ?? settings.workEndTime;
 
   return (
     <div className="flex flex-1 flex-col gap-7">
@@ -40,19 +28,19 @@ export function BeforeWorkScreen({
         label={`${formatMonth()} 누적 월급`}
         amount={salaryInfo.accumulatedEarnings}
       />
+
       <InfoCard>
         <InfoCardRow
-          label="오늘 예상 일급"
-          value={isDayOff ? '휴무' : formatCurrency(salaryInfo.dailyRate)}
+          label="오늘 일급"
+          value={formatCurrency(salaryInfo.dailyRate)}
         />
         <InfoCardDivider />
-        <InfoCardRow
-          label="오늘 근무 시간"
-          value={isDayOff ? '휴무' : `${workStart} - ${workEnd}`}
-        />
+        <InfoCardRow label="근무 시간" value={`${workStart} - ${workEnd}`} />
       </InfoCard>
+
       <AppFooter>
         <div className="flex flex-col items-center gap-3">
+          <TooltipBubble>{workStart} 자동 출근 예정</TooltipBubble>
           <Button
             variant="primary"
             rounded="full"
@@ -60,13 +48,11 @@ export function BeforeWorkScreen({
             className="w-[240px]"
             onClick={onStartWork}
           >
-            돈 벌러 가기
+            일찍 출근하기
           </Button>
-          {!isDayOff && (
-            <Button variant="link" size="md" onClick={onVacation}>
-              오늘 휴가예요
-            </Button>
-          )}
+          <Button variant="link" size="md" onClick={onVacation}>
+            오늘 휴가예요
+          </Button>
         </div>
       </AppFooter>
     </div>

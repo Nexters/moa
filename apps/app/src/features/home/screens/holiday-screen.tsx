@@ -1,50 +1,35 @@
-import { SalaryInfo } from '~/hooks/use-salary-calculator';
 import { formatCurrency } from '~/lib/format';
-import {
-  InfoCard,
-  InfoCardRow,
-  InfoCardDivider,
-  AppFooter,
-  Button,
-  Badge,
-} from '~/ui';
+import { InfoCard, InfoCardRow, InfoCardDivider, Button } from '~/ui';
 
 import { HeroSection } from '../components/hero-section';
+import { HomeMainScreen } from '../hooks/use-home-screen';
 
-interface HolidayScreenProps {
-  salaryInfo: SalaryInfo;
-  onTodayWork?: () => void;
-}
-
-export function HolidayScreen({ salaryInfo, onTodayWork }: HolidayScreenProps) {
+export function HolidayScreen({
+  salaryInfo,
+  onTodayWork,
+}: Extract<HomeMainScreen, { screen: 'holiday' }>) {
   return (
-    <div className="flex flex-1 flex-col gap-7">
+    <div className="flex flex-1 flex-col">
       <HeroSection
         variant="holiday"
         label="휴가 중 쌓은 월급"
         amount={salaryInfo.todayEarnings}
       />
-      <InfoCard>
-        <InfoCardRow label="오늘 근무 시간">
-          <Badge variant="blue">휴가</Badge>
+
+      <InfoCard className="mt-7">
+        <InfoCardRow label="근무 상태">
+          <span className="b1-600 text-blue">휴가</span>
         </InfoCardRow>
         <InfoCardDivider />
         <InfoCardRow
-          label="이번달 누적 월급"
+          label="누적 월급"
           value={formatCurrency(salaryInfo.accumulatedEarnings)}
         />
       </InfoCard>
-      <AppFooter>
-        <Button
-          variant="tertiary"
-          rounded="full"
-          size="lg"
-          className="w-[240px]"
-          onClick={onTodayWork}
-        >
-          오늘 출근했어요
-        </Button>
-      </AppFooter>
+
+      <Button variant="link" size="md" className="mt-5" onClick={onTodayWork}>
+        오늘 출근했어요
+      </Button>
     </div>
   );
 }

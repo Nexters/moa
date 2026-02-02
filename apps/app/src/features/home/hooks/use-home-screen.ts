@@ -7,14 +7,20 @@ import { useTodayWorkSchedule } from '~/hooks/use-today-work-schedule';
 import { useUserSettings } from '~/hooks/use-user-settings';
 import { useVacation } from '~/hooks/use-vacation';
 import { useWorkCompletedAck } from '~/hooks/use-work-completed-ack';
-import type { UserSettings } from '~/lib/tauri-bindings';
+import {
+  assertOnboarded,
+  type OnboardedUserSettings,
+} from '~/lib/tauri-bindings';
 
-// 레벨 1: 상태 기반 메인 스크린 (5가지)
-type HomeMainScreen =
+// ============================================================================
+// Types
+// ============================================================================
+
+export type HomeMainScreen =
   | { screen: 'holiday'; salaryInfo: SalaryInfo; onTodayWork: () => void }
   | {
       screen: 'before-work';
-      settings: UserSettings;
+      settings: OnboardedUserSettings;
       salaryInfo: SalaryInfo;
       todaySchedule: TodayWorkSchedule | null;
       onVacation: () => void;
@@ -22,26 +28,26 @@ type HomeMainScreen =
     }
   | {
       screen: 'working';
-      settings: UserSettings;
+      settings: OnboardedUserSettings;
       salaryInfo: SalaryInfo;
       todaySchedule: TodayWorkSchedule | null;
+      onCompleteWork: () => void;
+      onVacation: () => void;
     }
   | {
       screen: 'completed';
-      settings: UserSettings;
+      settings: OnboardedUserSettings;
       salaryInfo: SalaryInfo;
-      onClose: () => void;
+      onCompleteWork: () => void;
     }
   | {
       screen: 'post-completed';
-      settings: UserSettings;
+      settings: OnboardedUserSettings;
       salaryInfo: SalaryInfo;
       todaySchedule: TodayWorkSchedule | null;
-      onAdjustSchedule: () => void;
     };
 
-// 레벨 2: 유저 액션 기반 오버레이
-interface AdjustWorkTimeState {
+export interface AdjustWorkTimeState {
   isOpen: boolean;
   defaultStartTime: string;
   defaultEndTime: string;
@@ -49,14 +55,15 @@ interface AdjustWorkTimeState {
   onBack: () => void;
 }
 
-// 훅 반환 타입
-interface HomeScreenState {
+export interface HomeScreenState {
   isLoading: boolean;
   mainScreen: HomeMainScreen | null;
   adjustWorkTime: AdjustWorkTimeState;
 }
 
-export type { HomeMainScreen, AdjustWorkTimeState, HomeScreenState };
+// ============================================================================
+// Hook
+// ============================================================================
 
 export function useHomeScreen(): HomeScreenState {
   const [isAdjustOpen, setIsAdjustOpen] = useState(false);
@@ -94,12 +101,8 @@ export function useHomeScreen(): HomeScreenState {
     setIsAdjustOpen(true);
   };
 
-  const handleComplete = () => {
+  const handleCompleteWork = () => {
     void acknowledge();
-  };
-
-  const handleAdjustSchedule = () => {
-    setIsAdjustOpen(true);
   };
 
   const handleConfirmWorkTime = async (startTime: string, endTime: string) => {
@@ -129,11 +132,12 @@ export function useHomeScreen(): HomeScreenState {
     };
   }
 
+  assertOnboarded(settings);
+
   // adjustWorkTime 기본 시간값
   const defaultStartTime =
-    todaySchedule?.workStartTime ?? settings.workStartTime ?? '09:00';
-  const defaultEndTime =
-    todaySchedule?.workEndTime ?? settings.workEndTime ?? '18:00';
+    todaySchedule?.workStartTime ?? settings.workStartTime;
+  const defaultEndTime = todaySchedule?.workEndTime ?? settings.workEndTime;
 
   // 메인 스크린 결정
   const mainScreen = resolveMainScreen({
@@ -145,8 +149,7 @@ export function useHomeScreen(): HomeScreenState {
     onTodayWork: handleTodayWork,
     onVacation: handleVacation,
     onStartWork: handleStartWork,
-    onClose: handleComplete,
-    onAdjustSchedule: handleAdjustSchedule,
+    onCompleteWork: handleCompleteWork,
   });
 
   return {
@@ -165,14 +168,13 @@ export function useHomeScreen(): HomeScreenState {
 interface ResolveParams {
   isOnVacation: boolean;
   salaryInfo: SalaryInfo;
-  settings: UserSettings;
+  settings: OnboardedUserSettings;
   todaySchedule: TodayWorkSchedule | null;
   isAcknowledged: boolean;
   onTodayWork: () => void;
   onVacation: () => void;
   onStartWork: () => void;
-  onClose: () => void;
-  onAdjustSchedule: () => void;
+  onCompleteWork: () => void;
 }
 
 function resolveMainScreen(params: ResolveParams): HomeMainScreen {
@@ -185,8 +187,7 @@ function resolveMainScreen(params: ResolveParams): HomeMainScreen {
     onTodayWork,
     onVacation,
     onStartWork,
-    onClose,
-    onAdjustSchedule,
+    onCompleteWork,
   } = params;
 
   // 휴가 우선 체크
@@ -210,6 +211,8 @@ function resolveMainScreen(params: ResolveParams): HomeMainScreen {
         settings,
         salaryInfo,
         todaySchedule,
+        onCompleteWork,
+        onVacation,
       };
     case 'completed':
       if (isAcknowledged) {
@@ -218,14 +221,13 @@ function resolveMainScreen(params: ResolveParams): HomeMainScreen {
           settings,
           salaryInfo,
           todaySchedule,
-          onAdjustSchedule,
         };
       }
       return {
         screen: 'completed',
         settings,
         salaryInfo,
-        onClose,
+        onCompleteWork,
       };
   }
 }

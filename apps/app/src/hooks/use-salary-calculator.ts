@@ -1,17 +1,12 @@
 import { useState, useEffect } from 'react';
 
 import type { UserSettings } from '~/lib/tauri-bindings';
+import { timeToMinutes } from '~/lib/time';
 
 // 기본 근무 설정
 const DEFAULT_WORK_DAYS = [1, 2, 3, 4, 5]; // 월~금
 const DEFAULT_WORK_START = '09:00';
 const DEFAULT_WORK_END = '18:00';
-
-/** 시간 문자열을 분으로 변환 (HH:MM -> minutes) */
-function timeToMinutes(time: string): number {
-  const [hours, minutes] = time.split(':').map(Number);
-  return hours * 60 + minutes;
-}
 
 /** 근무 상태 */
 type WorkStatus = 'before-work' | 'working' | 'completed' | 'day-off';

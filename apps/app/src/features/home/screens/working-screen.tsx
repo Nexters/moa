@@ -1,25 +1,30 @@
-import type { SalaryInfo } from '~/hooks/use-salary-calculator';
-import type { TodayWorkSchedule } from '~/hooks/use-today-work-schedule';
-import { formatCurrency } from '~/lib/format';
-import type { UserSettings } from '~/lib/tauri-bindings';
-import { Badge, InfoCard, InfoCardDivider, InfoCardRow } from '~/ui';
+import { isWithinTimeRange } from '~/lib/time';
+import {
+  AppFooter,
+  Button,
+  InfoCard,
+  InfoCardDivider,
+  InfoCardRow,
+} from '~/ui';
 
 import { HeroSection } from '../components/hero-section';
-
-interface WorkingScreenProps {
-  settings: UserSettings;
-  salaryInfo: SalaryInfo;
-  todaySchedule: TodayWorkSchedule | null;
-}
+import { HomeMainScreen } from '../hooks/use-home-screen';
 
 export function WorkingScreen({
   settings,
   salaryInfo,
   todaySchedule,
-}: WorkingScreenProps) {
-  const workStart =
-    todaySchedule?.workStartTime ?? settings.workStartTime ?? '09:00';
-  const workEnd = todaySchedule?.workEndTime ?? settings.workEndTime ?? '18:00';
+  onCompleteWork,
+  onVacation,
+}: Extract<HomeMainScreen, { screen: 'working' }>) {
+  const workStart = todaySchedule?.workStartTime ?? settings.workStartTime;
+  const workEnd = todaySchedule?.workEndTime ?? settings.workEndTime;
+
+  const isLunchTime = isWithinTimeRange(
+    new Date(),
+    settings.lunchStartTime,
+    settings.lunchEndTime,
+  );
 
   return (
     <div className="flex flex-1 flex-col gap-7">
@@ -28,21 +33,35 @@ export function WorkingScreen({
         label="오늘 쌓은 월급"
         amount={salaryInfo.todayEarnings}
       />
+
       <InfoCard>
         <InfoCardRow label="근무 상태">
-          <Badge variant="green">근무 중</Badge>
+          {isLunchTime ? (
+            <span className="b1-600 text-blue">점심시간</span>
+          ) : (
+            <span className="b1-600 text-green-40">근무 중</span>
+          )}
         </InfoCardRow>
         <InfoCardDivider />
-        <InfoCardRow
-          label="오늘 근무 시간"
-          value={`${workStart} - ${workEnd}`}
-        />
-        <InfoCardDivider />
-        <InfoCardRow
-          label="이번달 누적 월급"
-          value={formatCurrency(salaryInfo.accumulatedEarnings)}
-        />
+        <InfoCardRow label="근무 시간" value={`${workStart} - ${workEnd}`} />
       </InfoCard>
+
+      <AppFooter>
+        <div className="flex flex-col items-center gap-3">
+          <Button
+            variant="primary"
+            rounded="full"
+            size="lg"
+            className="w-[240px]"
+            onClick={onCompleteWork}
+          >
+            일찍 퇴근하기
+          </Button>
+          <Button variant="link" size="md" onClick={onVacation}>
+            오늘 휴가예요
+          </Button>
+        </div>
+      </AppFooter>
     </div>
   );
 }

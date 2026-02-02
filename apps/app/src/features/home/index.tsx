@@ -30,42 +30,16 @@ export function Home() {
     <main className="flex flex-1 flex-col">
       <AppBar type="main" onSettings={() => navigate('settings')} />
       <div className="flex flex-1 flex-col px-5 pt-3">
-        {mainScreen.screen === 'holiday' && (
-          <HolidayScreen
-            salaryInfo={mainScreen.salaryInfo}
-            onTodayWork={mainScreen.onTodayWork}
-          />
-        )}
+        {mainScreen.screen === 'holiday' && <HolidayScreen {...mainScreen} />}
         {mainScreen.screen === 'before-work' && (
-          <BeforeWorkScreen
-            settings={mainScreen.settings}
-            salaryInfo={mainScreen.salaryInfo}
-            todaySchedule={mainScreen.todaySchedule}
-            onVacation={mainScreen.onVacation}
-            onStartWork={mainScreen.onStartWork}
-          />
+          <BeforeWorkScreen {...mainScreen} />
         )}
-        {mainScreen.screen === 'working' && (
-          <WorkingScreen
-            settings={mainScreen.settings}
-            salaryInfo={mainScreen.salaryInfo}
-            todaySchedule={mainScreen.todaySchedule}
-          />
-        )}
+        {mainScreen.screen === 'working' && <WorkingScreen {...mainScreen} />}
         {mainScreen.screen === 'completed' && (
-          <CompletedScreen
-            settings={mainScreen.settings}
-            salaryInfo={mainScreen.salaryInfo}
-            onClose={mainScreen.onClose}
-          />
+          <CompletedScreen {...mainScreen} />
         )}
         {mainScreen.screen === 'post-completed' && (
-          <PostCompletedScreen
-            settings={mainScreen.settings}
-            salaryInfo={mainScreen.salaryInfo}
-            todaySchedule={mainScreen.todaySchedule}
-            onAdjustSchedule={mainScreen.onAdjustSchedule}
-          />
+          <PostCompletedScreen {...mainScreen} />
         )}
       </div>
     </main>

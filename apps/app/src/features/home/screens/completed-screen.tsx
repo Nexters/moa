@@ -1,7 +1,5 @@
 import { useConfetti } from '~/hooks/use-confetti';
-import type { SalaryInfo } from '~/hooks/use-salary-calculator';
 import { formatCurrency } from '~/lib/format';
-import type { UserSettings } from '~/lib/tauri-bindings';
 import {
   AppFooter,
   Button,
@@ -11,22 +9,17 @@ import {
 } from '~/ui';
 
 import { HeroSection } from '../components/hero-section';
-
-interface CompletedScreenProps {
-  settings: UserSettings;
-  salaryInfo: SalaryInfo;
-  onClose?: () => void;
-}
+import type { HomeMainScreen } from '../hooks/use-home-screen';
 
 export function CompletedScreen({
   settings,
   salaryInfo,
-  onClose,
-}: CompletedScreenProps) {
+  onCompleteWork,
+}: Extract<HomeMainScreen, { screen: 'completed' }>) {
   useConfetti();
 
-  const workStart = settings.workStartTime ?? '09:00';
-  const workEnd = settings.workEndTime ?? '18:00';
+  const workStart = settings.workStartTime;
+  const workEnd = settings.workEndTime;
 
   return (
     <div className="flex flex-1 flex-col gap-7">
@@ -52,7 +45,7 @@ export function CompletedScreen({
           rounded="full"
           size="lg"
           className="w-[240px]"
-          onClick={onClose}
+          onClick={onCompleteWork}
         >
           완료
         </Button>

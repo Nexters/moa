@@ -17,14 +17,14 @@ const variantColors: Record<
     detail: '#343639',
   },
   partial: {
-    fill: '#48B477',
-    stroke: '#3D9A65',
-    detail: '#3D9A65',
+    fill: '#1FD683',
+    stroke: '#17A968',
+    detail: '#0F7449',
   },
   full: {
-    fill: '#48B477',
-    stroke: '#3D9A65',
-    detail: '#3D9A65',
+    fill: '#1FD683',
+    stroke: '#17A968',
+    detail: '#0F7449',
   },
 };
 
@@ -37,27 +37,27 @@ export function MoaMoneyIcon({
 
   return (
     <svg
+      xmlns="http://www.w3.org/2000/svg"
       className={cn('size-20', className)}
       viewBox="0 0 80 80"
       fill="none"
-      xmlns="http://www.w3.org/2000/svg"
       {...props}
     >
       <circle
-        cx="39.9673"
-        cy="39.9673"
+        cx="40.6274"
+        cy="39.2898"
         r="36.7349"
         fill={colors.fill}
         stroke={colors.stroke}
         strokeWidth="6.46465"
       />
       <path
-        d="M23.6309 24.3306H31.1123L39.7945 47.0117H40.14L48.8222 24.3306H56.3036L57.9623 55.6038H51.8639L50.55 35.1293H50.2909L42.127 55.6038H37.8075L29.6436 35.043H29.3844L28.2787 55.6038H21.9722L23.6309 24.3306Z"
+        d="M24.2905 23.6533H31.7719L40.4541 46.3344H40.7997L49.4819 23.6533H56.9633L58.622 54.9266H52.5236L51.2097 34.4521H50.9505L42.7867 54.9266H38.4672L30.3033 34.3657H30.0441L28.9383 54.9266H22.6318L24.2905 23.6533Z"
         fill={colors.detail}
       />
       <rect
-        x="18.957"
-        y="38.9558"
+        x="19.6167"
+        y="38.2783"
         width="42.0202"
         height="4.42318"
         fill={colors.detail}

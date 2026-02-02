@@ -41,3 +41,34 @@ export function unwrapResult<T, E>(
   }
   throw result.error;
 }
+
+// ---------------------------------------------------------------------------
+// Onboarded user settings helpers
+// ---------------------------------------------------------------------------
+
+import type { UserSettings } from './tauri-bindings.gen';
+
+/** 온보딩 완료 후 모든 optional 필드가 보장된 UserSettings */
+export type OnboardedUserSettings = Required<UserSettings>;
+
+/** 온보딩이 완료된 설정인지 런타임 검증 (미완료 시 에러) */
+export function assertOnboarded(
+  settings: UserSettings,
+): asserts settings is OnboardedUserSettings {
+  const required: (keyof UserSettings)[] = [
+    'salaryType',
+    'workDays',
+    'workStartTime',
+    'workEndTime',
+    'lunchStartTime',
+    'lunchEndTime',
+  ];
+
+  for (const key of required) {
+    if (settings[key] == null) {
+      throw new Error(
+        `UserSettings.${key} is missing — onboarding may not be completed`,
+      );
+    }
+  }
+}
