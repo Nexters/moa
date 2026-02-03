@@ -19,6 +19,12 @@
 
 See `apps/app/CLAUDE.md` for comprehensive Tauri app development guidelines.
 
+## Branch Naming
+
+- `feature/<description>` - 새 기능
+- `fix/<description>` - 버그 수정
+- `refactor/<description>` - 리팩토링
+
 ## Quick Reference
 
 ```bash
