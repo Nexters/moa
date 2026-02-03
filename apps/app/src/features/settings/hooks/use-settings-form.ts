@@ -28,7 +28,10 @@ interface UseSettingsFormOptions {
   onSuccess?: () => void;
 }
 
-export function useSettingsForm({ settings, onSuccess }: UseSettingsFormOptions) {
+export function useSettingsForm({
+  settings,
+  onSuccess,
+}: UseSettingsFormOptions) {
   const queryClient = useQueryClient();
 
   const form = useForm({
