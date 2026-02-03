@@ -1,12 +1,5 @@
-import {
-  AppBar,
-  AppFooter,
-  ArrowRightIcon,
-  Button,
-  DayChipGroup,
-  Field,
-  TimeInput,
-} from '~/ui';
+import { AppBar, AppFooter, Button, DayChipGroup, Field } from '~/ui';
+import { TimePeriodInput } from '~/ui/time-period-input';
 
 import type { OnboardingScreenProps } from '../hooks/use-onboarding-screen';
 
@@ -48,108 +41,55 @@ export function ScheduleScreen({ form, onBack }: OnboardingScreenProps) {
           {/* 근무 시간 */}
           <Field.Root className="gap-3">
             <Field.Label>근무 시간</Field.Label>
-            <div className="flex items-center gap-3">
-              <form.Field
-                name="workStartTime"
-                validators={{
-                  onChange: ({ value }) =>
-                    !value ? '출근 시간을 입력해주세요' : undefined,
-                }}
-              >
-                {(field) => (
-                  <TimeInput
-                    value={field.state.value}
-                    onChange={field.handleChange}
-                    className="flex-1"
-                  />
-                )}
-              </form.Field>
-              <ArrowRightIcon className="text-text-medium size-4" />
-              <form.Field
-                name="workEndTime"
-                validators={{
-                  onChange: ({ value }) =>
-                    !value ? '퇴근 시간을 입력해주세요' : undefined,
-                }}
-              >
-                {(field) => (
-                  <TimeInput
-                    value={field.state.value}
-                    onChange={field.handleChange}
-                    className="flex-1"
-                  />
-                )}
-              </form.Field>
-            </div>
+            <form.Subscribe
+              selector={(s) => ({
+                startTime: s.values.workStartTime,
+                endTime: s.values.workEndTime,
+              })}
+            >
+              {(value) => (
+                <TimePeriodInput
+                  value={value}
+                  onChange={(v) => {
+                    form.setFieldValue('workStartTime', v.startTime);
+                    form.setFieldValue('workEndTime', v.endTime);
+                  }}
+                />
+              )}
+            </form.Subscribe>
           </Field.Root>
 
           {/* 점심 시간 */}
           <Field.Root className="gap-3">
             <Field.Label>점심 시간</Field.Label>
-            <div className="flex items-center gap-3">
-              <form.Field
-                name="lunchStartTime"
-                validators={{
-                  onChange: ({ value }) =>
-                    !value ? '점심 시작 시간을 입력해주세요' : undefined,
-                }}
-              >
-                {(field) => (
-                  <TimeInput
-                    value={field.state.value}
-                    onChange={field.handleChange}
-                    className="flex-1"
-                  />
-                )}
-              </form.Field>
-              <ArrowRightIcon className="text-text-medium size-4" />
-              <form.Field
-                name="lunchEndTime"
-                validators={{
-                  onChange: ({ value }) =>
-                    !value ? '점심 종료 시간을 입력해주세요' : undefined,
-                }}
-              >
-                {(field) => (
-                  <TimeInput
-                    value={field.state.value}
-                    onChange={field.handleChange}
-                    className="flex-1"
-                  />
-                )}
-              </form.Field>
-            </div>
+            <form.Subscribe
+              selector={(s) => ({
+                startTime: s.values.lunchStartTime,
+                endTime: s.values.lunchEndTime,
+              })}
+            >
+              {(value) => (
+                <TimePeriodInput
+                  value={value}
+                  onChange={(v) => {
+                    form.setFieldValue('lunchStartTime', v.startTime);
+                    form.setFieldValue('lunchEndTime', v.endTime);
+                  }}
+                />
+              )}
+            </form.Subscribe>
           </Field.Root>
         </div>
 
         <form.Subscribe
           selector={(state) => ({
             workDaysError: state.fieldMeta.workDays?.errorMap.onChange,
-            workStartTimeError:
-              state.fieldMeta.workStartTime?.errorMap.onChange,
-            workEndTimeError: state.fieldMeta.workEndTime?.errorMap.onChange,
-            lunchStartTimeError:
-              state.fieldMeta.lunchStartTime?.errorMap.onChange,
-            lunchEndTimeError: state.fieldMeta.lunchEndTime?.errorMap.onChange,
             isSubmitting: state.isSubmitting,
             submitError: state.errorMap.onSubmit,
           })}
         >
-          {({
-            workDaysError,
-            workStartTimeError,
-            workEndTimeError,
-            lunchStartTimeError,
-            lunchEndTimeError,
-            isSubmitting,
-            submitError,
-          }) => {
-            const hasErrors =
-              !!workDaysError ||
-              !!workStartTimeError ||
-              !!workEndTimeError ||
-              !!lunchStartTimeError ||
-              !!lunchEndTimeError;
+          {({ workDaysError, isSubmitting, submitError }) => {
+            const hasErrors = !!workDaysError;
 
             return (
               <AppFooter>
