@@ -2,8 +2,18 @@ import { useOnboardingForm } from './hooks/use-onboarding-form';
 import { useOnboardingScreen } from './hooks/use-onboarding-screen';
 
 export function Onboarding() {
-  const form = useOnboardingForm();
-  const { CurrentScreen, screenProps } = useOnboardingScreen({ form });
+  const { CurrentScreen, goToNext, goToPrevious, isFirstScreen, isLastScreen } =
+    useOnboardingScreen();
 
-  return <CurrentScreen {...screenProps} />;
+  const form = useOnboardingForm({ onSuccess: goToNext });
+
+  return (
+    <CurrentScreen
+      form={form}
+      onNext={goToNext}
+      onBack={goToPrevious}
+      isFirstScreen={isFirstScreen}
+      isLastScreen={isLastScreen}
+    />
+  );
 }

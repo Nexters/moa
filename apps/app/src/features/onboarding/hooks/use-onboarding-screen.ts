@@ -35,11 +35,7 @@ const SCREEN_COMPONENTS: Record<
   completion: CompletionScreen,
 };
 
-interface UseOnboardingScreenOptions {
-  form: OnboardingForm;
-}
-
-export function useOnboardingScreen({ form }: UseOnboardingScreenOptions) {
+export function useOnboardingScreen() {
   const [currentScreen, setCurrentScreen] =
     useState<OnboardingScreen>('welcome');
 
@@ -48,7 +44,6 @@ export function useOnboardingScreen({ form }: UseOnboardingScreenOptions) {
 
   const isFirstScreen = currentStep === 0;
   const isLastScreen = currentStep === totalSteps - 1;
-  const canGoBack = !isFirstScreen;
 
   const goToNext = () => {
     const nextIndex = currentStep + 1;
@@ -64,34 +59,14 @@ export function useOnboardingScreen({ form }: UseOnboardingScreenOptions) {
     }
   };
 
-  const goToScreen = (screen: OnboardingScreen) => {
-    setCurrentScreen(screen);
-  };
-
   return {
-    // 현재 화면 정보 (디버깅/조건부 로직용)
     currentScreen,
     currentStep,
     totalSteps,
-
-    // 네비게이션 (직접 호출 필요 시)
     goToNext,
     goToPrevious,
-    goToScreen,
-
-    // 상태 플래그
     isFirstScreen,
     isLastScreen,
-    canGoBack,
-
-    // 렌더링용
     CurrentScreen: SCREEN_COMPONENTS[currentScreen],
-    screenProps: {
-      form,
-      onNext: goToNext,
-      onBack: goToPrevious,
-      isFirstScreen,
-      isLastScreen,
-    } satisfies OnboardingScreenProps,
   };
 }
