@@ -1,7 +1,7 @@
 import { cn } from 'tailwind-variants';
 
 import { IconButton } from './icon-button';
-import { ArrowLeftIcon, SettingsIcon } from './icons';
+import { ArrowLeftIcon, MoaLogoIcon, SettingsIcon } from './icons';
 
 type AppBarType = 'main' | 'detail';
 
@@ -40,7 +40,9 @@ interface MainAppBarProps {
 function MainAppBar({ onSettings }: MainAppBarProps) {
   return (
     <>
-      <h1 className="t3-500 text-text-high px-5 py-2.5">Moa</h1>
+      <h1 className="text-text-high px-5 py-2.5" aria-label="Moa">
+        <MoaLogoIcon aria-hidden="true" />
+      </h1>
       <div className="flex-1" />
       <IconButton onClick={onSettings} aria-label="설정">
         <SettingsIcon />
