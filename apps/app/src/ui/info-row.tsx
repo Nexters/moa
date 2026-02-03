@@ -4,7 +4,7 @@ import { tv } from 'tailwind-variants';
 import { ChevronRightIcon } from './icons';
 
 const infoRowVariants = tv({
-  base: 'b2-400 flex items-center justify-between px-4 py-3.5 first:rounded-t-md last:rounded-b-md',
+  base: 'b1-500 bg-container-primary flex items-center justify-between rounded-md px-4 py-3.5',
   variants: {
     interactive: {
       true: 'hover:bg-interactive-hover cursor-pointer transition-colors disabled:cursor-not-allowed disabled:opacity-50',
@@ -41,7 +41,7 @@ export function InfoRow({
       {(children || isButton) && (
         <span className="flex items-center gap-1">
           {children}
-          {isButton && <ChevronRightIcon className="text-text-low size-4" />}
+          {isButton && <ChevronRightIcon className="text-text-low size-6" />}
         </span>
       )}
     </Component>

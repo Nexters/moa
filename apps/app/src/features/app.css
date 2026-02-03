@@ -8,14 +8,16 @@
   body {
     @apply bg-bg-primary text-text-high antialiased select-none;
     overscroll-behavior: none;
-    min-height: 100dvh;
-    min-width: 100dvw;
+    height: 100dvh;
+    width: 100dvw;
     overflow: hidden;
     position: relative;
   }
 
   #root {
     isolation: isolate;
+    width: 100%;
+    height: 100%;
   }
 
   svg {
@@ -37,5 +39,28 @@
   *[data-tauri-drag-region] {
     -webkit-app-region: drag;
     app-region: drag;
+  }
+
+  /* Scrollbar overlays content instead of taking space */
+  .scrollbar-overlay {
+    overflow-y: auto;
+
+    /* Firefox */
+    scrollbar-width: thin;
+
+    /* Webkit (Chrome, Safari) */
+    &::-webkit-scrollbar {
+      width: 6px;
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
   }
 }

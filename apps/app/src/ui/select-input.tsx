@@ -10,7 +10,7 @@ interface SelectOption {
 
 interface SelectInputProps extends React.ComponentProps<typeof Select.Root> {
   className?: string;
-  options: SelectOption[];
+  options: readonly SelectOption[];
   placeholder?: string;
 }
 
@@ -46,13 +46,13 @@ export function SelectInput({
                   key={option.value}
                   value={option.value}
                   className={cn(
-                    'b1-400 text-text-medium flex cursor-pointer items-center justify-between rounded-xs px-4 py-2 outline-none',
+                    'b1-400 text-text-medium flex cursor-pointer items-center justify-between rounded-xs p-2 outline-none',
                     'data-highlighted:bg-container-secondary data-highlighted:b1-600 data-highlighted:text-text-high',
                   )}
                 >
                   <Select.ItemText>{option.label}</Select.ItemText>
                   <Select.ItemIndicator className="text-text-high">
-                    <CheckIcon className="size-4" />
+                    <CheckIcon className="size-6" />
                   </Select.ItemIndicator>
                 </Select.Item>
               ))}

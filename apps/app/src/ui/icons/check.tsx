@@ -1,17 +1,17 @@
 import type { ComponentProps } from 'react';
+import { cn } from 'tailwind-variants';
 
-export function CheckIcon(props: ComponentProps<'svg'>) {
+export function CheckIcon({ className, ...props }: ComponentProps<'svg'>) {
   return (
     <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
+      viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      className={cn('size-6', className)}
       {...props}
     >
       <path
-        d="M4 10L8 14L16 6"
+        d="M20 7L10 17L5 12"
         stroke="currentColor"
         strokeWidth="2"
         strokeLinecap="round"
