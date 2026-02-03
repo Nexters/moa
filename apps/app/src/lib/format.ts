@@ -7,11 +7,6 @@ export function formatCurrency(amount: number): string {
   return `${NUMBER_FORMATTER.format(Math.floor(amount))}원`;
 }
 
-/** 금액을 간단한 숫자 형식으로 포맷 (₩ 없이) */
-export function formatNumber(amount: number): string {
-  return NUMBER_FORMATTER.format(Math.floor(amount));
-}
-
 export function formatMonth(date = new Date()): string {
   const month = date.getMonth() + 1;
   return `${month}월`;
