@@ -40,8 +40,8 @@ interface MainAppBarProps {
 function MainAppBar({ onSettings }: MainAppBarProps) {
   return (
     <>
-      <h1 className="text-text-high px-5 py-2.5">
-        <MoaLogoIcon />
+      <h1 className="text-text-high px-5 py-2.5" aria-label="Moa">
+        <MoaLogoIcon aria-hidden="true" />
       </h1>
       <div className="flex-1" />
       <IconButton onClick={onSettings} aria-label="설정">
