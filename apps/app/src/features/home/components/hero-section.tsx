@@ -1,7 +1,6 @@
 import NumberFlow, { continuous } from '@number-flow/react';
 import { listen } from '@tauri-apps/api/event';
 import { useEffect, useState } from 'react';
-import { flushSync } from 'react-dom';
 import { cn } from 'tailwind-variants';
 
 import { HolidayIcon, MoaMoneyIcon } from '~/ui/icons';
@@ -16,20 +15,23 @@ interface HeroSectionProps {
 
 export function HeroSection({ variant, label, amount }: HeroSectionProps) {
   const isHoliday = variant === 'holiday';
+  const [animKey, setAnimKey] = useState(0);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-
-    const cleanup = listen('menubar_panel_did_open', () => {
-      flushSync(() => {
-        setMounted(false);
-      });
-      requestAnimationFrame(() => {
-        setMounted(true);
-      });
+    const id = requestAnimationFrame(() => {
+      setMounted(true);
     });
+    return () => {
+      cancelAnimationFrame(id);
+    };
+  }, [animKey]);
 
+  useEffect(() => {
+    const cleanup = listen('menubar_panel_did_open', () => {
+      setMounted(false);
+      setAnimKey((prev) => prev + 1);
+    });
     return () => {
       void cleanup.then((fn) => fn());
     };
@@ -42,6 +44,7 @@ export function HeroSection({ variant, label, amount }: HeroSectionProps) {
         <p className="t3-500 text-text-high">{label}</p>
         <div className="flex items-center justify-center gap-1">
           <NumberFlow
+            key={animKey}
             value={mounted ? amount : 0}
             locales="ko-KR"
             format={{ maximumFractionDigits: 0 }}
