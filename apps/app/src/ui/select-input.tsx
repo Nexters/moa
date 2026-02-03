@@ -10,7 +10,7 @@ interface SelectOption {
 
 interface SelectInputProps extends React.ComponentProps<typeof Select.Root> {
   className?: string;
-  options: SelectOption[];
+  options: readonly SelectOption[];
   placeholder?: string;
 }
 

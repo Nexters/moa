@@ -38,7 +38,7 @@ function EditSalaryForm({ settings, onBack }: EditSalaryFormProps) {
     <main className="flex flex-1 flex-col">
       <AppBar type="detail" title="급여 정보 수정" onBack={onBack} />
 
-      <div className="flex flex-1 flex-col px-6 pt-4">
+      <div className="scrollbar-overlay flex flex-1 flex-col p-5">
         <div className="flex flex-col gap-6">
           <form.Field name="salaryType">
             {(field) => (

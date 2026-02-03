@@ -44,7 +44,7 @@ export function SalaryInfoScreen({ onBack, onNavigate }: Props) {
     <main className="flex flex-1 flex-col">
       <AppBar type="detail" title="월급 · 근무 정보" onBack={onBack} />
 
-      <div className="flex flex-col gap-5 overflow-y-auto p-4">
+      <div className="flex flex-col gap-5 overflow-y-auto p-5">
         <SettingsSection title="월급 정보">
           <InfoRow
             as="button"

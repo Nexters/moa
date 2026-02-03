@@ -7,7 +7,6 @@ import { commands } from '~/lib/tauri-bindings';
 import { useUIStore } from '~/stores/ui-store';
 import { AppBar, InfoRow, SwitchInput } from '~/ui';
 
-import { ResetDataButton } from '../components/reset-data-button';
 import { SettingsSection } from '../components/settings-section';
 
 interface Props {
@@ -59,11 +58,22 @@ export function SettingsScreen({ onNavigate }: Props) {
     },
   });
 
+  const resetDataMutation = useMutation({
+    mutationFn: async () => {
+      const result = await commands.resetAllData();
+      if (result.status === 'error') throw new Error(result.error);
+    },
+    onSuccess: () => {
+      queryClient.clear();
+      navigate('onboarding');
+    },
+  });
+
   return (
     <div className="bg-bg-primary flex h-full flex-col">
       <AppBar type="detail" title="설정" onBack={() => navigate('home')} />
 
-      <div className="flex flex-col gap-5 overflow-y-auto p-4">
+      <div className="scrollbar-overlay flex min-h-0 flex-1 flex-col gap-5 p-5">
         <SettingsSection title="내 정보">
           <InfoRow
             as="button"
@@ -74,22 +84,21 @@ export function SettingsScreen({ onNavigate }: Props) {
 
         <SettingsSection title="앱 정보 및 도움말">
           <InfoRow label="버전 정보">
-            <span className="text-text-medium">{version ?? '-'}</span>
+            <span className="text-text-medium">
+              {version ? `v${version}` : '-'}
+            </span>
           </InfoRow>
           <InfoRow as="button" label="문의하기" disabled />
         </SettingsSection>
 
-        <SettingsSection title="메뉴바 표시">
-          <InfoRow label="메뉴바에 급여 표시">
+        <SettingsSection title="메뉴바 설정">
+          <InfoRow label="실시간 금액 표시">
             <SwitchInput
               value={settings?.showMenubarSalary ?? true}
               onSave={(v) => menubarSalaryMutation.mutate(v)}
               disabled={!settings || menubarSalaryMutation.isPending}
             />
           </InfoRow>
-        </SettingsSection>
-
-        <SettingsSection title="자동 실행">
           <InfoRow label="로그인 시 MOA 자동 실행">
             <SwitchInput
               value={autoStartEnabled}
@@ -99,9 +108,16 @@ export function SettingsScreen({ onNavigate }: Props) {
           </InfoRow>
         </SettingsSection>
 
-        <SettingsSection title="위험 영역">
-          <ResetDataButton />
-        </SettingsSection>
+        {process.env.NODE_ENV === 'development' && (
+          <SettingsSection title="개발자 메뉴" className="opacity-70">
+            <InfoRow
+              as="button"
+              label="데이터 초기화"
+              disabled={resetDataMutation.isPending}
+              onClick={() => resetDataMutation.mutate()}
+            />
+          </SettingsSection>
+        )}
       </div>
     </div>
   );

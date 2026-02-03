@@ -1,17 +1,17 @@
 import type { ReactNode } from 'react';
+import { cn } from 'tailwind-variants';
 
 interface Props {
   title: string;
-  children: ReactNode;
+  children?: ReactNode;
+  className?: string;
 }
 
-export function SettingsSection({ title, children }: Props) {
+export function SettingsSection({ title, children, className }: Props) {
   return (
-    <section className="flex flex-col gap-2">
-      <h2 className="c1-500 text-text-low px-1">{title}</h2>
-      <div className="bg-container-primary flex flex-col rounded-md">
-        {children}
-      </div>
+    <section className={cn('flex flex-col gap-2', className)}>
+      <h2 className="b2-500 text-text-medium">{title}</h2>
+      <div className="flex flex-col gap-2.5">{children}</div>
     </section>
   );
 }
