@@ -10,11 +10,7 @@ import {
 
 import type { OnboardingScreenProps } from '../hooks/use-onboarding-screen';
 
-export function ScheduleScreen({
-  form,
-  onBack,
-  onNext,
-}: OnboardingScreenProps) {
+export function ScheduleScreen({ form, onBack }: OnboardingScreenProps) {
   return (
     <main className="flex flex-1 flex-col">
       <AppBar type="detail" onBack={onBack} />
@@ -24,14 +20,27 @@ export function ScheduleScreen({
 
         <div className="mt-8 flex flex-col gap-8">
           {/* 근무 요일 */}
-          <form.Field name="workDays">
+          <form.Field
+            name="workDays"
+            validators={{
+              onChange: ({ value }) =>
+                value.length === 0 ? '근무 요일을 선택해주세요' : undefined,
+            }}
+          >
             {(field) => (
-              <Field.Root name={field.name} className="gap-3">
+              <Field.Root
+                name={field.name}
+                className="gap-3"
+                invalid={field.state.meta.errors.length > 0}
+              >
                 <Field.Label>근무 요일</Field.Label>
                 <DayChipGroup
                   selectedDays={field.state.value}
                   onChange={field.handleChange}
                 />
+                {field.state.meta.errors.filter(Boolean).map((error) => (
+                  <Field.Error key={error}>{error}</Field.Error>
+                ))}
               </Field.Root>
             )}
           </form.Field>
@@ -40,7 +49,13 @@ export function ScheduleScreen({
           <Field.Root className="gap-3">
             <Field.Label>근무 시간</Field.Label>
             <div className="flex items-center gap-3">
-              <form.Field name="workStartTime">
+              <form.Field
+                name="workStartTime"
+                validators={{
+                  onChange: ({ value }) =>
+                    !value ? '출근 시간을 입력해주세요' : undefined,
+                }}
+              >
                 {(field) => (
                   <TimeInput
                     value={field.state.value}
@@ -50,7 +65,13 @@ export function ScheduleScreen({
                 )}
               </form.Field>
               <ArrowRightIcon className="text-text-medium size-4" />
-              <form.Field name="workEndTime">
+              <form.Field
+                name="workEndTime"
+                validators={{
+                  onChange: ({ value }) =>
+                    !value ? '퇴근 시간을 입력해주세요' : undefined,
+                }}
+              >
                 {(field) => (
                   <TimeInput
                     value={field.state.value}
@@ -66,7 +87,13 @@ export function ScheduleScreen({
           <Field.Root className="gap-3">
             <Field.Label>점심 시간</Field.Label>
             <div className="flex items-center gap-3">
-              <form.Field name="lunchStartTime">
+              <form.Field
+                name="lunchStartTime"
+                validators={{
+                  onChange: ({ value }) =>
+                    !value ? '점심 시작 시간을 입력해주세요' : undefined,
+                }}
+              >
                 {(field) => (
                   <TimeInput
                     value={field.state.value}
@@ -76,7 +103,13 @@ export function ScheduleScreen({
                 )}
               </form.Field>
               <ArrowRightIcon className="text-text-medium size-4" />
-              <form.Field name="lunchEndTime">
+              <form.Field
+                name="lunchEndTime"
+                validators={{
+                  onChange: ({ value }) =>
+                    !value ? '점심 종료 시간을 입력해주세요' : undefined,
+                }}
+              >
                 {(field) => (
                   <TimeInput
                     value={field.state.value}
@@ -91,45 +124,51 @@ export function ScheduleScreen({
 
         <form.Subscribe
           selector={(state) => ({
-            workDays: state.values.workDays,
-            workStartTime: state.values.workStartTime,
-            workEndTime: state.values.workEndTime,
-            lunchStartTime: state.values.lunchStartTime,
-            lunchEndTime: state.values.lunchEndTime,
+            workDaysError: state.fieldMeta.workDays?.errorMap.onChange,
+            workStartTimeError:
+              state.fieldMeta.workStartTime?.errorMap.onChange,
+            workEndTimeError: state.fieldMeta.workEndTime?.errorMap.onChange,
+            lunchStartTimeError:
+              state.fieldMeta.lunchStartTime?.errorMap.onChange,
+            lunchEndTimeError: state.fieldMeta.lunchEndTime?.errorMap.onChange,
             isSubmitting: state.isSubmitting,
+            submitError: state.errorMap.onSubmit,
           })}
         >
           {({
-            workDays,
-            workStartTime,
-            workEndTime,
-            lunchStartTime,
-            lunchEndTime,
+            workDaysError,
+            workStartTimeError,
+            workEndTimeError,
+            lunchStartTimeError,
+            lunchEndTimeError,
             isSubmitting,
+            submitError,
           }) => {
-            const isValid =
-              workDays.length > 0 &&
-              workStartTime &&
-              workEndTime &&
-              lunchStartTime &&
-              lunchEndTime;
-
-            const handleSubmit = async () => {
-              await form.handleSubmit();
-              onNext();
-            };
+            const hasErrors =
+              !!workDaysError ||
+              !!workStartTimeError ||
+              !!workEndTimeError ||
+              !!lunchStartTimeError ||
+              !!lunchEndTimeError;
 
             return (
               <AppFooter>
-                <Button
-                  rounded="full"
-                  size="lg"
-                  className="w-60"
-                  disabled={!isValid || isSubmitting}
-                  onClick={handleSubmit}
-                >
-                  {isSubmitting ? '저장 중...' : '다음'}
-                </Button>
+                <div className="flex flex-col items-center gap-2">
+                  {submitError && (
+                    <p className="b2-400 text-error">
+                      저장에 실패했습니다. 다시 시도해주세요.
+                    </p>
+                  )}
+                  <Button
+                    rounded="full"
+                    size="lg"
+                    className="w-60"
+                    disabled={hasErrors || isSubmitting}
+                    onClick={() => form.handleSubmit()}
+                  >
+                    {isSubmitting ? '저장 중...' : '다음'}
+                  </Button>
+                </div>
               </AppFooter>
             );
           }}

@@ -38,11 +38,20 @@ export function SalaryScreen({ form, onNext, onBack }: OnboardingScreenProps) {
           </form.Field>
 
           {/* 급여 금액 */}
-          <form.Field name="salaryAmount">
+          <form.Field
+            name="salaryAmount"
+            validators={{
+              onChange: ({ value }) =>
+                value <= 0 ? '급여 금액은 0보다 커야 합니다' : undefined,
+            }}
+          >
             {(field) => (
               <form.Subscribe selector={(state) => state.values.salaryType}>
                 {(salaryType) => (
-                  <Field.Root name={field.name}>
+                  <Field.Root
+                    name={field.name}
+                    invalid={field.state.meta.errors.length > 0}
+                  >
                     <Field.Label>
                       {salaryType === 'monthly' ? '월 실수령액' : '연봉'}
                     </Field.Label>
@@ -53,6 +62,9 @@ export function SalaryScreen({ form, onNext, onBack }: OnboardingScreenProps) {
                       value={field.state.value}
                       onValueChange={(v) => field.handleChange(v ?? 0)}
                     />
+                    {field.state.meta.errors.filter(Boolean).map((error) => (
+                      <Field.Error key={error}>{error}</Field.Error>
+                    ))}
                   </Field.Root>
                 )}
               </form.Subscribe>
@@ -60,57 +72,55 @@ export function SalaryScreen({ form, onNext, onBack }: OnboardingScreenProps) {
           </form.Field>
 
           {/* 급여일 */}
-          <form.Field name="payDay">
-            {(field) => {
-              const handlePayDayChange = (value: number) => {
-                if (value >= 1 && value <= 31) {
-                  field.handleChange(value);
-                } else if (value === 0) {
-                  field.handleChange(1);
-                } else if (value > 31) {
-                  field.handleChange(31);
-                }
-              };
-
-              return (
-                <Field.Root name={field.name}>
-                  <Field.Label>급여일</Field.Label>
-                  <NumberInput
-                    defaultValue={25}
-                    value={field.state.value}
-                    onValueChange={(v) => handlePayDayChange(v ?? 0)}
-                    suffix="일"
-                    formatThousands={false}
-                  />
-                </Field.Root>
-              );
+          <form.Field
+            name="payDay"
+            validators={{
+              onChange: ({ value }) =>
+                value < 1 || value > 31
+                  ? '급여일은 1~31 사이여야 합니다'
+                  : undefined,
             }}
+          >
+            {(field) => (
+              <Field.Root
+                name={field.name}
+                invalid={field.state.meta.errors.length > 0}
+              >
+                <Field.Label>급여일</Field.Label>
+                <NumberInput
+                  defaultValue={25}
+                  value={field.state.value}
+                  onValueChange={(v) => field.handleChange(v ?? 0)}
+                  suffix="일"
+                  formatThousands={false}
+                />
+                {field.state.meta.errors.filter(Boolean).map((error) => (
+                  <Field.Error key={error}>{error}</Field.Error>
+                ))}
+              </Field.Root>
+            )}
           </form.Field>
         </div>
 
         <form.Subscribe
           selector={(state) => ({
-            salaryAmount: state.values.salaryAmount,
-            payDay: state.values.payDay,
+            salaryAmountError: state.fieldMeta.salaryAmount?.errorMap.onChange,
+            payDayError: state.fieldMeta.payDay?.errorMap.onChange,
           })}
         >
-          {({ salaryAmount, payDay }) => {
-            const isValid = salaryAmount > 0 && payDay >= 1 && payDay <= 31;
-
-            return (
-              <AppFooter>
-                <Button
-                  rounded="full"
-                  size="lg"
-                  className="w-60"
-                  disabled={!isValid}
-                  onClick={onNext}
-                >
-                  다음
-                </Button>
-              </AppFooter>
-            );
-          }}
+          {({ salaryAmountError, payDayError }) => (
+            <AppFooter>
+              <Button
+                rounded="full"
+                size="lg"
+                className="w-60"
+                disabled={!!salaryAmountError || !!payDayError}
+                onClick={onNext}
+              >
+                다음
+              </Button>
+            </AppFooter>
+          )}
         </form.Subscribe>
       </div>
     </main>
