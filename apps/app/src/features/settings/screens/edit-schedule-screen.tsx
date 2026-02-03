@@ -1,14 +1,7 @@
 import { useUserSettings } from '~/hooks/use-user-settings';
 import type { UserSettings } from '~/lib/tauri-bindings';
-import {
-  AppBar,
-  AppFooter,
-  ArrowRightIcon,
-  Button,
-  DayChipGroup,
-  Field,
-  TimeInput,
-} from '~/ui';
+import { AppBar, AppFooter, Button, DayChipGroup, Field } from '~/ui';
+import { TimePeriodInput } from '~/ui/time-period-input';
 
 import { useSettingsForm } from '../hooks/use-settings-form';
 
@@ -52,52 +45,42 @@ function EditScheduleForm({ settings, onBack }: EditScheduleFormProps) {
 
           <Field.Root className="gap-3">
             <Field.Label>근무 시간</Field.Label>
-            <div className="flex items-center gap-3">
-              <form.Field name="workStartTime">
-                {(field) => (
-                  <TimeInput
-                    value={field.state.value}
-                    onChange={field.handleChange}
-                    className="flex-1"
-                  />
-                )}
-              </form.Field>
-              <ArrowRightIcon className="text-text-medium size-4" />
-              <form.Field name="workEndTime">
-                {(field) => (
-                  <TimeInput
-                    value={field.state.value}
-                    onChange={field.handleChange}
-                    className="flex-1"
-                  />
-                )}
-              </form.Field>
-            </div>
+            <form.Subscribe
+              selector={(s) => ({
+                startTime: s.values.workStartTime,
+                endTime: s.values.workEndTime,
+              })}
+            >
+              {(value) => (
+                <TimePeriodInput
+                  value={value}
+                  onChange={(v) => {
+                    form.setFieldValue('workStartTime', v.startTime);
+                    form.setFieldValue('workEndTime', v.endTime);
+                  }}
+                />
+              )}
+            </form.Subscribe>
           </Field.Root>
 
           <Field.Root className="gap-3">
             <Field.Label>점심 시간</Field.Label>
-            <div className="flex items-center gap-3">
-              <form.Field name="lunchStartTime">
-                {(field) => (
-                  <TimeInput
-                    value={field.state.value}
-                    onChange={field.handleChange}
-                    className="flex-1"
-                  />
-                )}
-              </form.Field>
-              <ArrowRightIcon className="text-text-medium size-4" />
-              <form.Field name="lunchEndTime">
-                {(field) => (
-                  <TimeInput
-                    value={field.state.value}
-                    onChange={field.handleChange}
-                    className="flex-1"
-                  />
-                )}
-              </form.Field>
-            </div>
+            <form.Subscribe
+              selector={(s) => ({
+                startTime: s.values.lunchStartTime,
+                endTime: s.values.lunchEndTime,
+              })}
+            >
+              {(value) => (
+                <TimePeriodInput
+                  value={value}
+                  onChange={(v) => {
+                    form.setFieldValue('lunchStartTime', v.startTime);
+                    form.setFieldValue('lunchEndTime', v.endTime);
+                  }}
+                />
+              )}
+            </form.Subscribe>
           </Field.Root>
         </div>
 
