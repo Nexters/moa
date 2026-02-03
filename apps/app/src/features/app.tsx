@@ -62,7 +62,7 @@ export function App() {
 
   return (
     <>
-      <div tabIndex={0}>{/* 초기 포커스 방지 */}</div>
+      <div tabIndex={0} className="sr-only" aria-label="포커스 초기화" />
       <TraySync />
       {renderRoute()}
     </>
