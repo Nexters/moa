@@ -2,11 +2,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getVersion } from '@tauri-apps/api/app';
 import { enable, disable, isEnabled } from '@tauri-apps/plugin-autostart';
 
+import { useUserSettings } from '~/hooks/use-user-settings';
+import { commands } from '~/lib/tauri-bindings';
 import { useUIStore } from '~/stores/ui-store';
 import { AppBar, InfoRow, SwitchInput } from '~/ui';
 
-import { ResetDataButton } from './reset-data-button';
-import { SettingsSection } from './settings-section';
+import { ResetDataButton } from '../components/reset-data-button';
+import { SettingsSection } from '../components/settings-section';
 
 interface Props {
   onNavigate: (screen: 'salary-info') => void;
@@ -15,6 +17,7 @@ interface Props {
 export function SettingsScreen({ onNavigate }: Props) {
   const navigate = useUIStore((s) => s.navigate);
   const queryClient = useQueryClient();
+  const { data: settings } = useUserSettings();
 
   const { data: version } = useQuery({
     queryKey: ['appVersion'],
@@ -42,6 +45,20 @@ export function SettingsScreen({ onNavigate }: Props) {
     },
   });
 
+  const menubarSalaryMutation = useMutation({
+    mutationFn: async (showMenubarSalary: boolean) => {
+      if (!settings) return;
+      const result = await commands.saveUserSettings({
+        ...settings,
+        showMenubarSalary,
+      });
+      if (result.status === 'error') throw new Error(result.error);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['userSettings'] });
+    },
+  });
+
   return (
     <div className="bg-bg-primary flex h-full flex-col">
       <AppBar type="detail" title="설정" onBack={() => navigate('home')} />
@@ -60,6 +77,16 @@ export function SettingsScreen({ onNavigate }: Props) {
             <span className="text-text-medium">{version ?? '-'}</span>
           </InfoRow>
           <InfoRow as="button" label="문의하기" disabled />
+        </SettingsSection>
+
+        <SettingsSection title="메뉴바 표시">
+          <InfoRow label="메뉴바에 급여 표시">
+            <SwitchInput
+              value={settings?.showMenubarSalary ?? true}
+              onSave={(v) => menubarSalaryMutation.mutate(v)}
+              disabled={!settings || menubarSalaryMutation.isPending}
+            />
+          </InfoRow>
         </SettingsSection>
 
         <SettingsSection title="자동 실행">
