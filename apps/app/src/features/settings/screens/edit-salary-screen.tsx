@@ -32,12 +32,7 @@ interface EditSalaryFormProps {
 }
 
 function EditSalaryForm({ settings, onBack }: EditSalaryFormProps) {
-  const form = useSettingsForm({ settings });
-
-  const handleSave = async () => {
-    await form.handleSubmit();
-    onBack();
-  };
+  const form = useSettingsForm({ settings, onSuccess: onBack });
 
   return (
     <main className="flex flex-1 flex-col">
@@ -120,7 +115,7 @@ function EditSalaryForm({ settings, onBack }: EditSalaryFormProps) {
                   size="lg"
                   className="w-60"
                   disabled={!isValid || isSubmitting}
-                  onClick={handleSave}
+                  onClick={() => form.handleSubmit()}
                 >
                   {isSubmitting ? '저장 중...' : '저장'}
                 </Button>

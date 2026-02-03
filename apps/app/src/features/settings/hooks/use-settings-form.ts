@@ -25,9 +25,10 @@ export interface SettingsFormValues {
 
 interface UseSettingsFormOptions {
   settings: UserSettings;
+  onSuccess?: () => void;
 }
 
-export function useSettingsForm({ settings }: UseSettingsFormOptions) {
+export function useSettingsForm({ settings, onSuccess }: UseSettingsFormOptions) {
   const queryClient = useQueryClient();
 
   const form = useForm({
@@ -98,6 +99,7 @@ export function useSettingsForm({ settings }: UseSettingsFormOptions) {
       }
 
       await queryClient.invalidateQueries({ queryKey: ['userSettings'] });
+      onSuccess?.();
     },
   });
 

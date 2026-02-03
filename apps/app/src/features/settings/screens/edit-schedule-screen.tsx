@@ -30,12 +30,7 @@ interface EditScheduleFormProps {
 }
 
 function EditScheduleForm({ settings, onBack }: EditScheduleFormProps) {
-  const form = useSettingsForm({ settings });
-
-  const handleSave = async () => {
-    await form.handleSubmit();
-    onBack();
-  };
+  const form = useSettingsForm({ settings, onSuccess: onBack });
 
   return (
     <main className="flex flex-1 flex-col">
@@ -138,7 +133,7 @@ function EditScheduleForm({ settings, onBack }: EditScheduleFormProps) {
                   size="lg"
                   className="w-60"
                   disabled={!isValid || isSubmitting}
-                  onClick={handleSave}
+                  onClick={() => form.handleSubmit()}
                 >
                   {isSubmitting ? '저장 중...' : '저장'}
                 </Button>
