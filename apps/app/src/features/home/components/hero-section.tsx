@@ -1,6 +1,7 @@
 import NumberFlow, { continuous } from '@number-flow/react';
 import { listen } from '@tauri-apps/api/event';
 import { useEffect, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { cn } from 'tailwind-variants';
 
 import { HolidayIcon, MoaMoneyIcon } from '~/ui/icons';
@@ -21,7 +22,9 @@ export function HeroSection({ variant, label, amount }: HeroSectionProps) {
     setMounted(true);
 
     const cleanup = listen('menubar_panel_did_open', () => {
-      setMounted(false);
+      flushSync(() => {
+        setMounted(false);
+      });
       requestAnimationFrame(() => {
         setMounted(true);
       });
