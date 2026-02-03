@@ -36,7 +36,7 @@ function EditSalaryForm({ settings, onBack }: EditSalaryFormProps) {
 
   return (
     <main className="flex flex-1 flex-col">
-      <AppBar type="detail" title="급여 정보 수정" onBack={onBack} />
+      <AppBar type="detail" title="월급 정보" onBack={onBack} />
 
       <div className="scrollbar-overlay flex flex-1 flex-col p-5">
         <div className="flex flex-col gap-6">
@@ -55,19 +55,13 @@ function EditSalaryForm({ settings, onBack }: EditSalaryFormProps) {
 
           <form.Field name="salaryAmount">
             {(field) => (
-              <form.Subscribe selector={(state) => state.values.salaryType}>
-                {(salaryType) => (
-                  <Field.Root name={field.name}>
-                    <Field.Label>
-                      {salaryType === 'monthly' ? '월 실수령액' : '연봉'}
-                    </Field.Label>
-                    <NumberInput
-                      value={field.state.value}
-                      onValueChange={(v) => field.handleChange(v ?? 0)}
-                    />
-                  </Field.Root>
-                )}
-              </form.Subscribe>
+              <Field.Root name={field.name}>
+                <Field.Label>금액</Field.Label>
+                <NumberInput
+                  value={field.state.value}
+                  onValueChange={(v) => field.handleChange(v ?? 0)}
+                />
+              </Field.Root>
             )}
           </form.Field>
 
@@ -85,7 +79,7 @@ function EditSalaryForm({ settings, onBack }: EditSalaryFormProps) {
 
               return (
                 <Field.Root name={field.name}>
-                  <Field.Label>급여일</Field.Label>
+                  <Field.Label>월급일</Field.Label>
                   <NumberInput
                     value={field.state.value}
                     onValueChange={(v) => handlePayDayChange(v ?? 0)}

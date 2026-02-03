@@ -34,7 +34,7 @@ function EditScheduleForm({ settings, onBack }: EditScheduleFormProps) {
 
   return (
     <main className="flex flex-1 flex-col">
-      <AppBar type="detail" title="근무 정보 수정" onBack={onBack} />
+      <AppBar type="detail" title="근무 정보" onBack={onBack} />
 
       <div className="scrollbar-overlay flex flex-1 flex-col p-5">
         <div className="flex flex-col gap-8">
