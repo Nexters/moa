@@ -20,7 +20,7 @@ export function TraySync() {
   useTrayIconSync(isWorking);
 
   useTrayTitleSync(
-    salaryInfo?.accumulatedEarnings ?? null,
+    salaryInfo?.todayEarnings ?? null,
     settings?.showMenubarSalary ?? true,
   );
 
