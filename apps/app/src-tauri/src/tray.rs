@@ -22,7 +22,7 @@ pub fn create(app_handle: &AppHandle) -> tauri::Result<TrayIcon> {
 
     TrayIconBuilder::with_id("tray")
         .icon(icon)
-        .icon_as_template(true)
+        .icon_as_template(false)
         .on_tray_icon_event(|tray, event| {
             // Let positioner handle tray events for positioning
             tauri_plugin_positioner::on_tray_event(tray.app_handle(), &event);
