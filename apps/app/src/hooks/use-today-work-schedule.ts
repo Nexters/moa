@@ -25,13 +25,10 @@ export function useTodayWorkSchedule() {
     emergencyDataQueryOptions.file<TodayWorkScheduleData>(SCHEDULE_FILENAME),
   );
 
-  const isToday = rawData?.date === today;
-  const schedule: TodayWorkSchedule | null = isToday
-    ? {
-        workStartTime: rawData.workStartTime,
-        workEndTime: rawData.workEndTime,
-      }
-    : null;
+  const schedule: TodayWorkSchedule | null =
+    rawData && rawData.date === today
+      ? { workStartTime: rawData.workStartTime, workEndTime: rawData.workEndTime }
+      : null;
 
   const saveMutation = useMutation({
     mutationFn: async ({

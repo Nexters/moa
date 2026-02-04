@@ -18,7 +18,7 @@ export function useWorkCompletedAck() {
     emergencyDataQueryOptions.file<AckData>(ACK_FILENAME),
   );
 
-  const isAcknowledged = rawData?.date === today;
+  const isAcknowledged = rawData != null && rawData.date === today;
 
   const acknowledgeMutation = useMutation({
     mutationFn: async () => {

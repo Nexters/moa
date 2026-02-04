@@ -18,7 +18,7 @@ export function useVacation() {
     emergencyDataQueryOptions.file<VacationData>(VACATION_FILENAME),
   );
 
-  const isOnVacation = rawData?.date === today;
+  const isOnVacation = rawData != null && rawData.date === today;
 
   const setVacationMutation = useMutation({
     mutationFn: async () => {
