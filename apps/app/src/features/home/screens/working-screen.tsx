@@ -14,7 +14,7 @@ export function WorkingScreen({
   settings,
   salaryInfo,
   todaySchedule,
-  onCompleteWork,
+  onEarlyLeave,
   onVacation,
 }: Extract<HomeMainScreen, { screen: 'working' }>) {
   const workStart = todaySchedule?.workStartTime ?? settings.workStartTime;
@@ -53,7 +53,7 @@ export function WorkingScreen({
             rounded="full"
             size="lg"
             className="w-[240px]"
-            onClick={onCompleteWork}
+            onClick={onEarlyLeave}
           >
             일찍 퇴근하기
           </Button>

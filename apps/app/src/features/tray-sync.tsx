@@ -1,4 +1,5 @@
 import { useSalaryCalculator } from '~/hooks/use-salary-calculator';
+import { useTodayWorkSchedule } from '~/hooks/use-today-work-schedule';
 import { useTrayIconSync } from '~/hooks/use-tray-icon-sync';
 import { useTrayTitleSync } from '~/hooks/use-tray-title-sync';
 import { useUserSettings } from '~/hooks/use-user-settings';
@@ -12,7 +13,8 @@ import { useUserSettings } from '~/hooks/use-user-settings';
  */
 export function TraySync() {
   const { data: settings } = useUserSettings();
-  const salaryInfo = useSalaryCalculator(settings ?? null);
+  const { schedule: todaySchedule } = useTodayWorkSchedule();
+  const salaryInfo = useSalaryCalculator(settings ?? null, todaySchedule);
 
   const isWorking = salaryInfo ? salaryInfo.workStatus === 'working' : null;
   useTrayIconSync(isWorking);

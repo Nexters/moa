@@ -3,10 +3,11 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import {
   commands,
+  unwrapResult,
   type SalaryType,
   type UserSettings,
 } from '~/lib/tauri-bindings';
-import { userSettingsQuery } from '~/queries';
+import { emergencyDataQuery, userSettingsQuery } from '~/queries';
 
 export const SALARY_TYPE_OPTIONS = [
   { value: 'monthly', label: '월급' },
@@ -104,6 +105,12 @@ export function useSettingsForm({
 
       await queryClient.invalidateQueries({
         queryKey: userSettingsQuery.all(),
+      });
+      unwrapResult(
+        await commands.saveEmergencyData('today-work-schedule', null),
+      );
+      void queryClient.invalidateQueries({
+        queryKey: emergencyDataQuery.file('today-work-schedule'),
       });
       onSuccess?.();
     },
