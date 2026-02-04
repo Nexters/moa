@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 
-import { commands } from '~/lib/tauri-bindings';
+import { commands, unwrapResult } from '~/lib/tauri-bindings';
 
 const SCHEDULE_FILENAME = 'today-work-schedule';
 export const todayWorkScheduleQueryKey = ['todayWorkSchedule'] as const;
@@ -38,11 +38,11 @@ export function useTodayWorkSchedule(): TodayWorkScheduleState {
   const { data: scheduleData = null, isLoading } = useQuery({
     queryKey: todayWorkScheduleQueryKey,
     queryFn: async () => {
-      const result = await commands.loadEmergencyData(SCHEDULE_FILENAME);
-      if (result.status === 'ok') {
-        return (result.data as TodayWorkScheduleData | null) ?? null;
-      }
-      return null;
+      return (
+        (unwrapResult(
+          await commands.loadEmergencyData(SCHEDULE_FILENAME),
+        ) as TodayWorkScheduleData | null) ?? null
+      );
     },
   });
 
@@ -63,14 +63,23 @@ export function useTodayWorkSchedule(): TodayWorkScheduleState {
         workStartTime: startTime,
         workEndTime: endTime,
       };
-      await commands.saveEmergencyData(SCHEDULE_FILENAME, newData);
+      const result = await commands.saveEmergencyData(
+        SCHEDULE_FILENAME,
+        newData,
+      );
+      if (result.status === 'error') {
+        throw result.error;
+      }
       queryClient.setQueryData(todayWorkScheduleQueryKey, newData);
     },
     [today, queryClient],
   );
 
   const clearSchedule = useCallback(async () => {
-    await commands.saveEmergencyData(SCHEDULE_FILENAME, null);
+    const result = await commands.saveEmergencyData(SCHEDULE_FILENAME, null);
+    if (result.status === 'error') {
+      throw result.error;
+    }
     queryClient.setQueryData(todayWorkScheduleQueryKey, null);
   }, [queryClient]);
 
