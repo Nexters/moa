@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { commands } from '~/lib/tauri-bindings';
+import { commands, unwrapResult } from '~/lib/tauri-bindings';
 import { getTodayString } from '~/lib/time';
 import { emergencyDataQuery, emergencyDataQueryOptions } from '~/queries';
 
@@ -22,7 +22,10 @@ export function useWorkCompletedAck() {
 
   const acknowledgeMutation = useMutation({
     mutationFn: async () => {
-      await commands.saveEmergencyData(ACK_FILENAME, { date: today });
+      const today = getTodayString();
+      unwrapResult(
+        await commands.saveEmergencyData(ACK_FILENAME, { date: today }),
+      );
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({

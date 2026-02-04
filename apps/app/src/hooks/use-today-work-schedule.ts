@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { commands } from '~/lib/tauri-bindings';
+import { commands, unwrapResult } from '~/lib/tauri-bindings';
 import { getTodayString } from '~/lib/time';
 import { emergencyDataQuery, emergencyDataQueryOptions } from '~/queries';
 
@@ -27,7 +27,10 @@ export function useTodayWorkSchedule() {
 
   const schedule: TodayWorkSchedule | null =
     rawData && rawData.date === today
-      ? { workStartTime: rawData.workStartTime, workEndTime: rawData.workEndTime }
+      ? {
+          workStartTime: rawData.workStartTime,
+          workEndTime: rawData.workEndTime,
+        }
       : null;
 
   const saveMutation = useMutation({
@@ -38,11 +41,14 @@ export function useTodayWorkSchedule() {
       startTime: string;
       endTime: string;
     }) => {
-      await commands.saveEmergencyData(SCHEDULE_FILENAME, {
-        date: today,
-        workStartTime: startTime,
-        workEndTime: endTime,
-      });
+      const today = getTodayString();
+      unwrapResult(
+        await commands.saveEmergencyData(SCHEDULE_FILENAME, {
+          date: today,
+          workStartTime: startTime,
+          workEndTime: endTime,
+        }),
+      );
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({
@@ -53,7 +59,7 @@ export function useTodayWorkSchedule() {
 
   const clearMutation = useMutation({
     mutationFn: async () => {
-      await commands.saveEmergencyData(SCHEDULE_FILENAME, null);
+      unwrapResult(await commands.saveEmergencyData(SCHEDULE_FILENAME, null));
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({
