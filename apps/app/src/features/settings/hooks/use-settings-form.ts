@@ -1,6 +1,7 @@
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { todayWorkScheduleQueryKey } from '~/hooks/use-today-work-schedule';
 import {
   commands,
   type SalaryType,
@@ -102,6 +103,14 @@ export function useSettingsForm({
       }
 
       await queryClient.invalidateQueries({ queryKey: ['userSettings'] });
+      const scheduleResult = await commands.saveEmergencyData(
+        'today-work-schedule',
+        null,
+      );
+      if (scheduleResult.status === 'error') {
+        throw scheduleResult.error;
+      }
+      queryClient.setQueryData(todayWorkScheduleQueryKey, null);
       onSuccess?.();
     },
   });

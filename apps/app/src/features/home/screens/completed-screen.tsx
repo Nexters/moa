@@ -14,12 +14,13 @@ import type { HomeMainScreen } from '../hooks/use-home-screen';
 export function CompletedScreen({
   settings,
   salaryInfo,
-  onCompleteWork,
+  todaySchedule,
+  onAcknowledge,
 }: Extract<HomeMainScreen, { screen: 'completed' }>) {
   useConfetti();
 
-  const workStart = settings.workStartTime;
-  const workEnd = settings.workEndTime;
+  const workStart = todaySchedule?.workStartTime ?? settings.workStartTime;
+  const workEnd = todaySchedule?.workEndTime ?? settings.workEndTime;
 
   return (
     <div className="flex flex-1 flex-col gap-7">
@@ -45,7 +46,7 @@ export function CompletedScreen({
           rounded="full"
           size="lg"
           className="w-[240px]"
-          onClick={onCompleteWork}
+          onClick={onAcknowledge}
         >
           완료
         </Button>
