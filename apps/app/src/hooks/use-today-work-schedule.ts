@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback } from 'react';
 
 import { commands } from '~/lib/tauri-bindings';
 
 const SCHEDULE_FILENAME = 'today-work-schedule';
+export const todayWorkScheduleQueryKey = ['todayWorkSchedule'] as const;
 
 interface TodayWorkScheduleData {
   date: string;
@@ -31,21 +33,18 @@ function getTodayString(): string {
 }
 
 export function useTodayWorkSchedule(): TodayWorkScheduleState {
-  const [scheduleData, setScheduleData] =
-    useState<TodayWorkScheduleData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const loadSchedule = async () => {
+  const { data: scheduleData = null, isLoading } = useQuery({
+    queryKey: todayWorkScheduleQueryKey,
+    queryFn: async () => {
       const result = await commands.loadEmergencyData(SCHEDULE_FILENAME);
       if (result.status === 'ok') {
-        const data = result.data as TodayWorkScheduleData | null;
-        setScheduleData(data);
+        return (result.data as TodayWorkScheduleData | null) ?? null;
       }
-      setIsLoading(false);
-    };
-    void loadSchedule();
-  }, []);
+      return null;
+    },
+  });
 
   const today = getTodayString();
   const isToday = scheduleData?.date === today;
@@ -59,24 +58,21 @@ export function useTodayWorkSchedule(): TodayWorkScheduleState {
 
   const saveSchedule = useCallback(
     async (startTime: string, endTime: string) => {
-      await commands.saveEmergencyData(SCHEDULE_FILENAME, {
+      const newData = {
         date: today,
         workStartTime: startTime,
         workEndTime: endTime,
-      });
-      setScheduleData({
-        date: today,
-        workStartTime: startTime,
-        workEndTime: endTime,
-      });
+      };
+      await commands.saveEmergencyData(SCHEDULE_FILENAME, newData);
+      queryClient.setQueryData(todayWorkScheduleQueryKey, newData);
     },
-    [today],
+    [today, queryClient],
   );
 
   const clearSchedule = useCallback(async () => {
     await commands.saveEmergencyData(SCHEDULE_FILENAME, null);
-    setScheduleData(null);
-  }, []);
+    queryClient.setQueryData(todayWorkScheduleQueryKey, null);
+  }, [queryClient]);
 
   return {
     schedule,

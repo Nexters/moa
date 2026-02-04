@@ -102,6 +102,8 @@ export function useSettingsForm({
       }
 
       await queryClient.invalidateQueries({ queryKey: ['userSettings'] });
+      await commands.saveEmergencyData('today-work-schedule', null);
+      queryClient.setQueryData(['todayWorkSchedule'], null);
       onSuccess?.();
     },
   });
