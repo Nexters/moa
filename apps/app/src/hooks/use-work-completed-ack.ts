@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { commands } from '~/lib/tauri-bindings';
+import { getTodayString } from '~/lib/time';
+import { emergencyDataQuery, emergencyDataQueryOptions } from '~/queries';
 
 const ACK_FILENAME = 'work-completed-ack';
 
@@ -8,47 +10,30 @@ interface AckData {
   date: string;
 }
 
-interface WorkCompletedAckState {
-  isAcknowledged: boolean;
-  isLoading: boolean;
-  acknowledge: () => Promise<void>;
-}
-
-function getTodayString(): string {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-export function useWorkCompletedAck(): WorkCompletedAckState {
-  const [ackDate, setAckDate] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const loadAck = async () => {
-      const result = await commands.loadEmergencyData(ACK_FILENAME);
-      if (result.status === 'ok') {
-        const data = result.data as AckData | null;
-        setAckDate(data?.date ?? null);
-      }
-      setIsLoading(false);
-    };
-    void loadAck();
-  }, []);
-
+export function useWorkCompletedAck() {
+  const queryClient = useQueryClient();
   const today = getTodayString();
-  const isAcknowledged = ackDate === today;
 
-  const acknowledge = useCallback(async () => {
-    await commands.saveEmergencyData(ACK_FILENAME, { date: today });
-    setAckDate(today);
-  }, [today]);
+  const { data: rawData, isLoading } = useQuery(
+    emergencyDataQueryOptions.file<AckData>(ACK_FILENAME),
+  );
+
+  const isAcknowledged = rawData?.date === today;
+
+  const acknowledgeMutation = useMutation({
+    mutationFn: async () => {
+      await commands.saveEmergencyData(ACK_FILENAME, { date: today });
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: emergencyDataQuery.file(ACK_FILENAME),
+      });
+    },
+  });
 
   return {
     isAcknowledged,
     isLoading,
-    acknowledge,
+    acknowledge: () => acknowledgeMutation.mutateAsync(),
   };
 }

@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { commands } from '~/lib/tauri-bindings';
+import { getTodayString } from '~/lib/time';
+import { emergencyDataQuery, emergencyDataQueryOptions } from '~/queries';
 
 const SCHEDULE_FILENAME = 'today-work-schedule';
 
@@ -15,73 +17,59 @@ export interface TodayWorkSchedule {
   workEndTime: string;
 }
 
-interface TodayWorkScheduleState {
-  schedule: TodayWorkSchedule | null;
-  isLoading: boolean;
-  saveSchedule: (startTime: string, endTime: string) => Promise<void>;
-  clearSchedule: () => Promise<void>;
-}
-
-function getTodayString(): string {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
-export function useTodayWorkSchedule(): TodayWorkScheduleState {
-  const [scheduleData, setScheduleData] =
-    useState<TodayWorkScheduleData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const loadSchedule = async () => {
-      const result = await commands.loadEmergencyData(SCHEDULE_FILENAME);
-      if (result.status === 'ok') {
-        const data = result.data as TodayWorkScheduleData | null;
-        setScheduleData(data);
-      }
-      setIsLoading(false);
-    };
-    void loadSchedule();
-  }, []);
-
+export function useTodayWorkSchedule() {
+  const queryClient = useQueryClient();
   const today = getTodayString();
-  const isToday = scheduleData?.date === today;
 
+  const { data: rawData, isLoading } = useQuery(
+    emergencyDataQueryOptions.file<TodayWorkScheduleData>(SCHEDULE_FILENAME),
+  );
+
+  const isToday = rawData?.date === today;
   const schedule: TodayWorkSchedule | null = isToday
     ? {
-        workStartTime: scheduleData.workStartTime,
-        workEndTime: scheduleData.workEndTime,
+        workStartTime: rawData.workStartTime,
+        workEndTime: rawData.workEndTime,
       }
     : null;
 
-  const saveSchedule = useCallback(
-    async (startTime: string, endTime: string) => {
+  const saveMutation = useMutation({
+    mutationFn: async ({
+      startTime,
+      endTime,
+    }: {
+      startTime: string;
+      endTime: string;
+    }) => {
       await commands.saveEmergencyData(SCHEDULE_FILENAME, {
         date: today,
         workStartTime: startTime,
         workEndTime: endTime,
       });
-      setScheduleData({
-        date: today,
-        workStartTime: startTime,
-        workEndTime: endTime,
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: emergencyDataQuery.file(SCHEDULE_FILENAME),
       });
     },
-    [today],
-  );
+  });
 
-  const clearSchedule = useCallback(async () => {
-    await commands.saveEmergencyData(SCHEDULE_FILENAME, null);
-    setScheduleData(null);
-  }, []);
+  const clearMutation = useMutation({
+    mutationFn: async () => {
+      await commands.saveEmergencyData(SCHEDULE_FILENAME, null);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: emergencyDataQuery.file(SCHEDULE_FILENAME),
+      });
+    },
+  });
 
   return {
     schedule,
     isLoading,
-    saveSchedule,
-    clearSchedule,
+    saveSchedule: (startTime: string, endTime: string) =>
+      saveMutation.mutateAsync({ startTime, endTime }),
+    clearSchedule: () => clearMutation.mutateAsync(),
   };
 }

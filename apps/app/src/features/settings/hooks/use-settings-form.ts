@@ -6,6 +6,7 @@ import {
   type SalaryType,
   type UserSettings,
 } from '~/lib/tauri-bindings';
+import { userSettingsQuery } from '~/queries';
 
 export const SALARY_TYPE_OPTIONS = [
   { value: 'monthly', label: '월급' },
@@ -101,7 +102,9 @@ export function useSettingsForm({
         throw new Error(result.error);
       }
 
-      await queryClient.invalidateQueries({ queryKey: ['userSettings'] });
+      await queryClient.invalidateQueries({
+        queryKey: userSettingsQuery.all(),
+      });
       onSuccess?.();
     },
   });

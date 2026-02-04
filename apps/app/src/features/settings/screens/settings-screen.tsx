@@ -1,9 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getVersion } from '@tauri-apps/api/app';
-import { enable, disable, isEnabled } from '@tauri-apps/plugin-autostart';
+import { enable, disable } from '@tauri-apps/plugin-autostart';
 
 import { useUserSettings } from '~/hooks/use-user-settings';
 import { commands } from '~/lib/tauri-bindings';
+import { appQuery, appQueryOptions, userSettingsQuery } from '~/queries';
 import { useUIStore } from '~/stores/ui-store';
 import { AppBar, InfoRow, SwitchInput } from '~/ui';
 
@@ -18,18 +18,10 @@ export function SettingsScreen({ onNavigate }: Props) {
   const queryClient = useQueryClient();
   const { data: settings } = useUserSettings();
 
-  const { data: version } = useQuery({
-    queryKey: ['appVersion'],
-    queryFn: getVersion,
-    staleTime: Infinity,
-  });
+  const { data: version } = useQuery(appQueryOptions.version());
 
   const { data: autoStartEnabled = false, isLoading: isAutoStartLoading } =
-    useQuery({
-      queryKey: ['autostart'],
-      queryFn: isEnabled,
-      staleTime: Infinity,
-    });
+    useQuery(appQueryOptions.autostart());
 
   const autoStartMutation = useMutation({
     mutationFn: async (enabled: boolean) => {
@@ -40,7 +32,7 @@ export function SettingsScreen({ onNavigate }: Props) {
       }
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['autostart'] });
+      void queryClient.invalidateQueries({ queryKey: appQuery.autostart() });
     },
   });
 
@@ -54,7 +46,9 @@ export function SettingsScreen({ onNavigate }: Props) {
       if (result.status === 'error') throw new Error(result.error);
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['userSettings'] });
+      void queryClient.invalidateQueries({
+        queryKey: userSettingsQuery.all(),
+      });
     },
   });
 
