@@ -1,12 +1,13 @@
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { todayWorkScheduleQueryKey } from '~/hooks/use-today-work-schedule';
 import {
   commands,
+  unwrapResult,
   type SalaryType,
   type UserSettings,
 } from '~/lib/tauri-bindings';
+import { emergencyDataQuery, userSettingsQuery } from '~/queries';
 
 export const SALARY_TYPE_OPTIONS = [
   { value: 'monthly', label: '월급' },
@@ -102,15 +103,15 @@ export function useSettingsForm({
         throw new Error(result.error);
       }
 
-      await queryClient.invalidateQueries({ queryKey: ['userSettings'] });
-      const scheduleResult = await commands.saveEmergencyData(
-        'today-work-schedule',
-        null,
+      await queryClient.invalidateQueries({
+        queryKey: userSettingsQuery.all(),
+      });
+      unwrapResult(
+        await commands.saveEmergencyData('today-work-schedule', null),
       );
-      if (scheduleResult.status === 'error') {
-        throw scheduleResult.error;
-      }
-      queryClient.setQueryData(todayWorkScheduleQueryKey, null);
+      void queryClient.invalidateQueries({
+        queryKey: emergencyDataQuery.file('today-work-schedule'),
+      });
       onSuccess?.();
     },
   });

@@ -2,6 +2,7 @@ import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 
 import { commands, type SalaryType } from '~/lib/tauri-bindings';
+import { userSettingsQuery } from '~/queries';
 
 export const SALARY_TYPE_OPTIONS = [
   { value: 'monthly', label: '월급' },
@@ -50,7 +51,9 @@ export function useOnboardingForm({ onSuccess }: UseOnboardingFormOptions) {
         throw new Error(result.error);
       }
 
-      await queryClient.invalidateQueries({ queryKey: ['userSettings'] });
+      await queryClient.invalidateQueries({
+        queryKey: userSettingsQuery.all(),
+      });
       onSuccess();
     },
   });
