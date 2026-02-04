@@ -1,5 +1,3 @@
-import { useState } from 'react';
-
 import type { SalaryInfo } from '~/hooks/use-salary-calculator';
 import { useSalaryCalculator } from '~/hooks/use-salary-calculator';
 import type { TodayWorkSchedule } from '~/hooks/use-today-work-schedule';
@@ -11,6 +9,7 @@ import {
   assertOnboarded,
   type OnboardedUserSettings,
 } from '~/lib/tauri-bindings';
+import { getCurrentTimeString, minutesToTime, timeToMinutes } from '~/lib/time';
 
 // ============================================================================
 // Types
@@ -31,14 +30,15 @@ export type HomeMainScreen =
       settings: OnboardedUserSettings;
       salaryInfo: SalaryInfo;
       todaySchedule: TodayWorkSchedule | null;
-      onCompleteWork: () => void;
+      onEarlyLeave: () => void;
       onVacation: () => void;
     }
   | {
       screen: 'completed';
       settings: OnboardedUserSettings;
       salaryInfo: SalaryInfo;
-      onCompleteWork: () => void;
+      todaySchedule: TodayWorkSchedule | null;
+      onAcknowledge: () => void;
     }
   | {
       screen: 'post-completed';
@@ -47,18 +47,9 @@ export type HomeMainScreen =
       todaySchedule: TodayWorkSchedule | null;
     };
 
-export interface AdjustWorkTimeState {
-  isOpen: boolean;
-  defaultStartTime: string;
-  defaultEndTime: string;
-  onConfirm: (startTime: string, endTime: string) => Promise<void>;
-  onBack: () => void;
-}
-
 export interface HomeScreenState {
   isLoading: boolean;
   mainScreen: HomeMainScreen | null;
-  adjustWorkTime: AdjustWorkTimeState;
 }
 
 // ============================================================================
@@ -66,8 +57,6 @@ export interface HomeScreenState {
 // ============================================================================
 
 export function useHomeScreen(): HomeScreenState {
-  const [isAdjustOpen, setIsAdjustOpen] = useState(false);
-
   const { data: settings, isLoading } = useUserSettings();
   const {
     schedule: todaySchedule,
@@ -78,41 +67,14 @@ export function useHomeScreen(): HomeScreenState {
   const {
     isOnVacation,
     isLoading: vacationLoading,
-    setVacation,
     clearVacation,
+    setVacation,
   } = useVacation();
   const {
     isAcknowledged,
     isLoading: ackLoading,
     acknowledge,
   } = useWorkCompletedAck();
-
-  // 핸들러
-  const handleTodayWork = () => {
-    void clearVacation();
-    setIsAdjustOpen(true);
-  };
-
-  const handleVacation = () => {
-    void setVacation();
-  };
-
-  const handleStartWork = () => {
-    setIsAdjustOpen(true);
-  };
-
-  const handleCompleteWork = () => {
-    void acknowledge();
-  };
-
-  const handleConfirmWorkTime = async (startTime: string, endTime: string) => {
-    await saveSchedule(startTime, endTime);
-    setIsAdjustOpen(false);
-  };
-
-  const handleBackFromAdjust = () => {
-    setIsAdjustOpen(false);
-  };
 
   // 로딩 체크
   const allLoading =
@@ -122,22 +84,56 @@ export function useHomeScreen(): HomeScreenState {
     return {
       isLoading: true,
       mainScreen: null,
-      adjustWorkTime: {
-        isOpen: false,
-        defaultStartTime: '09:00',
-        defaultEndTime: '18:00',
-        onConfirm: handleConfirmWorkTime,
-        onBack: handleBackFromAdjust,
-      },
     };
   }
 
   assertOnboarded(settings);
 
-  // adjustWorkTime 기본 시간값
-  const defaultStartTime =
+  const getEffectiveStartTime = () =>
     todaySchedule?.workStartTime ?? settings.workStartTime;
-  const defaultEndTime = todaySchedule?.workEndTime ?? settings.workEndTime;
+
+  const getEffectiveEndTime = () =>
+    todaySchedule?.workEndTime ?? settings.workEndTime;
+
+  // 핸들러
+  const handleTodayWork = () => {
+    void clearVacation();
+  };
+
+  const handleVacation = () => {
+    void setVacation();
+  };
+
+  const handleStartWork = () => {
+    const now = getCurrentTimeString();
+    const originalStart = getEffectiveStartTime();
+    const originalEnd = getEffectiveEndTime();
+    const diffMinutes = timeToMinutes(originalStart) - timeToMinutes(now);
+
+    if (diffMinutes <= 0) {
+      void saveSchedule(originalStart, originalEnd);
+      return;
+    }
+
+    const newEnd = minutesToTime(timeToMinutes(originalEnd) - diffMinutes);
+    void saveSchedule(now, newEnd);
+  };
+
+  const handleEarlyLeave = () => {
+    const now = getCurrentTimeString();
+    const currentStart = getEffectiveStartTime();
+    const currentEnd = getEffectiveEndTime();
+
+    if (timeToMinutes(now) >= timeToMinutes(currentEnd)) {
+      return;
+    }
+
+    void saveSchedule(currentStart, now);
+  };
+
+  const handleAcknowledge = () => {
+    void acknowledge();
+  };
 
   // 메인 스크린 결정
   const mainScreen = resolveMainScreen({
@@ -149,19 +145,13 @@ export function useHomeScreen(): HomeScreenState {
     onTodayWork: handleTodayWork,
     onVacation: handleVacation,
     onStartWork: handleStartWork,
-    onCompleteWork: handleCompleteWork,
+    onEarlyLeave: handleEarlyLeave,
+    onAcknowledge: handleAcknowledge,
   });
 
   return {
     isLoading: false,
     mainScreen,
-    adjustWorkTime: {
-      isOpen: isAdjustOpen,
-      defaultStartTime,
-      defaultEndTime,
-      onConfirm: handleConfirmWorkTime,
-      onBack: handleBackFromAdjust,
-    },
   };
 }
 
@@ -174,7 +164,8 @@ interface ResolveParams {
   onTodayWork: () => void;
   onVacation: () => void;
   onStartWork: () => void;
-  onCompleteWork: () => void;
+  onEarlyLeave: () => void;
+  onAcknowledge: () => void;
 }
 
 function resolveMainScreen(params: ResolveParams): HomeMainScreen {
@@ -187,7 +178,8 @@ function resolveMainScreen(params: ResolveParams): HomeMainScreen {
     onTodayWork,
     onVacation,
     onStartWork,
-    onCompleteWork,
+    onEarlyLeave,
+    onAcknowledge,
   } = params;
 
   // 휴가 우선 체크
@@ -211,7 +203,7 @@ function resolveMainScreen(params: ResolveParams): HomeMainScreen {
         settings,
         salaryInfo,
         todaySchedule,
-        onCompleteWork,
+        onEarlyLeave,
         onVacation,
       };
     case 'completed':
@@ -227,7 +219,8 @@ function resolveMainScreen(params: ResolveParams): HomeMainScreen {
         screen: 'completed',
         settings,
         salaryInfo,
-        onCompleteWork,
+        todaySchedule,
+        onAcknowledge,
       };
   }
 }

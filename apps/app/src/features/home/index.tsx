@@ -2,7 +2,6 @@ import { useUIStore } from '~/stores/ui-store';
 import { AppBar } from '~/ui/app-bar';
 
 import { useHomeScreen } from './hooks/use-home-screen';
-import { AdjustWorkTimeScreen } from './screens/adjust-work-time-screen';
 import { BeforeWorkScreen } from './screens/before-work-screen';
 import { CompletedScreen } from './screens/completed-screen';
 import { HolidayScreen } from './screens/holiday-screen';
@@ -11,20 +10,9 @@ import { WorkingScreen } from './screens/working-screen';
 
 export function Home() {
   const navigate = useUIStore((s) => s.navigate);
-  const { isLoading, mainScreen, adjustWorkTime } = useHomeScreen();
+  const { isLoading, mainScreen } = useHomeScreen();
 
   if (isLoading || !mainScreen) return null;
-
-  if (adjustWorkTime.isOpen) {
-    return (
-      <AdjustWorkTimeScreen
-        defaultStartTime={adjustWorkTime.defaultStartTime}
-        defaultEndTime={adjustWorkTime.defaultEndTime}
-        onConfirm={adjustWorkTime.onConfirm}
-        onBack={adjustWorkTime.onBack}
-      />
-    );
-  }
 
   return (
     <main className="flex flex-1 flex-col">
