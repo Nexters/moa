@@ -42,7 +42,7 @@ export function useTrayTitleSync(amount: number | null, enabled: boolean) {
     prevAmount.current = rounded;
 
     // 표시 형식: "1,234,567원"
-    const title = `${rounded.toLocaleString()}원`;
+    const title = ` ${rounded.toLocaleString()}원`;
 
     commands
       .setTrayTitle(title)
