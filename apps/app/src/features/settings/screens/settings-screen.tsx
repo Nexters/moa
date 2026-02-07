@@ -13,7 +13,7 @@ import { SettingsSection } from '../components/settings-section';
 
 const MENUBAR_DISPLAY_OPTIONS = [
   { value: 'none', label: '표기 안함' },
-  { value: 'daily', label: '일급' },
+  { value: 'daily', label: '누적 일급' },
   { value: 'accumulated', label: '누적 월급' },
 ] as const;
 
