@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { enable, disable } from '@tauri-apps/plugin-autostart';
+import { exit } from '@tauri-apps/plugin-process';
 
 import { useUserSettings } from '~/hooks/use-user-settings';
 import { commands } from '~/lib/tauri-bindings';
@@ -76,15 +77,6 @@ export function SettingsScreen({ onNavigate }: Props) {
           />
         </SettingsSection>
 
-        <SettingsSection title="앱 정보 및 도움말">
-          <InfoRow label="버전 정보">
-            <span className="text-text-medium">
-              {version ? `v${version}` : '-'}
-            </span>
-          </InfoRow>
-          <InfoRow as="button" label="문의하기" disabled />
-        </SettingsSection>
-
         <SettingsSection title="메뉴바 설정">
           <InfoRow label="실시간 금액 표시">
             <SwitchInput
@@ -102,16 +94,21 @@ export function SettingsScreen({ onNavigate }: Props) {
           </InfoRow>
         </SettingsSection>
 
-        {process.env.NODE_ENV === 'development' && (
-          <SettingsSection title="개발자 메뉴" className="opacity-70">
-            <InfoRow
-              as="button"
-              label="데이터 초기화"
-              disabled={resetDataMutation.isPending}
-              onClick={() => resetDataMutation.mutate()}
-            />
-          </SettingsSection>
-        )}
+        <SettingsSection title="앱 정보">
+          <InfoRow label="버전 정보">
+            <span className="text-text-medium">
+              {version ? `v${version}` : '-'}
+            </span>
+          </InfoRow>
+          <InfoRow as="button" label="문의하기" disabled />
+          <InfoRow
+            as="button"
+            label="데이터 초기화"
+            disabled={resetDataMutation.isPending}
+            onClick={() => resetDataMutation.mutate()}
+          />
+          <InfoRow as="button" label="앱 종료하기" onClick={() => exit(0)} />
+        </SettingsSection>
       </div>
     </div>
   );
