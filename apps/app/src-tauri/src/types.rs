@@ -160,12 +160,6 @@ pub struct UserSettings {
     /// Work end time (HH:MM format, default: "18:00")
     #[serde(default = "default_work_end_time")]
     pub work_end_time: String,
-    /// Lunch start time (HH:MM format, default: "12:00")
-    #[serde(default = "default_lunch_start_time")]
-    pub lunch_start_time: String,
-    /// Lunch end time (HH:MM format, default: "13:00")
-    #[serde(default = "default_lunch_end_time")]
-    pub lunch_end_time: String,
     /// Whether onboarding is completed
     pub onboarding_completed: bool,
     /// Menubar display mode (macOS only): none, daily, accumulated
@@ -185,14 +179,6 @@ fn default_work_end_time() -> String {
     "18:00".to_string()
 }
 
-fn default_lunch_start_time() -> String {
-    "12:00".to_string()
-}
-
-fn default_lunch_end_time() -> String {
-    "13:00".to_string()
-}
-
 impl Default for UserSettings {
     fn default() -> Self {
         Self {
@@ -202,8 +188,6 @@ impl Default for UserSettings {
             work_days: default_work_days(),
             work_start_time: default_work_start_time(),
             work_end_time: default_work_end_time(),
-            lunch_start_time: default_lunch_start_time(),
-            lunch_end_time: default_lunch_end_time(),
             onboarding_completed: false,
             menubar_display_mode: MenubarDisplayMode::default(),
         }

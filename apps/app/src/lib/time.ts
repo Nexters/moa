@@ -28,16 +28,3 @@ export function getCurrentTimeString(): string {
   const minutes = String(now.getMinutes()).padStart(2, '0');
   return `${hours}:${minutes}`;
 }
-
-/** 현재 시각이 주어진 시간 범위(HH:MM) 안에 있는지 판별 */
-export function isWithinTimeRange(
-  now: Date,
-  startTime: string,
-  endTime: string,
-): boolean {
-  const nowMinutes = now.getHours() * 60 + now.getMinutes();
-  return (
-    nowMinutes >= timeToMinutes(startTime) &&
-    nowMinutes <= timeToMinutes(endTime)
-  );
-}

@@ -100,20 +100,6 @@ export function SalaryInfoScreen({ onBack, onNavigate }: Props) {
                 : '-'}
             </span>
           </InfoRow>
-          <InfoRow
-            as="button"
-            label="점심 시간"
-            onClick={() => onNavigate('edit-schedule')}
-          >
-            <span className="text-green-40">
-              {settings
-                ? formatTimeRange(
-                    settings.lunchStartTime,
-                    settings.lunchEndTime,
-                  )
-                : '-'}
-            </span>
-          </InfoRow>
         </SettingsSection>
       </div>
     </main>

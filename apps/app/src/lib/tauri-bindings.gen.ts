@@ -264,15 +264,7 @@ workStartTime?: string;
 /**
  * Work end time (HH:MM format, default: "18:00")
  */
-workEndTime?: string; 
-/**
- * Lunch start time (HH:MM format, default: "12:00")
- */
-lunchStartTime?: string; 
-/**
- * Lunch end time (HH:MM format, default: "13:00")
- */
-lunchEndTime?: string; 
+workEndTime?: string;
 /**
  * Whether onboarding is completed
  */

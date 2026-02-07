@@ -61,8 +61,6 @@ export function assertOnboarded(
     'workDays',
     'workStartTime',
     'workEndTime',
-    'lunchStartTime',
-    'lunchEndTime',
   ];
 
   for (const key of required) {

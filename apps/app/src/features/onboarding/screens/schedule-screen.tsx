@@ -58,27 +58,6 @@ export function ScheduleScreen({ form, onBack }: OnboardingScreenProps) {
               )}
             </form.Subscribe>
           </Field.Root>
-
-          {/* 점심 시간 */}
-          <Field.Root className="gap-3">
-            <Field.Label>점심 시간</Field.Label>
-            <form.Subscribe
-              selector={(s) => ({
-                startTime: s.values.lunchStartTime,
-                endTime: s.values.lunchEndTime,
-              })}
-            >
-              {(value) => (
-                <TimePeriodInput
-                  value={value}
-                  onChange={(v) => {
-                    form.setFieldValue('lunchStartTime', v.startTime);
-                    form.setFieldValue('lunchEndTime', v.endTime);
-                  }}
-                />
-              )}
-            </form.Subscribe>
-          </Field.Root>
         </div>
 
         <form.Subscribe
