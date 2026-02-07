@@ -5,7 +5,7 @@ import type { OnboardingScreenProps } from '../hooks/use-onboarding-screen';
 export function WelcomeScreen({ onNext }: OnboardingScreenProps) {
   return (
     <main className="flex flex-1 flex-col">
-      <AppBar type="main" onSettings={() => {}} />
+      <AppBar type="main" />
 
       <div className="flex flex-col items-center gap-5 px-5 pt-9">
         <TooltipBubble>

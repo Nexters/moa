@@ -44,9 +44,11 @@ function MainAppBar({ onSettings }: MainAppBarProps) {
         <MoaLogoIcon aria-hidden="true" />
       </h1>
       <div className="flex-1" />
-      <IconButton onClick={onSettings} aria-label="설정">
-        <SettingsIcon />
-      </IconButton>
+      {onSettings && (
+        <IconButton onClick={onSettings} aria-label="설정">
+          <SettingsIcon />
+        </IconButton>
+      )}
     </>
   );
 }
