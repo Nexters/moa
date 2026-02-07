@@ -9,12 +9,16 @@ const infoRowVariants = tv({
     interactive: {
       true: 'hover:bg-interactive-hover cursor-pointer transition-colors disabled:cursor-not-allowed disabled:opacity-50',
     },
+    danger: {
+      true: '',
+    },
   },
 });
 
 interface Props {
   as?: 'div' | 'button';
   label: string;
+  danger?: boolean;
   children?: ReactNode;
   onClick?: () => void;
   disabled?: boolean;
@@ -23,6 +27,7 @@ interface Props {
 export function InfoRow({
   as = 'div',
   label,
+  danger,
   children,
   onClick,
   disabled,
@@ -35,13 +40,17 @@ export function InfoRow({
       type={isButton ? 'button' : undefined}
       onClick={onClick}
       disabled={disabled}
-      className={infoRowVariants({ interactive: isButton })}
+      className={infoRowVariants({ interactive: isButton, danger })}
     >
-      <span className="text-text-high">{label}</span>
+      <span className={danger ? 'text-error' : 'text-text-high'}>{label}</span>
       {(children || isButton) && (
         <span className="flex items-center gap-1">
           {children}
-          {isButton && <ChevronRightIcon className="text-text-low size-6" />}
+          {isButton && (
+            <ChevronRightIcon
+              className={danger ? 'text-error size-6' : 'text-text-low size-6'}
+            />
+          )}
         </span>
       )}
     </Component>

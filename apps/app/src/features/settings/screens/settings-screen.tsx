@@ -104,10 +104,16 @@ export function SettingsScreen({ onNavigate }: Props) {
           <InfoRow
             as="button"
             label="데이터 초기화"
+            danger
             disabled={resetDataMutation.isPending}
             onClick={() => resetDataMutation.mutate()}
           />
-          <InfoRow as="button" label="앱 종료하기" onClick={() => exit(0)} />
+          <InfoRow
+            as="button"
+            label="앱 종료하기"
+            danger
+            onClick={() => exit(0)}
+          />
         </SettingsSection>
       </div>
     </div>
