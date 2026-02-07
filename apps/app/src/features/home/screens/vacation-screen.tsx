@@ -4,10 +4,10 @@ import { InfoCard, InfoCardRow, InfoCardDivider, Button } from '~/ui';
 import { HeroSection } from '../components/hero-section';
 import { HomeMainScreen } from '../hooks/use-home-screen';
 
-export function HolidayScreen({
+export function VacationScreen({
   salaryInfo,
   onTodayWork,
-}: Extract<HomeMainScreen, { screen: 'holiday' }>) {
+}: Extract<HomeMainScreen, { screen: 'vacation' }>) {
   return (
     <div className="flex flex-1 flex-col">
       <HeroSection

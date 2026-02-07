@@ -16,7 +16,8 @@ import { getCurrentTimeString, minutesToTime, timeToMinutes } from '~/lib/time';
 // ============================================================================
 
 export type HomeMainScreen =
-  | { screen: 'holiday'; salaryInfo: SalaryInfo; onTodayWork: () => void }
+  | { screen: 'vacation'; salaryInfo: SalaryInfo; onTodayWork: () => void }
+  | { screen: 'day-off'; salaryInfo: SalaryInfo; onTodayWork: () => void }
   | {
       screen: 'before-work';
       settings: OnboardedUserSettings;
@@ -96,9 +97,18 @@ export function useHomeScreen(): HomeScreenState {
     todaySchedule?.workEndTime ?? settings.workEndTime;
 
   // 핸들러
-  const handleTodayWork = () => {
+  const handleTodayWorkFromVacation = () => {
     void clearVacation();
     void saveSchedule(settings.workStartTime, settings.workEndTime);
+  };
+
+  const handleTodayWorkFromDayOff = () => {
+    const now = getCurrentTimeString();
+    const totalWorkMinutes =
+      timeToMinutes(settings.workEndTime) -
+      timeToMinutes(settings.workStartTime);
+    const endTime = minutesToTime(timeToMinutes(now) + totalWorkMinutes);
+    void saveSchedule(now, endTime);
   };
 
   const handleVacation = () => {
@@ -143,7 +153,8 @@ export function useHomeScreen(): HomeScreenState {
     settings,
     todaySchedule,
     isAcknowledged,
-    onTodayWork: handleTodayWork,
+    onTodayWorkFromVacation: handleTodayWorkFromVacation,
+    onTodayWorkFromDayOff: handleTodayWorkFromDayOff,
     onVacation: handleVacation,
     onStartWork: handleStartWork,
     onEarlyLeave: handleEarlyLeave,
@@ -162,7 +173,8 @@ interface ResolveParams {
   settings: OnboardedUserSettings;
   todaySchedule: TodayWorkSchedule | null;
   isAcknowledged: boolean;
-  onTodayWork: () => void;
+  onTodayWorkFromVacation: () => void;
+  onTodayWorkFromDayOff: () => void;
   onVacation: () => void;
   onStartWork: () => void;
   onEarlyLeave: () => void;
@@ -176,7 +188,8 @@ function resolveMainScreen(params: ResolveParams): HomeMainScreen {
     settings,
     todaySchedule,
     isAcknowledged,
-    onTodayWork,
+    onTodayWorkFromVacation,
+    onTodayWorkFromDayOff,
     onVacation,
     onStartWork,
     onEarlyLeave,
@@ -184,8 +197,21 @@ function resolveMainScreen(params: ResolveParams): HomeMainScreen {
   } = params;
 
   // 휴가 우선 체크
-  if (isOnVacation || salaryInfo.workStatus === 'day-off') {
-    return { screen: 'holiday', salaryInfo, onTodayWork };
+  if (isOnVacation) {
+    return {
+      screen: 'vacation',
+      salaryInfo,
+      onTodayWork: onTodayWorkFromVacation,
+    };
+  }
+
+  // 비근무일 (주말/출근하지 않는 요일)
+  if (salaryInfo.workStatus === 'day-off') {
+    return {
+      screen: 'day-off',
+      salaryInfo,
+      onTodayWork: onTodayWorkFromDayOff,
+    };
   }
 
   switch (salaryInfo.workStatus) {
