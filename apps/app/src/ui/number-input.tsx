@@ -9,7 +9,7 @@ interface NumberInputProps extends ComponentProps<typeof NumberField.Root> {
 
 export function NumberInput({
   className,
-  suffix = '원',
+  suffix = '만원',
   formatThousands = true,
   ...props
 }: NumberInputProps) {
