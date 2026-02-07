@@ -264,7 +264,7 @@ workStartTime?: string;
 /**
  * Work end time (HH:MM format, default: "18:00")
  */
-workEndTime?: string;
+workEndTime?: string; 
 /**
  * Whether onboarding is completed
  */
