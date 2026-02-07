@@ -4,8 +4,9 @@ import { AppBar } from '~/ui/app-bar';
 import { useHomeScreen } from './hooks/use-home-screen';
 import { BeforeWorkScreen } from './screens/before-work-screen';
 import { CompletedScreen } from './screens/completed-screen';
-import { HolidayScreen } from './screens/holiday-screen';
+import { DayOffScreen } from './screens/day-off-screen';
 import { PostCompletedScreen } from './screens/post-completed-screen';
+import { VacationScreen } from './screens/vacation-screen';
 import { WorkingScreen } from './screens/working-screen';
 
 export function Home() {
@@ -18,7 +19,8 @@ export function Home() {
     <main className="flex flex-1 flex-col">
       <AppBar type="main" onSettings={() => navigate('settings')} />
       <div className="flex flex-1 flex-col px-5 pt-3">
-        {mainScreen.screen === 'holiday' && <HolidayScreen {...mainScreen} />}
+        {mainScreen.screen === 'vacation' && <VacationScreen {...mainScreen} />}
+        {mainScreen.screen === 'day-off' && <DayOffScreen {...mainScreen} />}
         {mainScreen.screen === 'before-work' && (
           <BeforeWorkScreen {...mainScreen} />
         )}
