@@ -34,9 +34,21 @@ export function useWorkCompletedAck() {
     },
   });
 
+  const clearMutation = useMutation({
+    mutationFn: async () => {
+      unwrapResult(await commands.saveEmergencyData(ACK_FILENAME, null));
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: emergencyDataQuery.file(ACK_FILENAME),
+      });
+    },
+  });
+
   return {
     isAcknowledged,
     isLoading,
     acknowledge: () => acknowledgeMutation.mutateAsync(),
+    clearAcknowledge: () => clearMutation.mutateAsync(),
   };
 }

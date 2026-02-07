@@ -1,5 +1,5 @@
 import { formatCurrency, formatMonth } from '~/lib/format';
-import { InfoCard, InfoCardDivider, InfoCardRow } from '~/ui';
+import { Button, InfoCard, InfoCardDivider, InfoCardRow } from '~/ui';
 
 import { HeroSection } from '../components/hero-section';
 import type { HomeMainScreen } from '../hooks/use-home-screen';
@@ -8,6 +8,7 @@ export function PostCompletedScreen({
   settings,
   salaryInfo,
   todaySchedule,
+  onStillWorking,
 }: Extract<HomeMainScreen, { screen: 'post-completed' }>) {
   const workStart = todaySchedule?.workStartTime ?? settings.workStartTime;
   const workEnd = todaySchedule?.workEndTime ?? settings.workEndTime;
@@ -27,6 +28,14 @@ export function PostCompletedScreen({
         <InfoCardDivider />
         <InfoCardRow label="근무 시간" value={`${workStart} - ${workEnd}`} />
       </InfoCard>
+      <Button
+        variant="link"
+        size="md"
+        className="mt-5"
+        onClick={onStillWorking}
+      >
+        아직 근무 중이에요
+      </Button>
     </div>
   );
 }
