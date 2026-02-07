@@ -6,7 +6,7 @@ import { useUserSettings } from '~/hooks/use-user-settings';
 import { commands } from '~/lib/tauri-bindings';
 import { appQuery, appQueryOptions, userSettingsQuery } from '~/queries';
 import { useUIStore } from '~/stores/ui-store';
-import { AppBar, InfoRow, SwitchInput } from '~/ui';
+import { AppBar, Button, InfoRow, SwitchInput } from '~/ui';
 
 import { SettingsSection } from '../components/settings-section';
 
@@ -101,20 +101,20 @@ export function SettingsScreen({ onNavigate }: Props) {
             </span>
           </InfoRow>
           <InfoRow as="button" label="문의하기" disabled />
-          <InfoRow
-            as="button"
-            label="데이터 초기화"
-            danger
+        </SettingsSection>
+
+        <div className="flex items-center justify-center gap-3">
+          <Button
+            variant="link"
             disabled={resetDataMutation.isPending}
             onClick={() => resetDataMutation.mutate()}
-          />
-          <InfoRow
-            as="button"
-            label="앱 종료하기"
-            danger
-            onClick={() => exit(0)}
-          />
-        </SettingsSection>
+          >
+            데이터 초기화
+          </Button>
+          <Button variant="link" onClick={() => exit(0)}>
+            앱 종료하기
+          </Button>
+        </div>
       </div>
     </div>
   );
