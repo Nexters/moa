@@ -46,6 +46,7 @@ export type HomeMainScreen =
       settings: OnboardedUserSettings;
       salaryInfo: SalaryInfo;
       todaySchedule: TodayWorkSchedule | null;
+      onStillWorking: () => void;
     };
 
 export interface HomeScreenState {
@@ -63,6 +64,7 @@ export function useHomeScreen(): HomeScreenState {
     schedule: todaySchedule,
     isLoading: scheduleLoading,
     saveSchedule,
+    clearSchedule,
   } = useTodayWorkSchedule();
   const {
     isOnVacation,
@@ -79,6 +81,7 @@ export function useHomeScreen(): HomeScreenState {
     isAcknowledged,
     isLoading: ackLoading,
     acknowledge,
+    clearAcknowledge,
   } = useWorkCompletedAck();
 
   // 로딩 체크
@@ -150,6 +153,11 @@ export function useHomeScreen(): HomeScreenState {
     void acknowledge();
   };
 
+  const handleStillWorking = () => {
+    void clearAcknowledge();
+    void clearSchedule();
+  };
+
   // 메인 스크린 결정
   const mainScreen = resolveMainScreen({
     isOnVacation,
@@ -163,6 +171,7 @@ export function useHomeScreen(): HomeScreenState {
     onStartWork: handleStartWork,
     onEarlyLeave: handleEarlyLeave,
     onAcknowledge: handleAcknowledge,
+    onStillWorking: handleStillWorking,
   });
 
   return {
@@ -183,6 +192,7 @@ interface ResolveParams {
   onStartWork: () => void;
   onEarlyLeave: () => void;
   onAcknowledge: () => void;
+  onStillWorking: () => void;
 }
 
 function resolveMainScreen(params: ResolveParams): HomeMainScreen {
@@ -198,6 +208,7 @@ function resolveMainScreen(params: ResolveParams): HomeMainScreen {
     onStartWork,
     onEarlyLeave,
     onAcknowledge,
+    onStillWorking,
   } = params;
 
   // 휴가 우선 체크
@@ -244,6 +255,7 @@ function resolveMainScreen(params: ResolveParams): HomeMainScreen {
           settings,
           salaryInfo,
           todaySchedule,
+          onStillWorking,
         };
       }
       return {

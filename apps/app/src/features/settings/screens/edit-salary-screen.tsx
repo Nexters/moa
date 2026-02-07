@@ -60,7 +60,7 @@ function EditSalaryForm({ settings, onBack }: EditSalaryFormProps) {
               onChange: ({ value }) => {
                 if (value <= 0) return '급여 금액은 0보다 커야 합니다';
                 if (value > MAX_SALARY_AMOUNT)
-                  return `최대 ${MAX_SALARY_AMOUNT.toLocaleString()}원까지 입력할 수 있습니다`;
+                  return `최대 ${(MAX_SALARY_AMOUNT / 10_000).toLocaleString()}만원까지 입력할 수 있습니다`;
                 return undefined;
               },
             }}
@@ -72,9 +72,9 @@ function EditSalaryForm({ settings, onBack }: EditSalaryFormProps) {
               >
                 <Field.Label>금액</Field.Label>
                 <NumberInput
-                  max={MAX_SALARY_AMOUNT}
-                  value={field.state.value}
-                  onValueChange={(v) => field.handleChange(v ?? 0)}
+                  max={MAX_SALARY_AMOUNT / 10_000}
+                  value={field.state.value / 10_000}
+                  onValueChange={(v) => field.handleChange((v ?? 0) * 10_000)}
                 />
                 {field.state.meta.errors.filter(Boolean).map((error) => (
                   <Field.Error key={error}>{error}</Field.Error>

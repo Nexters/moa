@@ -45,7 +45,7 @@ export function SalaryScreen({ form, onNext, onBack }: OnboardingScreenProps) {
               onChange: ({ value }) => {
                 if (value <= 0) return '급여 금액은 0보다 커야 합니다';
                 if (value > MAX_SALARY_AMOUNT)
-                  return `최대 ${MAX_SALARY_AMOUNT.toLocaleString()}원까지 입력할 수 있습니다`;
+                  return `최대 ${(MAX_SALARY_AMOUNT / 10_000).toLocaleString()}만원까지 입력할 수 있습니다`;
                 return undefined;
               },
             }}
@@ -57,16 +57,14 @@ export function SalaryScreen({ form, onNext, onBack }: OnboardingScreenProps) {
                     name={field.name}
                     invalid={field.state.meta.errors.length > 0}
                   >
-                    <Field.Label>
-                      {salaryType === 'monthly' ? '월 실수령액' : '연봉'}
-                    </Field.Label>
+                    <Field.Label>금액</Field.Label>
                     <NumberInput
-                      max={MAX_SALARY_AMOUNT}
-                      defaultValue={
-                        salaryType === 'monthly' ? 3_000_000 : 36_000_000
+                      max={MAX_SALARY_AMOUNT / 10_000}
+                      defaultValue={salaryType === 'monthly' ? 300 : 3600}
+                      value={field.state.value / 10_000}
+                      onValueChange={(v) =>
+                        field.handleChange((v ?? 0) * 10_000)
                       }
-                      value={field.state.value}
-                      onValueChange={(v) => field.handleChange(v ?? 0)}
                     />
                     {field.state.meta.errors.filter(Boolean).map((error) => (
                       <Field.Error key={error}>{error}</Field.Error>

@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { enable, disable } from '@tauri-apps/plugin-autostart';
+import { exit } from '@tauri-apps/plugin-process';
 
 import { useUserSettings } from '~/hooks/use-user-settings';
 import type { MenubarDisplayMode } from '~/lib/tauri-bindings';
 import { commands } from '~/lib/tauri-bindings';
 import { appQuery, appQueryOptions, userSettingsQuery } from '~/queries';
 import { useUIStore } from '~/stores/ui-store';
-import { AppBar, InfoRow, SelectInput, SwitchInput } from '~/ui';
+import { AppBar, Button, InfoRow, SelectInput, SwitchInput } from '~/ui';
 
 import { SettingsSection } from '../components/settings-section';
 
@@ -83,15 +84,6 @@ export function SettingsScreen({ onNavigate }: Props) {
           />
         </SettingsSection>
 
-        <SettingsSection title="앱 정보 및 도움말">
-          <InfoRow label="버전 정보">
-            <span className="text-text-medium">
-              {version ? `v${version}` : '-'}
-            </span>
-          </InfoRow>
-          <InfoRow as="button" label="문의하기" disabled />
-        </SettingsSection>
-
         <SettingsSection title="메뉴바 설정">
           <SelectInput
             options={MENUBAR_DISPLAY_OPTIONS}
@@ -110,16 +102,27 @@ export function SettingsScreen({ onNavigate }: Props) {
           </InfoRow>
         </SettingsSection>
 
-        {process.env.NODE_ENV === 'development' && (
-          <SettingsSection title="개발자 메뉴" className="opacity-70">
-            <InfoRow
-              as="button"
-              label="데이터 초기화"
-              disabled={resetDataMutation.isPending}
-              onClick={() => resetDataMutation.mutate()}
-            />
-          </SettingsSection>
-        )}
+        <SettingsSection title="앱 정보">
+          <InfoRow label="버전 정보">
+            <span className="text-text-medium">
+              {version ? `v${version}` : '-'}
+            </span>
+          </InfoRow>
+          <InfoRow as="button" label="문의하기" disabled />
+        </SettingsSection>
+
+        <div className="flex items-center justify-center gap-3">
+          <Button
+            variant="link"
+            disabled={resetDataMutation.isPending}
+            onClick={() => resetDataMutation.mutate()}
+          >
+            데이터 초기화
+          </Button>
+          <Button variant="link" onClick={() => exit(0)}>
+            앱 종료하기
+          </Button>
+        </div>
       </div>
     </div>
   );
