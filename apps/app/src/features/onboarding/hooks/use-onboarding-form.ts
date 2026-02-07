@@ -44,7 +44,6 @@ export function useOnboardingForm({ onSuccess }: UseOnboardingFormOptions) {
       const result = await commands.saveUserSettings({
         ...value,
         onboardingCompleted: true,
-        showMenubarSalary: true,
       });
 
       if (result.status === 'error') {
