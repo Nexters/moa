@@ -40,6 +40,7 @@ export interface TodayTimeOverride {
 export function useSalaryCalculator(
   settings: UserSettings | null,
   todayOverride?: TodayTimeOverride | null,
+  isOnVacation?: boolean,
 ): SalaryInfo | null {
   const [, setTick] = useState(0);
 
@@ -48,14 +49,15 @@ export function useSalaryCalculator(
 
     const interval = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(interval);
-  }, [settings, todayOverride]);
+  }, [settings, todayOverride, isOnVacation]);
 
-  return calculateSalaryInfo(settings, todayOverride);
+  return calculateSalaryInfo(settings, todayOverride, isOnVacation);
 }
 
 function calculateSalaryInfo(
   settings: UserSettings | null,
   todayOverride?: TodayTimeOverride | null,
+  isOnVacation?: boolean,
 ): SalaryInfo | null {
   if (!settings || !settings.onboardingCompleted) return null;
 
@@ -70,7 +72,11 @@ function calculateSalaryInfo(
     todayOverride?.workEndTime ?? settings.workEndTime ?? DEFAULT_WORK_END;
   const workStartMinutes = timeToMinutes(workStartTime);
   const workEndMinutes = timeToMinutes(workEndTime);
-  const workHoursPerDay = (workEndMinutes - workStartMinutes) / 60;
+  const lunchStartMinutes = timeToMinutes(settings.lunchStartTime!);
+  const lunchEndMinutes = timeToMinutes(settings.lunchEndTime!);
+  const lunchDurationMinutes = lunchEndMinutes - lunchStartMinutes;
+  const workHoursPerDay =
+    (workEndMinutes - workStartMinutes - lunchDurationMinutes) / 60;
 
   const monthlySalary =
     settings.salaryType === 'yearly'
@@ -95,19 +101,34 @@ function calculateSalaryInfo(
   let todayEarnings = 0;
   let workStatus: WorkStatus = 'day-off';
 
-  if (isWorkDay) {
-    if (currentMinutes < workStartMinutes) {
-      workStatus = 'before-work';
-      todayEarnings = 0;
-    } else if (currentMinutes >= workEndMinutes) {
-      workStatus = 'completed';
-      todayEarnings = dailyRate;
-    } else {
-      workStatus = 'working';
-      const workedMinutes = currentMinutes - workStartMinutes;
-      const workedSeconds = workedMinutes * 60 + now.getSeconds();
-      todayEarnings = perSecond * workedSeconds;
-    }
+  if (!isWorkDay || isOnVacation) {
+    // 주말 또는 휴가
+    workStatus = 'day-off';
+    todayEarnings = 0;
+  } else if (currentMinutes < workStartMinutes) {
+    workStatus = 'before-work';
+    todayEarnings = 0;
+  } else if (currentMinutes >= workEndMinutes) {
+    workStatus = 'completed';
+    todayEarnings = dailyRate;
+  } else if (currentMinutes < lunchStartMinutes) {
+    // 오전 근무 중 (점심 전)
+    workStatus = 'working';
+    const workedMinutes = currentMinutes - workStartMinutes;
+    const workedSeconds = workedMinutes * 60 + now.getSeconds();
+    todayEarnings = perSecond * workedSeconds;
+  } else if (currentMinutes < lunchEndMinutes) {
+    // 점심시간 - 오전 근무분만 계산 (금액 고정)
+    workStatus = 'working';
+    const workedSeconds = (lunchStartMinutes - workStartMinutes) * 60;
+    todayEarnings = perSecond * workedSeconds;
+  } else {
+    // 오후 근무 중 (점심 후)
+    workStatus = 'working';
+    const workedMinutes =
+      currentMinutes - workStartMinutes - lunchDurationMinutes;
+    const workedSeconds = workedMinutes * 60 + now.getSeconds();
+    todayEarnings = perSecond * workedSeconds;
   }
 
   const workedDays = getWorkedDaysSincePayDay(payPeriod.start, now, workDays);

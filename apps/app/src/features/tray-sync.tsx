@@ -3,6 +3,7 @@ import { useTodayWorkSchedule } from '~/hooks/use-today-work-schedule';
 import { useTrayIconSync } from '~/hooks/use-tray-icon-sync';
 import { useTrayTitleSync } from '~/hooks/use-tray-title-sync';
 import { useUserSettings } from '~/hooks/use-user-settings';
+import { useVacation } from '~/hooks/use-vacation';
 
 /**
  * 전역 Tray 동기화 컴포넌트
@@ -14,7 +15,12 @@ import { useUserSettings } from '~/hooks/use-user-settings';
 export function TraySync() {
   const { data: settings } = useUserSettings();
   const { schedule: todaySchedule } = useTodayWorkSchedule();
-  const salaryInfo = useSalaryCalculator(settings ?? null, todaySchedule);
+  const { isOnVacation } = useVacation();
+  const salaryInfo = useSalaryCalculator(
+    settings ?? null,
+    todaySchedule,
+    isOnVacation,
+  );
 
   const isWorking = salaryInfo ? salaryInfo.workStatus === 'working' : null;
   useTrayIconSync(isWorking);
