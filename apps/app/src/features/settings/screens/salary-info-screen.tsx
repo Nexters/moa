@@ -11,7 +11,7 @@ interface Props {
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 
-function formatSalary(type: SalaryType | undefined, amount: number): string {
+function formatSalary(amount: number, type: SalaryType): string {
   const typeLabel = type === 'yearly' ? '연봉' : '월급';
 
   let formatted: string;
@@ -64,7 +64,7 @@ export function SalaryInfoScreen({ onBack, onNavigate }: Props) {
           >
             <span className="text-green-40">
               {settings
-                ? formatSalary(settings.salaryType, settings.salaryAmount)
+                ? formatSalary(settings.salaryAmount, settings.salaryType!)
                 : '-'}
             </span>
           </InfoRow>
