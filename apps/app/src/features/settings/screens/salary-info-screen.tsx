@@ -11,12 +11,23 @@ interface Props {
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 
-function formatSalary(type: SalaryType | undefined, amount: number): string {
+function formatSalary(amount: number, type?: SalaryType): string {
   const typeLabel = type === 'yearly' ? '연봉' : '월급';
-  const formatted =
-    amount >= 10000
-      ? `${Math.floor(amount / 10000)}만원`
-      : `${amount.toLocaleString()}원`;
+
+  let formatted: string;
+  const eok = Math.floor(amount / 100_000_000);
+  const man = Math.floor((amount % 100_000_000) / 10_000);
+
+  if (eok > 0 && man > 0) {
+    formatted = `${eok}억 ${man}만원`;
+  } else if (eok > 0) {
+    formatted = `${eok}억원`;
+  } else if (man > 0) {
+    formatted = `${man}만원`;
+  } else {
+    formatted = `${amount.toLocaleString()}원`;
+  }
+
   return `${typeLabel} · ${formatted}`;
 }
 
@@ -53,7 +64,7 @@ export function SalaryInfoScreen({ onBack, onNavigate }: Props) {
           >
             <span className="text-green-40">
               {settings
-                ? formatSalary(settings.salaryType, settings.salaryAmount)
+                ? formatSalary(settings.salaryAmount, settings.salaryType)
                 : '-'}
             </span>
           </InfoRow>
