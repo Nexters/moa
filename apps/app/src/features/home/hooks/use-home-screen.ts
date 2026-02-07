@@ -98,6 +98,7 @@ export function useHomeScreen(): HomeScreenState {
   // 핸들러
   const handleTodayWork = () => {
     void clearVacation();
+    void saveSchedule(settings.workStartTime, settings.workEndTime);
   };
 
   const handleVacation = () => {
