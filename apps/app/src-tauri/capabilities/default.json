@@ -16,6 +16,6 @@
     "autostart:allow-disable",
     "autostart:allow-is-enabled",
     "process:default",
-    "opener:allow-open-url"
+    "opener:default"
   ]
 }
