@@ -86,7 +86,7 @@ export function useSalaryCalculator(
 
       // 3. 오늘 근무 상태 확인
       const dayOfWeek = now.getDay();
-      const isWorkDay = workDays.includes(dayOfWeek);
+      const isWorkDay = workDays.includes(dayOfWeek) || todayOverride != null;
       const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
       // 4. 오늘 번 금액 계산
