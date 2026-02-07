@@ -194,6 +194,22 @@ export type AppPreferences = { theme: string;
 language: string | null }
 export type JsonValue = null | boolean | number | string | JsonValue[] | Partial<{ [key in string]: JsonValue }>
 /**
+ * Menubar display mode for salary
+ */
+export type MenubarDisplayMode = 
+/**
+ * 표기 안함
+ */
+"none" | 
+/**
+ * 일급 (오늘 실시간 금액)
+ */
+"daily" | 
+/**
+ * 누적 월급
+ */
+"accumulated"
+/**
  * Error types for recovery operations (typed for frontend matching)
  */
 export type RecoveryError = 
@@ -262,9 +278,9 @@ lunchEndTime?: string;
  */
 onboardingCompleted: boolean; 
 /**
- * Whether to show accumulated salary in menubar (macOS only)
+ * Menubar display mode (macOS only): none, daily, accumulated
  */
-showMenubarSalary?: boolean }
+menubarDisplayMode?: MenubarDisplayMode }
 
 /** tauri-specta globals **/
 

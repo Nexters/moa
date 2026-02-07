@@ -25,6 +25,7 @@ export { commands, type Result } from './tauri-bindings.gen';
 export type {
   AppPreferences,
   JsonValue,
+  MenubarDisplayMode,
   RecoveryError,
   SalaryType,
   UserSettings,

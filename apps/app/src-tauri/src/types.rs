@@ -127,6 +127,19 @@ pub enum SalaryType {
     Yearly,
 }
 
+/// Menubar display mode for salary
+#[derive(Debug, Clone, Serialize, Deserialize, Type, Default, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum MenubarDisplayMode {
+    /// 표기 안함
+    None,
+    /// 일급 (오늘 실시간 금액)
+    #[default]
+    Daily,
+    /// 누적 월급
+    Accumulated,
+}
+
 /// User settings for salary calculation (MVP)
 #[derive(Debug, Clone, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase")]
@@ -155,13 +168,9 @@ pub struct UserSettings {
     pub lunch_end_time: String,
     /// Whether onboarding is completed
     pub onboarding_completed: bool,
-    /// Whether to show accumulated salary in menubar (macOS only)
-    #[serde(default = "default_show_menubar_salary")]
-    pub show_menubar_salary: bool,
-}
-
-fn default_show_menubar_salary() -> bool {
-    true
+    /// Menubar display mode (macOS only): none, daily, accumulated
+    #[serde(default)]
+    pub menubar_display_mode: MenubarDisplayMode,
 }
 
 fn default_work_days() -> Vec<u8> {
@@ -196,7 +205,7 @@ impl Default for UserSettings {
             lunch_start_time: default_lunch_start_time(),
             lunch_end_time: default_lunch_end_time(),
             onboarding_completed: false,
-            show_menubar_salary: true,
+            menubar_display_mode: MenubarDisplayMode::default(),
         }
     }
 }
