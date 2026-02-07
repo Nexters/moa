@@ -64,13 +64,17 @@ export function useHomeScreen(): HomeScreenState {
     isLoading: scheduleLoading,
     saveSchedule,
   } = useTodayWorkSchedule();
-  const salaryInfo = useSalaryCalculator(settings ?? null, todaySchedule);
   const {
     isOnVacation,
     isLoading: vacationLoading,
     clearVacation,
     setVacation,
   } = useVacation();
+  const salaryInfo = useSalaryCalculator(
+    settings ?? null,
+    todaySchedule,
+    isOnVacation,
+  );
   const {
     isAcknowledged,
     isLoading: ackLoading,
