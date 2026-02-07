@@ -78,9 +78,13 @@ export function SettingsScreen({ onNavigate }: Props) {
         `앱 버전/빌드: v${version ?? 'unknown'}`,
       ].join('\n'),
     );
-    await openUrl(
-      `mailto:moa.mymoney@gmail.com?subject=${subject}&body=${body}`,
-    );
+    try {
+      await openUrl(
+        `mailto:moa.mymoney@gmail.com?subject=${subject}&body=${body}`,
+      );
+    } catch {
+      // OS handles mailto: errors natively
+    }
   };
 
   return (
