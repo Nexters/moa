@@ -93,17 +93,14 @@ export function SettingsScreen({ onNavigate }: Props) {
         </SettingsSection>
 
         <SettingsSection title="메뉴바 설정">
-          <InfoRow label="실시간 금액 표시">
-            <SelectInput
-              className="w-auto bg-transparent px-0 py-0"
-              options={MENUBAR_DISPLAY_OPTIONS}
-              value={settings?.menubarDisplayMode ?? 'daily'}
-              onValueChange={(v) =>
-                menubarDisplayModeMutation.mutate(v as MenubarDisplayMode)
-              }
-              disabled={!settings || menubarDisplayModeMutation.isPending}
-            />
-          </InfoRow>
+          <SelectInput
+            options={MENUBAR_DISPLAY_OPTIONS}
+            value={settings?.menubarDisplayMode ?? 'daily'}
+            onValueChange={(v) =>
+              menubarDisplayModeMutation.mutate(v as MenubarDisplayMode)
+            }
+            disabled={!settings || menubarDisplayModeMutation.isPending}
+          />
           <InfoRow label="로그인 시 MOA 자동 실행">
             <SwitchInput
               value={autoStartEnabled}
