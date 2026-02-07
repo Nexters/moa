@@ -1,6 +1,7 @@
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { MAX_SALARY_AMOUNT } from '~/lib/constants';
 import {
   commands,
   unwrapResult,
@@ -53,6 +54,8 @@ export function useSettingsForm({
 
         if (value.salaryAmount <= 0) {
           errors.salaryAmount = '급여 금액은 0보다 커야 합니다';
+        } else if (value.salaryAmount > MAX_SALARY_AMOUNT) {
+          errors.salaryAmount = `최대 ${MAX_SALARY_AMOUNT.toLocaleString()}원까지 입력할 수 있습니다`;
         }
 
         if (value.payDay < 1 || value.payDay > 31) {

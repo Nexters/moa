@@ -1,4 +1,5 @@
 import { useUserSettings } from '~/hooks/use-user-settings';
+import { MAX_SALARY_AMOUNT } from '~/lib/constants';
 import type { SalaryType, UserSettings } from '~/lib/tauri-bindings';
 import {
   AppBar,
@@ -53,14 +54,31 @@ function EditSalaryForm({ settings, onBack }: EditSalaryFormProps) {
             )}
           </form.Field>
 
-          <form.Field name="salaryAmount">
+          <form.Field
+            name="salaryAmount"
+            validators={{
+              onChange: ({ value }) => {
+                if (value <= 0) return '급여 금액은 0보다 커야 합니다';
+                if (value > MAX_SALARY_AMOUNT)
+                  return `최대 ${MAX_SALARY_AMOUNT.toLocaleString()}원까지 입력할 수 있습니다`;
+                return undefined;
+              },
+            }}
+          >
             {(field) => (
-              <Field.Root name={field.name}>
+              <Field.Root
+                name={field.name}
+                invalid={field.state.meta.errors.length > 0}
+              >
                 <Field.Label>금액</Field.Label>
                 <NumberInput
+                  max={MAX_SALARY_AMOUNT}
                   value={field.state.value}
                   onValueChange={(v) => field.handleChange(v ?? 0)}
                 />
+                {field.state.meta.errors.filter(Boolean).map((error) => (
+                  <Field.Error key={error}>{error}</Field.Error>
+                ))}
               </Field.Root>
             )}
           </form.Field>
@@ -100,7 +118,11 @@ function EditSalaryForm({ settings, onBack }: EditSalaryFormProps) {
           })}
         >
           {({ salaryAmount, payDay, isSubmitting }) => {
-            const isValid = salaryAmount > 0 && payDay >= 1 && payDay <= 31;
+            const isValid =
+              salaryAmount > 0 &&
+              salaryAmount <= MAX_SALARY_AMOUNT &&
+              payDay >= 1 &&
+              payDay <= 31;
 
             return (
               <AppFooter>

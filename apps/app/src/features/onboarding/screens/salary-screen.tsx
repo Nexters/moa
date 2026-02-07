@@ -1,3 +1,4 @@
+import { MAX_SALARY_AMOUNT } from '~/lib/constants';
 import type { SalaryType } from '~/lib/tauri-bindings';
 import {
   AppBar,
@@ -41,8 +42,12 @@ export function SalaryScreen({ form, onNext, onBack }: OnboardingScreenProps) {
           <form.Field
             name="salaryAmount"
             validators={{
-              onChange: ({ value }) =>
-                value <= 0 ? '급여 금액은 0보다 커야 합니다' : undefined,
+              onChange: ({ value }) => {
+                if (value <= 0) return '급여 금액은 0보다 커야 합니다';
+                if (value > MAX_SALARY_AMOUNT)
+                  return `최대 ${MAX_SALARY_AMOUNT.toLocaleString()}원까지 입력할 수 있습니다`;
+                return undefined;
+              },
             }}
           >
             {(field) => (
@@ -56,6 +61,7 @@ export function SalaryScreen({ form, onNext, onBack }: OnboardingScreenProps) {
                       {salaryType === 'monthly' ? '월 실수령액' : '연봉'}
                     </Field.Label>
                     <NumberInput
+                      max={MAX_SALARY_AMOUNT}
                       defaultValue={
                         salaryType === 'monthly' ? 3_000_000 : 36_000_000
                       }
