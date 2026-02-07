@@ -57,9 +57,7 @@ export function SalaryScreen({ form, onNext, onBack }: OnboardingScreenProps) {
                     name={field.name}
                     invalid={field.state.meta.errors.length > 0}
                   >
-                    <Field.Label>
-                      {salaryType === 'monthly' ? '월 실수령액' : '연봉'}
-                    </Field.Label>
+                    <Field.Label>금액</Field.Label>
                     <NumberInput
                       max={MAX_SALARY_AMOUNT / 10_000}
                       defaultValue={salaryType === 'monthly' ? 300 : 3600}
