@@ -19,13 +19,13 @@ export function NumberInput({
       locale="ko-KR"
       format={formatThousands ? { useGrouping: true } : { useGrouping: false }}
       className={cn(
-        'bg-container-primary focus-within:border-green-40 relative w-full rounded-sm border border-transparent',
+        'bg-container-primary focus-within:border-green-40 flex w-full items-center rounded-sm border border-transparent',
         className,
       )}
     >
-      <NumberField.Input className="b1-600 text-text-high placeholder:text-text-low w-full bg-transparent px-4 py-3 pr-10 text-right focus:outline-none" />
+      <NumberField.Input className="b1-600 text-text-high placeholder:text-text-low min-w-0 flex-1 bg-transparent px-4 py-3 focus:outline-none" />
       {suffix && (
-        <span className="b1-600 text-text-medium pointer-events-none absolute top-1/2 right-4 -translate-y-1/2">
+        <span className="b1-600 text-text-medium pointer-events-none shrink-0 pr-4 pl-1">
           {suffix}
         </span>
       )}
