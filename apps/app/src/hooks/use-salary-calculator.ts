@@ -41,108 +41,88 @@ export function useSalaryCalculator(
   settings: UserSettings | null,
   todayOverride?: TodayTimeOverride | null,
 ): SalaryInfo | null {
-  const [info, setInfo] = useState<SalaryInfo | null>(null);
+  const [, setTick] = useState(0);
 
   useEffect(() => {
-    if (!settings || !settings.onboardingCompleted) {
-      setInfo(null);
-      return;
-    }
+    if (!settings || !settings.onboardingCompleted) return;
 
-    const calculate = () => {
-      const now = new Date();
-
-      // 설정에서 근무 정보 가져오기 (기본값 사용)
-      const workDays = settings.workDays ?? DEFAULT_WORK_DAYS;
-      // 오늘 오버라이드가 있으면 해당 시간 사용
-      const workStartTime =
-        todayOverride?.workStartTime ??
-        settings.workStartTime ??
-        DEFAULT_WORK_START;
-      const workEndTime =
-        todayOverride?.workEndTime ?? settings.workEndTime ?? DEFAULT_WORK_END;
-      const workStartMinutes = timeToMinutes(workStartTime);
-      const workEndMinutes = timeToMinutes(workEndTime);
-      const workHoursPerDay = (workEndMinutes - workStartMinutes) / 60;
-
-      // 연봉인 경우 월급으로 변환 (12로 나눔)
-      const monthlySalary =
-        settings.salaryType === 'yearly'
-          ? settings.salaryAmount / 12
-          : settings.salaryAmount;
-
-      // 1. 이번 급여 주기의 월 근무일수 계산
-      const payPeriod = getPayPeriod(now, settings.payDay);
-      const workDaysInPeriod = getWorkDaysInPeriod(
-        payPeriod.start,
-        payPeriod.end,
-        workDays,
-      );
-
-      // 2. 일급, 시급, 초당 금액 계산
-      const dailyRate = monthlySalary / workDaysInPeriod;
-      const hourlyRate = dailyRate / workHoursPerDay;
-      const perSecond = hourlyRate / 3600;
-
-      // 3. 오늘 근무 상태 확인
-      const dayOfWeek = now.getDay();
-      const isWorkDay = workDays.includes(dayOfWeek) || todayOverride != null;
-      const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-      // 4. 오늘 번 금액 계산
-      let todayEarnings = 0;
-      let workStatus: WorkStatus = 'day-off';
-
-      if (isWorkDay) {
-        if (currentMinutes < workStartMinutes) {
-          // 출근 전
-          workStatus = 'before-work';
-          todayEarnings = 0;
-        } else if (currentMinutes >= workEndMinutes) {
-          // 퇴근 후 (근무 완료)
-          workStatus = 'completed';
-          todayEarnings = dailyRate;
-        } else {
-          // 근무 중
-          workStatus = 'working';
-          const workedMinutes = currentMinutes - workStartMinutes;
-          const workedSeconds = workedMinutes * 60 + now.getSeconds();
-          todayEarnings = perSecond * workedSeconds;
-        }
-      }
-
-      // 5. 월급날부터 어제까지 근무한 일수
-      const workedDays = getWorkedDaysSincePayDay(
-        payPeriod.start,
-        now,
-        workDays,
-      );
-
-      // 6. 누적 금액 계산
-      const accumulatedEarnings = workedDays * dailyRate + todayEarnings;
-
-      setInfo({
-        dailyRate,
-        hourlyRate,
-        perSecond,
-        accumulatedEarnings,
-        todayEarnings,
-        workStatus,
-        isWorkDay,
-        workedDays,
-      });
-    };
-
-    // 초기 계산
-    calculate();
-
-    // 1초마다 업데이트
-    const interval = setInterval(calculate, 1000);
-
+    const interval = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(interval);
   }, [settings, todayOverride]);
 
-  return info;
+  return calculateSalaryInfo(settings, todayOverride);
+}
+
+function calculateSalaryInfo(
+  settings: UserSettings | null,
+  todayOverride?: TodayTimeOverride | null,
+): SalaryInfo | null {
+  if (!settings || !settings.onboardingCompleted) return null;
+
+  const now = new Date();
+
+  const workDays = settings.workDays ?? DEFAULT_WORK_DAYS;
+  const workStartTime =
+    todayOverride?.workStartTime ??
+    settings.workStartTime ??
+    DEFAULT_WORK_START;
+  const workEndTime =
+    todayOverride?.workEndTime ?? settings.workEndTime ?? DEFAULT_WORK_END;
+  const workStartMinutes = timeToMinutes(workStartTime);
+  const workEndMinutes = timeToMinutes(workEndTime);
+  const workHoursPerDay = (workEndMinutes - workStartMinutes) / 60;
+
+  const monthlySalary =
+    settings.salaryType === 'yearly'
+      ? settings.salaryAmount / 12
+      : settings.salaryAmount;
+
+  const payPeriod = getPayPeriod(now, settings.payDay);
+  const workDaysInPeriod = getWorkDaysInPeriod(
+    payPeriod.start,
+    payPeriod.end,
+    workDays,
+  );
+
+  const dailyRate = monthlySalary / workDaysInPeriod;
+  const hourlyRate = dailyRate / workHoursPerDay;
+  const perSecond = hourlyRate / 3600;
+
+  const dayOfWeek = now.getDay();
+  const isWorkDay = workDays.includes(dayOfWeek) || todayOverride != null;
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  let todayEarnings = 0;
+  let workStatus: WorkStatus = 'day-off';
+
+  if (isWorkDay) {
+    if (currentMinutes < workStartMinutes) {
+      workStatus = 'before-work';
+      todayEarnings = 0;
+    } else if (currentMinutes >= workEndMinutes) {
+      workStatus = 'completed';
+      todayEarnings = dailyRate;
+    } else {
+      workStatus = 'working';
+      const workedMinutes = currentMinutes - workStartMinutes;
+      const workedSeconds = workedMinutes * 60 + now.getSeconds();
+      todayEarnings = perSecond * workedSeconds;
+    }
+  }
+
+  const workedDays = getWorkedDaysSincePayDay(payPeriod.start, now, workDays);
+  const accumulatedEarnings = workedDays * dailyRate + todayEarnings;
+
+  return {
+    dailyRate,
+    hourlyRate,
+    perSecond,
+    accumulatedEarnings,
+    todayEarnings,
+    workStatus,
+    isWorkDay,
+    workedDays,
+  };
 }
 
 // 헬퍼 함수들
