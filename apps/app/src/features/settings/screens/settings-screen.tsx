@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { enable, disable } from '@tauri-apps/plugin-autostart';
+import { openUrl } from '@tauri-apps/plugin-opener';
 import { exit } from '@tauri-apps/plugin-process';
 
 import { useUserSettings } from '~/hooks/use-user-settings';
@@ -64,6 +65,24 @@ export function SettingsScreen({ onNavigate }: Props) {
     },
   });
 
+  const handleContactUs = async () => {
+    const subject = encodeURIComponent('[문의] 모아 서비스에 문의드립니다.');
+    const body = encodeURIComponent(
+      [
+        '문의 유형: (버그 신고 / 제휴·광고 / 계정·결제 / 신고 / 기능 제안 / 기타)',
+        '상세 설명:',
+        '스크린샷/영상(선택):',
+        '',
+        '-----------------------------------------------',
+        '아래 정보는 앱에서 자동 기입됨',
+        `앱 버전/빌드: v${version ?? 'unknown'}`,
+      ].join('\n'),
+    );
+    await openUrl(
+      `mailto:moa.mymoney@gmail.com?subject=${subject}&body=${body}`,
+    );
+  };
+
   return (
     <div className="bg-bg-primary flex h-full flex-col">
       <AppBar type="detail" title="설정" onBack={() => navigate('home')} />
@@ -100,7 +119,7 @@ export function SettingsScreen({ onNavigate }: Props) {
               {version ? `v${version}` : '-'}
             </span>
           </InfoRow>
-          <InfoRow as="button" label="문의하기" disabled />
+          <InfoRow as="button" label="문의하기" onClick={handleContactUs} />
         </SettingsSection>
 
         <div className="flex items-center justify-center gap-3">
