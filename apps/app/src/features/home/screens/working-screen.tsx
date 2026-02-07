@@ -1,4 +1,3 @@
-import { isWithinTimeRange } from '~/lib/time';
 import {
   AppFooter,
   Button,
@@ -20,12 +19,6 @@ export function WorkingScreen({
   const workStart = todaySchedule?.workStartTime ?? settings.workStartTime;
   const workEnd = todaySchedule?.workEndTime ?? settings.workEndTime;
 
-  const isLunchTime = isWithinTimeRange(
-    new Date(),
-    settings.lunchStartTime,
-    settings.lunchEndTime,
-  );
-
   return (
     <div className="flex flex-1 flex-col gap-7">
       <HeroSection
@@ -36,11 +29,7 @@ export function WorkingScreen({
 
       <InfoCard>
         <InfoCardRow label="근무 상태">
-          {isLunchTime ? (
-            <span className="b1-600 text-blue">점심시간</span>
-          ) : (
-            <span className="b1-600 text-green-40">근무 중</span>
-          )}
+          <span className="b1-600 text-green-40">근무 중</span>
         </InfoCardRow>
         <InfoCardDivider />
         <InfoCardRow label="근무 시간" value={`${workStart} - ${workEnd}`} />

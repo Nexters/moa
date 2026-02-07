@@ -72,11 +72,7 @@ function calculateSalaryInfo(
     todayOverride?.workEndTime ?? settings.workEndTime ?? DEFAULT_WORK_END;
   const workStartMinutes = timeToMinutes(workStartTime);
   const workEndMinutes = timeToMinutes(workEndTime);
-  const lunchStartMinutes = timeToMinutes(settings.lunchStartTime!);
-  const lunchEndMinutes = timeToMinutes(settings.lunchEndTime!);
-  const lunchDurationMinutes = lunchEndMinutes - lunchStartMinutes;
-  const workHoursPerDay =
-    (workEndMinutes - workStartMinutes - lunchDurationMinutes) / 60;
+  const workHoursPerDay = (workEndMinutes - workStartMinutes) / 60;
 
   const monthlySalary =
     settings.salaryType === 'yearly'
@@ -111,22 +107,10 @@ function calculateSalaryInfo(
   } else if (currentMinutes >= workEndMinutes) {
     workStatus = 'completed';
     todayEarnings = dailyRate;
-  } else if (currentMinutes < lunchStartMinutes) {
-    // 오전 근무 중 (점심 전)
+  } else {
+    // 근무 중
     workStatus = 'working';
     const workedMinutes = currentMinutes - workStartMinutes;
-    const workedSeconds = workedMinutes * 60 + now.getSeconds();
-    todayEarnings = perSecond * workedSeconds;
-  } else if (currentMinutes < lunchEndMinutes) {
-    // 점심시간 - 오전 근무분만 계산 (금액 고정)
-    workStatus = 'working';
-    const workedSeconds = (lunchStartMinutes - workStartMinutes) * 60;
-    todayEarnings = perSecond * workedSeconds;
-  } else {
-    // 오후 근무 중 (점심 후)
-    workStatus = 'working';
-    const workedMinutes =
-      currentMinutes - workStartMinutes - lunchDurationMinutes;
     const workedSeconds = workedMinutes * 60 + now.getSeconds();
     todayEarnings = perSecond * workedSeconds;
   }

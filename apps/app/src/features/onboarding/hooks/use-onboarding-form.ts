@@ -16,8 +16,6 @@ export interface OnboardingFormValues {
   workDays: number[];
   workStartTime: string;
   workEndTime: string;
-  lunchStartTime: string;
-  lunchEndTime: string;
 }
 
 const DEFAULT_VALUES: OnboardingFormValues = {
@@ -27,8 +25,6 @@ const DEFAULT_VALUES: OnboardingFormValues = {
   workDays: [1, 2, 3, 4, 5],
   workStartTime: '09:00',
   workEndTime: '18:00',
-  lunchStartTime: '12:00',
-  lunchEndTime: '13:00',
 };
 
 interface UseOnboardingFormOptions {

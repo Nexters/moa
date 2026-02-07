@@ -62,26 +62,6 @@ function EditScheduleForm({ settings, onBack }: EditScheduleFormProps) {
               )}
             </form.Subscribe>
           </Field.Root>
-
-          <Field.Root className="gap-3">
-            <Field.Label>점심 시간</Field.Label>
-            <form.Subscribe
-              selector={(s) => ({
-                startTime: s.values.lunchStartTime,
-                endTime: s.values.lunchEndTime,
-              })}
-            >
-              {(value) => (
-                <TimePeriodInput
-                  value={value}
-                  onChange={(v) => {
-                    form.setFieldValue('lunchStartTime', v.startTime);
-                    form.setFieldValue('lunchEndTime', v.endTime);
-                  }}
-                />
-              )}
-            </form.Subscribe>
-          </Field.Root>
         </div>
 
         <form.Subscribe
@@ -89,25 +69,11 @@ function EditScheduleForm({ settings, onBack }: EditScheduleFormProps) {
             workDays: state.values.workDays,
             workStartTime: state.values.workStartTime,
             workEndTime: state.values.workEndTime,
-            lunchStartTime: state.values.lunchStartTime,
-            lunchEndTime: state.values.lunchEndTime,
             isSubmitting: state.isSubmitting,
           })}
         >
-          {({
-            workDays,
-            workStartTime,
-            workEndTime,
-            lunchStartTime,
-            lunchEndTime,
-            isSubmitting,
-          }) => {
-            const isValid =
-              workDays.length > 0 &&
-              workStartTime &&
-              workEndTime &&
-              lunchStartTime &&
-              lunchEndTime;
+          {({ workDays, workStartTime, workEndTime, isSubmitting }) => {
+            const isValid = workDays.length > 0 && workStartTime && workEndTime;
 
             return (
               <AppFooter>

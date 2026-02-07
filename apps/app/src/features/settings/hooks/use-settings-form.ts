@@ -22,8 +22,6 @@ export interface SettingsFormValues {
   workDays: number[];
   workStartTime: string;
   workEndTime: string;
-  lunchStartTime: string;
-  lunchEndTime: string;
 }
 
 interface UseSettingsFormOptions {
@@ -45,8 +43,6 @@ export function useSettingsForm({
       workDays: settings.workDays ?? [1, 2, 3, 4, 5],
       workStartTime: settings.workStartTime ?? '09:00',
       workEndTime: settings.workEndTime ?? '18:00',
-      lunchStartTime: settings.lunchStartTime ?? '12:00',
-      lunchEndTime: settings.lunchEndTime ?? '13:00',
     } satisfies SettingsFormValues,
     validators: {
       onSubmit: ({ value }) => {
@@ -74,14 +70,6 @@ export function useSettingsForm({
           errors.workEndTime = '퇴근 시간을 입력해주세요';
         }
 
-        if (!value.lunchStartTime) {
-          errors.lunchStartTime = '점심 시작 시간을 입력해주세요';
-        }
-
-        if (!value.lunchEndTime) {
-          errors.lunchEndTime = '점심 종료 시간을 입력해주세요';
-        }
-
         if (Object.keys(errors).length > 0) {
           return { fields: errors };
         }
@@ -98,8 +86,6 @@ export function useSettingsForm({
         workDays: value.workDays,
         workStartTime: value.workStartTime,
         workEndTime: value.workEndTime,
-        lunchStartTime: value.lunchStartTime,
-        lunchEndTime: value.lunchEndTime,
       });
 
       if (result.status === 'error') {
