@@ -3,12 +3,19 @@ import { enable, disable } from '@tauri-apps/plugin-autostart';
 import { exit } from '@tauri-apps/plugin-process';
 
 import { useUserSettings } from '~/hooks/use-user-settings';
+import type { MenubarDisplayMode } from '~/lib/tauri-bindings';
 import { commands } from '~/lib/tauri-bindings';
 import { appQuery, appQueryOptions, userSettingsQuery } from '~/queries';
 import { useUIStore } from '~/stores/ui-store';
-import { AppBar, Button, InfoRow, SwitchInput } from '~/ui';
+import { AppBar, Button, InfoRow, SelectInput, SwitchInput } from '~/ui';
 
 import { SettingsSection } from '../components/settings-section';
+
+const MENUBAR_DISPLAY_OPTIONS = [
+  { value: 'none', label: '표기 안함' },
+  { value: 'daily', label: '일급' },
+  { value: 'accumulated', label: '누적 월급' },
+] as const;
 
 interface Props {
   onNavigate: (screen: 'salary-info') => void;
@@ -37,12 +44,12 @@ export function SettingsScreen({ onNavigate }: Props) {
     },
   });
 
-  const menubarSalaryMutation = useMutation({
-    mutationFn: async (showMenubarSalary: boolean) => {
+  const menubarDisplayModeMutation = useMutation({
+    mutationFn: async (menubarDisplayMode: MenubarDisplayMode) => {
       if (!settings) return;
       const result = await commands.saveUserSettings({
         ...settings,
-        showMenubarSalary,
+        menubarDisplayMode,
       });
       if (result.status === 'error') throw new Error(result.error);
     },
@@ -78,13 +85,14 @@ export function SettingsScreen({ onNavigate }: Props) {
         </SettingsSection>
 
         <SettingsSection title="메뉴바 설정">
-          <InfoRow label="실시간 금액 표시">
-            <SwitchInput
-              value={settings?.showMenubarSalary ?? true}
-              onSave={(v) => menubarSalaryMutation.mutate(v)}
-              disabled={!settings || menubarSalaryMutation.isPending}
-            />
-          </InfoRow>
+          <SelectInput
+            options={MENUBAR_DISPLAY_OPTIONS}
+            value={settings?.menubarDisplayMode ?? 'daily'}
+            onValueChange={(v) =>
+              menubarDisplayModeMutation.mutate(v as MenubarDisplayMode)
+            }
+            disabled={!settings || menubarDisplayModeMutation.isPending}
+          />
           <InfoRow label="로그인 시 MOA 자동 실행">
             <SwitchInput
               value={autoStartEnabled}

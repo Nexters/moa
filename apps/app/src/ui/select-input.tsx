@@ -24,7 +24,7 @@ export function SelectInput({
     <Select.Root items={options} {...props}>
       <Select.Trigger
         className={cn(
-          'bg-container-primary b1-600 text-text-high focus:border-green-40 flex w-full cursor-pointer items-center justify-between rounded-sm border border-transparent px-4 py-3 transition-colors focus:outline-none',
+          'bg-container-primary b1-600 text-text-high focus:border-green-40 hover:bg-interactive-hover flex w-full cursor-pointer items-center justify-between rounded-sm border border-transparent px-4 py-3 transition-colors focus:outline-none disabled:cursor-not-allowed disabled:opacity-50',
           className,
         )}
       >

@@ -25,10 +25,15 @@ export function TraySync() {
   const isWorking = salaryInfo ? salaryInfo.workStatus === 'working' : null;
   useTrayIconSync(isWorking);
 
-  useTrayTitleSync(
-    salaryInfo?.todayEarnings ?? null,
-    settings?.showMenubarSalary ?? true,
-  );
+  const displayMode = settings?.menubarDisplayMode ?? 'daily';
+  const trayAmount =
+    displayMode === 'daily'
+      ? (salaryInfo?.todayEarnings ?? null)
+      : displayMode === 'accumulated'
+        ? (salaryInfo?.accumulatedEarnings ?? null)
+        : null;
+
+  useTrayTitleSync(trayAmount, displayMode !== 'none');
 
   return null;
 }
