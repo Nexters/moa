@@ -149,7 +149,7 @@ async resetAllData() : Promise<Result<null, string>> {
 }
 },
 /**
- * 트레이 아이콘 상태 변경 (근무중/비근무)
+ * 트레이 아이콘 상태 변경 (근무중: 코인 플립 애니메이션 / 비근무: 정적 아이콘)
  */
 async setTrayIconState(isWorking: boolean) : Promise<Result<null, string>> {
     try {
