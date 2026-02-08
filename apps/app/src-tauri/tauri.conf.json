@@ -43,7 +43,11 @@
     "category": "Utility",
     "shortDescription": "Visualize your accumulated salary in real-time",
     "longDescription": "A lightweight menu bar/system tray app that visualizes your accumulated salary in real-time.",
-    "copyright": "Copyright © 2026 bepyan. All rights reserved."
+    "copyright": "Copyright © 2026 bepyan. All rights reserved.",
+    "macOS": {
+      "signingIdentity": null,
+      "entitlements": null
+    }
   },
   "plugins": {
     "updater": {

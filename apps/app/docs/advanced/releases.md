@@ -52,6 +52,42 @@ Add these secrets (Settings → Secrets and variables → Actions):
 - Update `publisher`, `shortDescription`, `longDescription`
 - Update `productName` and `identifier`
 
+### 4. macOS Code Signing & Notarization
+
+Apple Developer Program ($99/yr) 가입 후 설정.
+
+**인증서 발급:**
+
+1. Apple Developer → Certificates → Developer ID Application 생성
+2. Keychain Access에서 .p12 내보내기
+
+**App Store Connect API 키 생성:**
+
+1. App Store Connect → 사용자 및 액세스 → 통합 → App Store Connect API
+2. 키 생성 (앱 관리 권한), .p8 파일 다운로드
+
+**GitHub Secrets 추가:**
+
+| Secret                       | Description                           |
+| ---------------------------- | ------------------------------------- |
+| `APPLE_CERTIFICATE`          | Base64 encoded .p12 certificate       |
+| `APPLE_CERTIFICATE_PASSWORD` | .p12 export password                  |
+| `KEYCHAIN_PASSWORD`          | Arbitrary string for CI keychain      |
+| `APPLE_SIGNING_IDENTITY`     | `Developer ID Application: Name (ID)` |
+| `APPLE_API_ISSUER`           | App Store Connect Issuer ID           |
+| `APPLE_API_KEY`              | App Store Connect Key ID              |
+| `APPLE_API_KEY_CONTENT`      | .p8 file content                      |
+
+**검증:**
+
+```bash
+# 코드 서명 확인
+codesign -dv --verbose=4 /path/to/moa.app
+
+# 공증 확인
+spctl -a -vv -t install /path/to/moa.app
+```
+
 ## Release Process
 
 ### Simple Method
