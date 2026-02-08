@@ -69,3 +69,52 @@ jobs:
           prerelease: false
           includeUpdaterJson: true
           args: ${{ matrix.args }}
+
+  notify:
+    needs: [publish-tauri]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Discord Notification
+        continue-on-error: true
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          BUILD_RESULT: ${{ needs.publish-tauri.result }}
+          VERSION: ${{ github.ref_name || inputs.version }}
+          ACTOR: ${{ github.actor }}
+          REPO: ${{ github.repository }}
+        run: |
+          if [ "$BUILD_RESULT" == "success" ]; then
+            COLOR=5763719
+            TITLE="✅ Moa App $VERSION 빌드 성공"
+          else
+            COLOR=15548997
+            TITLE="❌ Moa App $VERSION 빌드 실패"
+          fi
+
+          RELEASE_URL="https://github.com/${REPO}/releases"
+          TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          PAYLOAD=$(jq -n \
+            --arg title "$TITLE" \
+            --argjson color "$COLOR" \
+            --arg version "$VERSION" \
+            --arg actor "$ACTOR" \
+            --arg release_url "$RELEASE_URL" \
+            --arg timestamp "$TIMESTAMP" \
+            '{
+              embeds: [{
+                title: $title,
+                color: $color,
+                fields: [
+                  {name: "버전", value: $version, inline: true},
+                  {name: "배포자", value: $actor, inline: true},
+                  {name: "릴리스", value: $release_url}
+                ],
+                timestamp: $timestamp
+              }]
+            }')
+
+          curl -f -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "$DISCORD_WEBHOOK"
