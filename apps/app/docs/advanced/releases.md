@@ -76,7 +76,7 @@ Apple Developer Program ($99/yr) 가입 후 설정.
 | `APPLE_SIGNING_IDENTITY`     | `Developer ID Application: Name (ID)` |
 | `APPLE_API_ISSUER`           | App Store Connect Issuer ID           |
 | `APPLE_API_KEY`              | App Store Connect Key ID              |
-| `APPLE_API_KEY_CONTENT`      | .p8 file content                      |
+| `APPLE_API_KEY_CONTENT`      | .p8 file content (base64 encoded)     |
 
 **검증:**
 
