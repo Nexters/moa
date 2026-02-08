@@ -33,7 +33,8 @@ export function TraySync() {
         ? (salaryInfo?.accumulatedEarnings ?? null)
         : null;
 
-  useTrayTitleSync(trayAmount, displayMode !== 'none');
+  const isDayOff = salaryInfo?.workStatus === 'day-off';
+  useTrayTitleSync(trayAmount, displayMode !== 'none' && !isDayOff);
 
   return null;
 }
