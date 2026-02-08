@@ -29,6 +29,7 @@ jscpd-report
 *.sw?
 
 # Environment files
+envs
 .env
 .env.local
 .env.development.local
