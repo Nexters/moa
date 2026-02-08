@@ -15,7 +15,7 @@
     "rust:bindings": "source ~/.cargo/env && cd src-tauri && cargo test export_bindings -- --ignored --nocapture",
     "tauri": "tauri",
     "tauri:dev": "source ~/.cargo/env && bun tauri dev",
-    "tauri:build": "tauri build --no-sign",
+    "tauri:build": "source .env && tauri build --bundles app,dmg",
     "check:all": "bun rust:fmt:check && bun rust:clippy"
   },
   "dependencies": {
