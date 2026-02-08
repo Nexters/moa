@@ -42,26 +42,25 @@ export function useSalaryCalculator(
   todayOverride?: TodayTimeOverride | null,
   isOnVacation?: boolean,
 ): SalaryInfo | null {
-  const [, setTick] = useState(0);
+  const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
-    if (!settings || !settings.onboardingCompleted) return;
+    if (!settings?.onboardingCompleted) return;
 
-    const interval = setInterval(() => setTick((t) => t + 1), 1000);
+    const interval = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(interval);
-  }, [settings, todayOverride, isOnVacation]);
+  }, [settings?.onboardingCompleted]);
 
-  return calculateSalaryInfo(settings, todayOverride, isOnVacation);
+  return calculateSalaryInfo(settings, todayOverride, isOnVacation, now);
 }
 
 function calculateSalaryInfo(
   settings: UserSettings | null,
-  todayOverride?: TodayTimeOverride | null,
-  isOnVacation?: boolean,
+  todayOverride: TodayTimeOverride | null | undefined,
+  isOnVacation: boolean | undefined,
+  now: Date,
 ): SalaryInfo | null {
   if (!settings || !settings.onboardingCompleted) return null;
-
-  const now = new Date();
 
   const workDays = settings.workDays ?? DEFAULT_WORK_DAYS;
   const workStartTime =
