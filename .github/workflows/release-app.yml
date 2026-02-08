@@ -69,3 +69,40 @@ jobs:
           prerelease: false
           includeUpdaterJson: true
           args: ${{ matrix.args }}
+
+  notify:
+    needs: [publish-tauri]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Discord Notification
+        continue-on-error: true
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          BUILD_RESULT: ${{ needs.publish-tauri.result }}
+          VERSION: ${{ github.ref_name || inputs.version }}
+        run: |
+          if [ "$BUILD_RESULT" == "success" ]; then
+            COLOR=5763719
+            TITLE="✅ Moa App $VERSION 빌드 성공"
+          else
+            COLOR=15548997
+            TITLE="❌ Moa App $VERSION 빌드 실패"
+          fi
+
+          RELEASE_URL="https://github.com/${{ github.repository }}/releases"
+
+          curl -f -H "Content-Type: application/json" \
+            -d '{
+              "embeds": [{
+                "title": "'"$TITLE"'",
+                "color": '"$COLOR"',
+                "fields": [
+                  {"name": "버전", "value": "'"$VERSION"'", "inline": true},
+                  {"name": "배포자", "value": "${{ github.actor }}", "inline": true},
+                  {"name": "릴리스", "value": "'"$RELEASE_URL"'"}
+                ],
+                "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
+              }]
+            }' \
+            $DISCORD_WEBHOOK
