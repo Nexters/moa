@@ -85,7 +85,7 @@ Apple Developer Program ($99/yr) 가입 후 설정.
 codesign -dv --verbose=4 /path/to/moa.app
 
 # 공증 확인
-spctl -a -vv -t install /path/to/moa.app
+spctl -a -vv /path/to/moa.app
 ```
 
 ## Release Process

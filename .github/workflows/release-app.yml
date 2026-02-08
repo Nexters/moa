@@ -72,11 +72,13 @@ jobs:
         env:
           APPLE_API_KEY_CONTENT: ${{ secrets.APPLE_API_KEY_CONTENT }}
         run: |
-          mkdir -p ~/private_keys
-          echo -n "$APPLE_API_KEY_CONTENT" > ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8
+          KEY_PATH="$HOME/private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8"
+          mkdir -p "$(dirname "$KEY_PATH")"
+          echo -n "$APPLE_API_KEY_CONTENT" > "$KEY_PATH"
+          echo "APPLE_API_KEY_PATH=$KEY_PATH" >> $GITHUB_ENV
 
       - name: Build and release
-        uses: tauri-apps/tauri-action@dev
+        uses: tauri-apps/tauri-action@action-v0.6.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
@@ -84,7 +86,6 @@ jobs:
           APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
           APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
-          APPLE_API_KEY_PATH: ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY }}.p8
         with:
           tagName: ${{ github.ref_name || inputs.version }}
           releaseName: 'Moa ${{ github.ref_name || inputs.version }}'
