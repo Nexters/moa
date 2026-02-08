@@ -1,5 +1,8 @@
 //! System tray/menu bar icon functionality.
 
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::Duration;
+
 use tauri::{
     image::Image,
     tray::{MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent},
@@ -13,8 +16,25 @@ use tauri_nspanel::ManagerExt;
 use tauri_plugin_positioner::{Position, WindowExt};
 
 /// Embedded tray icons for different states
-static TRAY_ICON_ACTIVE: &[u8] = include_bytes!("../icons/tray-active.png");
 static TRAY_ICON_IDLE: &[u8] = include_bytes!("../icons/tray-idle.png");
+
+/// Embedded animation frames for coin-flip effect (working state)
+static TRAY_FRAMES: [&[u8]; 8] = [
+    include_bytes!("../icons/tray-frame-0.png"),
+    include_bytes!("../icons/tray-frame-1.png"),
+    include_bytes!("../icons/tray-frame-2.png"),
+    include_bytes!("../icons/tray-frame-3.png"),
+    include_bytes!("../icons/tray-frame-4.png"),
+    include_bytes!("../icons/tray-frame-5.png"),
+    include_bytes!("../icons/tray-frame-6.png"),
+    include_bytes!("../icons/tray-frame-7.png"),
+];
+
+/// Animation control flag
+static ANIMATING: AtomicBool = AtomicBool::new(false);
+
+/// Animation frame interval (150ms × 8 frames = 1.2s per rotation)
+const FRAME_INTERVAL: Duration = Duration::from_millis(150);
 
 /// Creates the system tray icon with click handlers.
 pub fn create(app_handle: &AppHandle) -> tauri::Result<TrayIcon> {
@@ -80,29 +100,45 @@ fn toggle_main_window(app_handle: &AppHandle) {
     }
 }
 
-/// 트레이 아이콘 상태 변경 (근무중/비근무)
+/// 트레이 아이콘 상태 변경 (근무중: 코인 플립 애니메이션 / 비근무: 정적 아이콘)
 #[tauri::command]
 #[specta::specta]
 pub fn set_tray_icon_state(app: AppHandle, is_working: bool) -> Result<(), String> {
-    let icon_bytes = if is_working {
-        TRAY_ICON_ACTIVE
+    if is_working {
+        // 이미 애니메이션 중이면 중복 spawn 방지
+        if ANIMATING.swap(true, Ordering::SeqCst) {
+            return Ok(());
+        }
+
+        let app_clone = app.clone();
+        std::thread::spawn(move || {
+            let mut frame_idx: usize = 0;
+
+            while ANIMATING.load(Ordering::Relaxed) {
+                if let Some(tray) = app_clone.tray_by_id("tray") {
+                    if let Ok(icon) = Image::from_bytes(TRAY_FRAMES[frame_idx]) {
+                        let _ = tray.set_icon(Some(icon));
+                    }
+                }
+
+                frame_idx = (frame_idx + 1) % TRAY_FRAMES.len();
+                std::thread::sleep(FRAME_INTERVAL);
+            }
+
+            // 애니메이션 종료 후 idle 아이콘 복원
+            if let Some(tray) = app_clone.tray_by_id("tray") {
+                if let Ok(icon) = Image::from_bytes(TRAY_ICON_IDLE) {
+                    let _ = tray.set_icon(Some(icon));
+                }
+            }
+        });
+
+        log::debug!("트레이 아이콘 애니메이션 시작");
     } else {
-        TRAY_ICON_IDLE
-    };
+        ANIMATING.store(false, Ordering::SeqCst);
+        log::debug!("트레이 아이콘 애니메이션 중지");
+    }
 
-    let tray = app
-        .tray_by_id("tray")
-        .ok_or("트레이 아이콘을 찾을 수 없습니다")?;
-
-    let icon = Image::from_bytes(icon_bytes).map_err(|e| format!("아이콘 로드 실패: {e}"))?;
-
-    tray.set_icon(Some(icon))
-        .map_err(|e| format!("아이콘 설정 실패: {e}"))?;
-
-    log::debug!(
-        "트레이 아이콘 상태 변경: {}",
-        if is_working { "활성" } else { "비활성" }
-    );
     Ok(())
 }
 
