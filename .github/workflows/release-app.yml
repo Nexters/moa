@@ -81,6 +81,8 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
           BUILD_RESULT: ${{ needs.publish-tauri.result }}
           VERSION: ${{ github.ref_name || inputs.version }}
+          ACTOR: ${{ github.actor }}
+          REPO: ${{ github.repository }}
         run: |
           if [ "$BUILD_RESULT" == "success" ]; then
             COLOR=5763719
@@ -90,19 +92,29 @@ jobs:
             TITLE="❌ Moa App $VERSION 빌드 실패"
           fi
 
-          RELEASE_URL="https://github.com/${{ github.repository }}/releases"
+          RELEASE_URL="https://github.com/${REPO}/releases"
+          TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          PAYLOAD=$(jq -n \
+            --arg title "$TITLE" \
+            --argjson color "$COLOR" \
+            --arg version "$VERSION" \
+            --arg actor "$ACTOR" \
+            --arg release_url "$RELEASE_URL" \
+            --arg timestamp "$TIMESTAMP" \
+            '{
+              embeds: [{
+                title: $title,
+                color: $color,
+                fields: [
+                  {name: "버전", value: $version, inline: true},
+                  {name: "배포자", value: $actor, inline: true},
+                  {name: "릴리스", value: $release_url}
+                ],
+                timestamp: $timestamp
+              }]
+            }')
 
           curl -f -H "Content-Type: application/json" \
-            -d '{
-              "embeds": [{
-                "title": "'"$TITLE"'",
-                "color": '"$COLOR"',
-                "fields": [
-                  {"name": "버전", "value": "'"$VERSION"'", "inline": true},
-                  {"name": "배포자", "value": "${{ github.actor }}", "inline": true},
-                  {"name": "릴리스", "value": "'"$RELEASE_URL"'"}
-                ],
-                "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
-              }]
-            }' \
-            $DISCORD_WEBHOOK
+            -d "$PAYLOAD" \
+            "$DISCORD_WEBHOOK"
