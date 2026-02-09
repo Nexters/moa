@@ -1,13 +1,11 @@
-# CLAUDE.md
+# Moa Landing
 
-**Moa Landing**: Static landing page (Astro + React)
+Static landing page (Astro + React)
 
 ## Core Rules
 
-1. **bun only** - Do not use `npm`/`pnpm`
-2. **Korean responses** - Always respond in Korean
-3. **Astro v5 only** - Never use v4 docs/patterns
-4. **SSG only** - No server-side features
+1. **Astro v5 only** - Never use v4 docs/patterns
+2. **SSG only** - No server-side features (no SSR, no API routes)
 
 ## Tech Stack
 
@@ -41,58 +39,38 @@ apps/landing/
 └── public/                  # Static assets (favicon, etc.)
 ```
 
-## Code Patterns
-
-### Astro + React Integration
-
-```astro
----
-import { App } from "~/features/app";
-import "../global.css";
----
-
-<body>
-  <App client:load />  <!-- Immediate hydration -->
-</body>
-```
-
-**Client Directives**:
-
-- `client:load`: Immediate hydration (full page interaction)
-- `client:visible`: Hydrate on viewport entry (lazy load)
-- `client:idle`: Hydrate on main thread idle
-
-### Styling
+## Styling
 
 Uses shared design system:
 
 ```css
-/* global.css */
 @import '@moa/shared/theme.css';
 ```
 
-**Color token examples**:
+Color tokens:
 
-- Background: `bg-bg-primary`, `bg-gray-80`
+- Background: `bg-bg-primary`, `bg-bg-secondary`
+- Container: `bg-container-primary`, `bg-container-secondary`
 - Text: `text-text-high`, `text-text-medium`, `text-text-low`
-- Accent: `text-green-40`, `hover:text-green-40`
+- Interactive: `hover:bg-interactive-hover`
+- Accent (no semantic token): `text-green-40`, `hover:text-green-40`
 
-### Version Management
+Full token reference: `packages/shared/src/styles/theme.css`
+
+## Version Management
 
 ```typescript
 // Injected via Vite define in astro.config.mjs
 declare const __APP_VERSION__: string;
 export const APP_VERSION = __APP_VERSION__;
 
-// Auto-generates GitHub Releases URL
+// Auto-generates GitHub Releases URL (version from apps/app/package.json)
 export function getDownloadUrl(platform: Platform) {
   return `https://github.com/nexters/moa/releases/download/v${APP_VERSION}/...`;
 }
 ```
 
-Version is read from `apps/app/package.json`.
-
-## Deployment Notes
+## Deployment
 
 | Item         | Value                         |
 | ------------ | ----------------------------- |
@@ -101,7 +79,7 @@ Version is read from `apps/app/package.json`.
 | Build output | `dist/`                       |
 | Deploy       | GitHub Actions (on main push) |
 
-**Static asset paths**: Must include base path
+Static asset paths must include base path:
 
 ```html
 <!-- Correct -->
@@ -110,11 +88,3 @@ Version is read from `apps/app/package.json`.
 <!-- Incorrect -->
 <link rel="icon" href="/favicon.svg" />
 ```
-
-## Parent Rules Reference
-
-Common rules from root CLAUDE.md apply:
-
-- bun only
-- Korean responses
-- Quality check after changes

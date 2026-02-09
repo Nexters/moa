@@ -1,6 +1,6 @@
-# CLAUDE.md
+# Moa
 
-**Moa**: Monorepo for Moa project
+Monorepo: real-time salary visualization menubar app
 
 ## Core Rules
 
@@ -15,20 +15,10 @@
 | **app**     | Tauri menubar app   | `apps/app/`     |
 | **landing** | Static landing page | `apps/landing/` |
 
-## App-Specific Instructions
-
-See `apps/app/CLAUDE.md` for comprehensive Tauri app development guidelines.
-
-## Branch Naming
-
-- `feature/<description>` - 새 기능
-- `fix/<description>` - 버그 수정
-- `refactor/<description>` - 리팩토링
-
 ## Quick Reference
 
 ```bash
-bun dev:app        # Run Tauri app (in tmux)
-bun dev:landing    # Run landing page
+bun dev:app        # Tauri app (in tmux)
+bun dev:landing    # Landing page
 bun check:all      # Full quality check
 ```
