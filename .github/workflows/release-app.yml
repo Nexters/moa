@@ -23,7 +23,9 @@ jobs:
       matrix:
         include:
           - platform: 'macos-latest'
-            args: '--bundles app,dmg'
+            args: '--bundles app,dmg --target aarch64-apple-darwin'
+          - platform: 'macos-latest'
+            args: '--bundles app,dmg --target x86_64-apple-darwin'
           - platform: 'windows-latest'
             args: '--bundles msi'
 
@@ -36,6 +38,8 @@ jobs:
 
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-apple-darwin
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2
