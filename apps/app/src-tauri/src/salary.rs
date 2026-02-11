@@ -80,18 +80,18 @@ pub fn start_salary_ticker(app_handle: AppHandle) {
         let mut prev_is_working: Option<bool> = None;
 
         loop {
-            std::thread::sleep(Duration::from_secs(1));
-
             // Re-read settings on change
             if SETTINGS_CHANGED.swap(false, Ordering::Relaxed) {
                 settings = load_settings(&app_handle);
             }
 
             let Some(ref s) = settings else {
+                std::thread::sleep(Duration::from_secs(1));
                 continue;
             };
 
             if !s.onboarding_completed {
+                std::thread::sleep(Duration::from_secs(1));
                 continue;
             }
 
@@ -117,6 +117,7 @@ pub fn start_salary_ticker(app_handle: AppHandle) {
                 today_override.as_ref().map(|(s, e)| (s.as_str(), e.as_str())),
                 now.naive_local(),
             ) else {
+                std::thread::sleep(Duration::from_secs(1));
                 continue;
             };
 
@@ -156,6 +157,8 @@ pub fn start_salary_ticker(app_handle: AppHandle) {
 
             // Emit event to frontend
             let _ = app_handle.emit("salary-tick", &payload);
+
+            std::thread::sleep(Duration::from_secs(1));
         }
     });
 

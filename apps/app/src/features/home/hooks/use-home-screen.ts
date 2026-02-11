@@ -1,5 +1,5 @@
-import type { SalaryInfo } from '~/hooks/use-salary-calculator';
-import { useSalaryCalculator } from '~/hooks/use-salary-calculator';
+import type { SalaryInfo } from '~/hooks/use-salary-tick';
+import { useSalaryTick } from '~/hooks/use-salary-tick';
 import type { TodayWorkSchedule } from '~/hooks/use-today-work-schedule';
 import { useTodayWorkSchedule } from '~/hooks/use-today-work-schedule';
 import { useUserSettings } from '~/hooks/use-user-settings';
@@ -72,11 +72,7 @@ export function useHomeScreen(): HomeScreenState {
     clearVacation,
     setVacation,
   } = useVacation();
-  const salaryInfo = useSalaryCalculator(
-    settings ?? null,
-    todaySchedule,
-    isOnVacation,
-  );
+  const salaryInfo = useSalaryTick();
   const {
     isAcknowledged,
     isLoading: ackLoading,
