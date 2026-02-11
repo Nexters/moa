@@ -1,0 +1,83 @@
+name: Update Homebrew Cask
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  update-cask:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get release info
+        id: release
+        env:
+          VERSION: ${{ github.event.release.tag_name }}
+        run: echo "version=${VERSION#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Download DMGs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          gh release download "$TAG" \
+            --repo "$REPO" \
+            --pattern "*.dmg" \
+            --dir ./dmgs
+
+      - name: Calculate SHA256
+        id: sha
+        run: |
+          VERSION="${{ steps.release.outputs.version }}"
+          echo "aarch64=$(shasum -a 256 ./dmgs/moa_${VERSION}_aarch64.dmg | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+          echo "x64=$(shasum -a 256 ./dmgs/moa_${VERSION}_x64.dmg | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout Tap repo
+        uses: actions/checkout@v4
+        with:
+          repository: nexters/homebrew-moa
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: homebrew-tap
+
+      - name: Update Cask formula
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+          SHA_AARCH64: ${{ steps.sha.outputs.aarch64 }}
+          SHA_X64: ${{ steps.sha.outputs.x64 }}
+        run: |
+          cat > homebrew-tap/Casks/moa.rb << RUBY
+          cask "moa" do
+            version "$VERSION"
+
+            on_arm do
+              url "https://github.com/nexters/moa/releases/download/v#{version}/moa_#{version}_aarch64.dmg"
+              sha256 "$SHA_AARCH64"
+            end
+
+            on_intel do
+              url "https://github.com/nexters/moa/releases/download/v#{version}/moa_#{version}_x64.dmg"
+              sha256 "$SHA_X64"
+            end
+
+            name "Moa"
+            desc "Real-time salary visualization menubar app"
+            homepage "https://github.com/nexters/moa"
+
+            app "moa.app"
+
+            zap trash: [
+              "~/Library/Application Support/moa",
+              "~/Library/Caches/moa",
+              "~/Library/Preferences/moa.plist",
+            ]
+          end
+          RUBY
+
+      - name: Push to Tap repo
+        working-directory: homebrew-tap
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/moa.rb
+          git commit -m "Update moa to v${{ steps.release.outputs.version }}"
+          git push
