@@ -1,0 +1,65 @@
+name: Update Homebrew Cask
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  update-cask:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Get release info
+        id: release
+        env:
+          VERSION: ${{ github.event.release.tag_name }}
+        run: echo "version=${VERSION#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Download DMGs
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          gh release download "$TAG" \
+            --repo "$REPO" \
+            --pattern "*.dmg" \
+            --dir ./dmgs
+
+      - name: Calculate SHA256
+        id: sha
+        run: |
+          VERSION="${{ steps.release.outputs.version }}"
+          echo "aarch64=$(shasum -a 256 ./dmgs/moa_${VERSION}_aarch64.dmg | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+          echo "x64=$(shasum -a 256 ./dmgs/moa_${VERSION}_x64.dmg | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout Tap repo
+        uses: actions/checkout@v4
+        with:
+          repository: nexters/homebrew-moa
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          path: homebrew-tap
+
+      - name: Generate Cask formula
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+          SHA_AARCH64: ${{ steps.sha.outputs.aarch64 }}
+          SHA_X64: ${{ steps.sha.outputs.x64 }}
+        run: |
+          mkdir -p homebrew-tap/Casks
+          sed -e "s/{{VERSION}}/$VERSION/g" \
+              -e "s/{{SHA_AARCH64}}/$SHA_AARCH64/g" \
+              -e "s/{{SHA_X64}}/$SHA_X64/g" \
+              homebrew/Casks/moa.rb.template \
+              > homebrew-tap/Casks/moa.rb
+
+      - name: Push to Tap repo
+        working-directory: homebrew-tap
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/moa.rb
+          git commit -m "Update moa to v${{ steps.release.outputs.version }}"
+          git push
