@@ -2,7 +2,7 @@ use tauri_specta::{collect_commands, Builder};
 
 pub fn generate_bindings() -> Builder<tauri::Wry> {
     use crate::commands::{menubar, notifications, preferences, recovery, user_settings};
-    use crate::tray;
+    use crate::{salary, tray};
 
     Builder::<tauri::Wry>::new().commands(collect_commands![
         // Menubar panel
@@ -26,6 +26,8 @@ pub fn generate_bindings() -> Builder<tauri::Wry> {
         // Tray icon
         tray::set_tray_icon_state,
         tray::set_tray_title,
+        // Salary ticker
+        salary::notify_settings_changed,
     ])
 }
 

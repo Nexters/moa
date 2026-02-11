@@ -49,6 +49,7 @@ export function useOnboardingForm({ onSuccess }: UseOnboardingFormOptions) {
       await queryClient.invalidateQueries({
         queryKey: userSettingsQuery.all(),
       });
+      void commands.notifySettingsChanged();
       onSuccess();
     },
   });

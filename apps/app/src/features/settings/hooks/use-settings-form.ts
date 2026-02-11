@@ -101,6 +101,7 @@ export function useSettingsForm({
       void queryClient.invalidateQueries({
         queryKey: emergencyDataQuery.file('today-work-schedule'),
       });
+      void commands.notifySettingsChanged();
       onSuccess?.();
     },
   });

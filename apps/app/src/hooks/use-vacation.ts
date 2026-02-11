@@ -31,6 +31,7 @@ export function useVacation() {
       void queryClient.invalidateQueries({
         queryKey: emergencyDataQuery.file(VACATION_FILENAME),
       });
+      void commands.notifySettingsChanged();
     },
   });
 
@@ -42,6 +43,7 @@ export function useVacation() {
       void queryClient.invalidateQueries({
         queryKey: emergencyDataQuery.file(VACATION_FILENAME),
       });
+      void commands.notifySettingsChanged();
     },
   });
 

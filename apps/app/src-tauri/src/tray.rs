@@ -100,14 +100,12 @@ fn toggle_main_window(app_handle: &AppHandle) {
     }
 }
 
-/// 트레이 아이콘 상태 변경 (근무중: 코인 플립 애니메이션 / 비근무: 정적 아이콘)
-#[tauri::command]
-#[specta::specta]
-pub fn set_tray_icon_state(app: AppHandle, is_working: bool) -> Result<(), String> {
+/// 트레이 아이콘 상태 변경 로직 (커맨드와 내부 모두에서 사용)
+pub fn update_icon_state(app: &AppHandle, is_working: bool) {
     if is_working {
         // 이미 애니메이션 중이면 중복 spawn 방지
         if ANIMATING.swap(true, Ordering::SeqCst) {
-            return Ok(());
+            return;
         }
 
         let app_clone = app.clone();
@@ -138,7 +136,13 @@ pub fn set_tray_icon_state(app: AppHandle, is_working: bool) -> Result<(), Strin
         ANIMATING.store(false, Ordering::SeqCst);
         log::debug!("트레이 아이콘 애니메이션 중지");
     }
+}
 
+/// 트레이 아이콘 상태 변경 (근무중: 코인 플립 애니메이션 / 비근무: 정적 아이콘)
+#[tauri::command]
+#[specta::specta]
+pub fn set_tray_icon_state(app: AppHandle, is_working: bool) -> Result<(), String> {
+    update_icon_state(&app, is_working);
     Ok(())
 }
 

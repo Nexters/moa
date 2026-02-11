@@ -169,6 +169,9 @@ async setTrayTitle(title: string | null) : Promise<Result<null, string>> {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+async notifySettingsChanged() : Promise<void> {
+    await TAURI_INVOKE("notify_settings_changed");
 }
 }
 
