@@ -24,6 +24,7 @@ export function App() {
   useEffect(() => {
     const cleanListen = listen('menubar_panel_did_open', () => {
       resetToHome();
+      (document.activeElement as HTMLElement)?.blur();
     });
     return () => {
       void cleanListen.then((fn) => fn());
@@ -59,10 +60,5 @@ export function App() {
     }
   };
 
-  return (
-    <>
-      <div tabIndex={0} className="sr-only" aria-label="포커스 초기화" />
-      {renderRoute()}
-    </>
-  );
+  return <>{renderRoute()}</>;
 }
