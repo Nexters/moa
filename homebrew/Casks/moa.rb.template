@@ -1,0 +1,25 @@
+cask "moa" do
+  version "{{VERSION}}"
+
+  on_arm do
+    url "https://github.com/nexters/moa/releases/download/v#{version}/moa_#{version}_aarch64.dmg"
+    sha256 "{{SHA_AARCH64}}"
+  end
+
+  on_intel do
+    url "https://github.com/nexters/moa/releases/download/v#{version}/moa_#{version}_x64.dmg"
+    sha256 "{{SHA_X64}}"
+  end
+
+  name "Moa"
+  desc "Real-time salary visualization menubar app"
+  homepage "https://github.com/nexters/moa"
+
+  app "moa.app"
+
+  zap trash: [
+    "~/Library/Application Support/moa",
+    "~/Library/Caches/moa",
+    "~/Library/Preferences/moa.plist",
+  ]
+end

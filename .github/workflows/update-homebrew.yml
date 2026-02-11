@@ -8,6 +8,9 @@ jobs:
   update-cask:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
       - name: Get release info
         id: release
         env:
@@ -39,39 +42,18 @@ jobs:
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
           path: homebrew-tap
 
-      - name: Update Cask formula
+      - name: Generate Cask formula
         env:
           VERSION: ${{ steps.release.outputs.version }}
           SHA_AARCH64: ${{ steps.sha.outputs.aarch64 }}
           SHA_X64: ${{ steps.sha.outputs.x64 }}
         run: |
-          cat > homebrew-tap/Casks/moa.rb << RUBY
-          cask "moa" do
-            version "$VERSION"
-
-            on_arm do
-              url "https://github.com/nexters/moa/releases/download/v#{version}/moa_#{version}_aarch64.dmg"
-              sha256 "$SHA_AARCH64"
-            end
-
-            on_intel do
-              url "https://github.com/nexters/moa/releases/download/v#{version}/moa_#{version}_x64.dmg"
-              sha256 "$SHA_X64"
-            end
-
-            name "Moa"
-            desc "Real-time salary visualization menubar app"
-            homepage "https://github.com/nexters/moa"
-
-            app "moa.app"
-
-            zap trash: [
-              "~/Library/Application Support/moa",
-              "~/Library/Caches/moa",
-              "~/Library/Preferences/moa.plist",
-            ]
-          end
-          RUBY
+          mkdir -p homebrew-tap/Casks
+          sed -e "s/{{VERSION}}/$VERSION/g" \
+              -e "s/{{SHA_AARCH64}}/$SHA_AARCH64/g" \
+              -e "s/{{SHA_X64}}/$SHA_X64/g" \
+              homebrew/Casks/moa.rb.template \
+              > homebrew-tap/Casks/moa.rb
 
       - name: Push to Tap repo
         working-directory: homebrew-tap
