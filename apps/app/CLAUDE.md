@@ -79,12 +79,13 @@ apps/app/
 │       ├── lib.rs           # App setup, plugins
 │       ├── bindings.rs      # tauri-specta registration
 │       ├── types.rs         # Shared types
-│       ├── tray.rs          # System tray
+│       ├── tray.rs          # System tray icon/animation
+│       ├── salary.rs        # Salary calculation + background ticker
 │       └── commands/        # Command handlers
 │
 └── src/
     ├── features/            # Feature-based components
-    │   ├── menubar/
+    │   ├── home/
     │   ├── settings/
     │   ├── onboarding/
     │   └── app.tsx          # Root component
