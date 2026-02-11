@@ -43,18 +43,6 @@ export function App() {
         {/* Divider */}
         <div className="bg-gray-80 my-12 h-px md:my-16" />
 
-        {/* Beta Notice */}
-        <section className="mb-12 md:mb-16">
-          <h2 className="c1-500 text-text-low mb-4 uppercase">Beta</h2>
-          <p className="t3-400 text-text-medium mb-4">
-            현재 베타 단계입니다. macOS에서 앱 실행을 위해 터미널에서 아래
-            명령어를 실행해주세요.
-          </p>
-          <code className="b2-400 bg-gray-80 text-text-high block px-4 py-3 font-mono">
-            xattr -cr /Applications/moa.app
-          </code>
-        </section>
-
         {/* Download Section */}
         <section className="grid grid-cols-4 gap-8 md:grid-cols-12 md:gap-12">
           {/* Desktop */}
