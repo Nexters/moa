@@ -49,12 +49,12 @@ pub fn start_ticker(app_handle: AppHandle) {
     std::thread::spawn(move || {
         let mut state = load_from_disk(&app_handle);
         loop {
-            std::thread::sleep(Duration::from_secs(1));
             if SETTINGS_CHANGED.swap(false, Ordering::Relaxed) {
                 state = load_from_disk(&app_handle);
             }
             // 계산 → 네이티브 API 직접 호출 → 이벤트 emit
             let _ = app_handle.emit("event-name", &payload);
+            std::thread::sleep(Duration::from_secs(1)); // sleep은 loop 끝에 배치
         }
     });
 }
@@ -77,4 +77,4 @@ useEffect(() => {
 
 설정/데이터 저장 후 `commands.notifySettingsChanged()`를 호출하여 Rust 스레드에 변경을 알린다.
 
-**현재 사용처**: `salary.rs` — 급여 계산 + 메뉴바 타이틀 갱신 (1초 간격)
+**현재 사용처**: `salary.rs` — 급여 계산의 single source of truth. 메뉴바 타이틀을 직접 갱신하고, `salary-tick` 이벤트로 React UI(`useSalaryTick` 훅)에도 동일한 계산 결과를 전달한다 (1초 간격).

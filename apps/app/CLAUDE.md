@@ -80,7 +80,7 @@ apps/app/
 │       ├── bindings.rs      # tauri-specta registration
 │       ├── types.rs         # Shared types
 │       ├── tray.rs          # System tray icon/animation
-│       ├── salary.rs        # Salary calculation + background ticker
+│       ├── salary.rs        # Salary calculation (single source of truth) + background ticker
 │       └── commands/        # Command handlers
 │
 └── src/
@@ -89,7 +89,7 @@ apps/app/
     │   ├── settings/
     │   ├── onboarding/
     │   └── app.tsx          # Root component
-    ├── hooks/               # Custom hooks
+    ├── hooks/               # Custom hooks (useSalaryTick: Rust 이벤트 구독)
     ├── stores/              # Zustand stores
     ├── lib/                 # Utilities, bindings
 ```
