@@ -44,9 +44,8 @@ export function App() {
         {/* Divider */}
         <div className="bg-gray-80 my-12 h-px md:my-16" />
 
-        {/* Download Section */}
+        {/* Desktop Section */}
         <section className="grid grid-cols-4 gap-8 md:grid-cols-12 md:gap-12">
-          {/* Desktop */}
           <div className="col-span-4 md:col-span-6">
             <div className="mb-4 flex items-baseline justify-between">
               <h2 className="c1-500 text-text-low uppercase">Desktop</h2>
@@ -54,6 +53,12 @@ export function App() {
                 v{APP_VERSION}
               </span>
             </div>
+            <CodeBlock
+              commands={['brew tap nexters/moa', 'brew install --cask moa']}
+            />
+          </div>
+          <div className="col-span-4 md:col-span-6">
+            <h2 className="c1-500 text-text-low mb-4 uppercase">Download</h2>
             <div className="flex flex-col gap-3">
               <DownloadButton
                 platform="macOS"
@@ -68,24 +73,18 @@ export function App() {
               />
             </div>
           </div>
-
-          {/* Mobile */}
-          <div className="col-span-4 md:col-span-6">
-            <h2 className="c1-500 text-text-low mb-4 uppercase">Mobile</h2>
-            <div className="flex flex-col gap-3">
-              <DownloadButton platform="iOS" icon={<IOSIcon />} />
-              <DownloadButton platform="Android" icon={<AndroidIcon />} />
-            </div>
-          </div>
         </section>
 
-        {/* Homebrew Section */}
-        <section className="mt-12 grid grid-cols-4 gap-4 md:mt-16 md:grid-cols-12">
-          <div className="col-span-4 md:col-span-6">
-            <h2 className="c1-500 text-text-low mb-4 uppercase">Homebrew</h2>
-            <CodeBlock
-              commands={['brew tap nexters/moa', 'brew install --cask moa']}
-            />
+        {/* Mobile Section */}
+        <section className="mt-12 md:mt-16">
+          <h2 className="c1-500 text-text-low mb-4 uppercase">Mobile</h2>
+          <div className="grid grid-cols-4 gap-8 md:grid-cols-12 md:gap-12">
+            <div className="col-span-4 md:col-span-6">
+              <div className="flex flex-col gap-3">
+                <DownloadButton platform="iOS" icon={<IOSIcon />} />
+                <DownloadButton platform="Android" icon={<AndroidIcon />} />
+              </div>
+            </div>
           </div>
         </section>
 
