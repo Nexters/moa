@@ -65,7 +65,11 @@ export function App() {
                 arch="Apple Silicon"
                 href={getDownloadUrl('mac-aarch64')}
               />
-              <DownloadButton platform="macOS" arch="Intel" />
+              <DownloadButton
+                platform="macOS"
+                arch="Intel"
+                href={getDownloadUrl('mac-x64')}
+              />
               <DownloadButton
                 platform="Windows"
                 arch="x64"

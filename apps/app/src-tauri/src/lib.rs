@@ -6,6 +6,7 @@
 
 mod bindings;
 mod commands;
+mod salary;
 mod tray;
 mod types;
 mod utils;
@@ -125,6 +126,9 @@ pub fn run() {
 
             // Create system tray icon
             tray::create(app.handle())?;
+
+            // Start background salary ticker (updates tray title every second)
+            salary::start_salary_ticker(app.handle().clone());
 
             Ok(())
         })

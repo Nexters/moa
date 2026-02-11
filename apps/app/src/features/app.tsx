@@ -8,7 +8,6 @@ import { useUIStore } from '~/stores/ui-store';
 import { Home } from './home';
 import { Onboarding } from './onboarding';
 import { Settings } from './settings';
-import { TraySync } from './tray-sync';
 import './app.css';
 
 export function App() {
@@ -63,7 +62,6 @@ export function App() {
   return (
     <>
       <div tabIndex={0} className="sr-only" aria-label="포커스 초기화" />
-      <TraySync />
       {renderRoute()}
     </>
   );
