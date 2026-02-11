@@ -58,6 +58,7 @@ export function SettingsScreen({ onNavigate }: Props) {
       void queryClient.invalidateQueries({
         queryKey: userSettingsQuery.all(),
       });
+      void commands.notifySettingsChanged();
     },
   });
 
@@ -67,6 +68,7 @@ export function SettingsScreen({ onNavigate }: Props) {
       if (result.status === 'error') throw new Error(result.error);
     },
     onSuccess: () => {
+      void commands.notifySettingsChanged();
       queryClient.clear();
       navigate('onboarding');
     },

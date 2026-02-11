@@ -54,6 +54,7 @@ export function useTodayWorkSchedule() {
       void queryClient.invalidateQueries({
         queryKey: emergencyDataQuery.file(SCHEDULE_FILENAME),
       });
+      void commands.notifySettingsChanged();
     },
   });
 
@@ -65,6 +66,7 @@ export function useTodayWorkSchedule() {
       void queryClient.invalidateQueries({
         queryKey: emergencyDataQuery.file(SCHEDULE_FILENAME),
       });
+      void commands.notifySettingsChanged();
     },
   });
 
