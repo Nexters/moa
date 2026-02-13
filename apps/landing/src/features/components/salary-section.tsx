@@ -1,49 +1,71 @@
 export function SalarySection() {
   return (
     <section className="bg-bg-secondary px-6 pt-[60px] pb-20 md:px-[68px] md:pt-[100px] md:pb-[160px] lg:px-[120px]">
-      <div className="mx-auto flex max-w-[1200px] flex-col items-center">
-        <h2 className="t2-700 md:h2-700 mb-2 text-center text-white md:mb-3">
-          지금 이 시간,
-        </h2>
-        <h2 className="t2-700 md:h2-700 mb-8 text-center text-white md:mb-12">
-          나 얼마 벌고 있을까?
-        </h2>
+      <div className="mx-auto flex flex-col items-center gap-10 md:gap-[60px]">
+        {/* Title */}
+        <div className="flex flex-col items-center gap-4 text-center">
+          <h2 className="t2-700 md:h2-700 text-white">
+            지금 이 시간, 나 얼마 벌고 있을까?
+          </h2>
+          <p className="t3-400 text-text-medium">
+            출근부터 퇴근까지, 내 업무의 보상을 숫자로 바로 느껴보세요.
+          </p>
+        </div>
 
-        {/* Popover Card */}
-        <div className="w-full max-w-[504px] rounded-[20px] bg-white/[0.08] p-6 shadow-[2px_4px_20px_0px_rgba(0,0,0,0.25)] md:p-8">
-          {/* Tooltip pill */}
-          <div className="mb-4 flex items-center gap-2">
-            <span className="bg-gray-70 c1-500 rounded-full px-3 py-1 text-white">
-              실시간
-            </span>
-          </div>
-
-          {/* Money icon + salary */}
-          <div className="mb-4 flex items-center gap-3 md:mb-6">
-            <img
-              src="/moa/images/moa-money.avif"
-              alt="돈 아이콘"
-              className="h-10 w-10 md:h-14 md:w-14"
-            />
-            <div>
-              <p className="c1-400 text-text-medium mb-1">오늘 쌓은 월급</p>
-              <p
-                className="font-bold tracking-[-0.2px] text-white"
-                style={salaryStyle}
-              >
-                2,150,000
-                <span className="t2-700 md:h3-700">원</span>
-              </p>
+        {/* Popover */}
+        <div className="flex w-full items-center justify-center">
+          <div className="flex flex-col items-center gap-3 overflow-clip rounded-[20px] shadow-[2px_4px_20px_0px_rgba(0,0,0,0.25)]">
+            {/* Tooltip pill + arrow */}
+            <div className="flex flex-col items-center">
+              <div className="bg-gray-70 flex items-center rounded-full px-5 py-[11px]">
+                <span className="t2-500 text-white">
+                  이번달에 쌓은 월급 123,203,000원
+                </span>
+              </div>
+              <div className="border-t-gray-70 h-0 w-0 border-x-[12px] border-t-[13px] border-x-transparent" />
             </div>
-          </div>
 
-          {/* Status info */}
-          <div className="bg-gray-70 flex items-center justify-between rounded-[12px] px-4 py-3">
-            <div className="flex items-center gap-2">
-              <span className="bg-green-40 h-2 w-2 rounded-full" />
-              <span className="b2-500 text-text-medium">근무 중</span>
+            {/* Content */}
+            <div className="flex w-full flex-col gap-6 pt-4 md:w-[504px]">
+              {/* Icon + label + salary */}
+              <div className="flex flex-col items-center gap-4 px-5 md:px-7">
+                <img
+                  src="/moa/images/moa-money.avif"
+                  alt="MOA 아이콘"
+                  className="h-[80px] w-[80px] object-contain md:h-[112px] md:w-[112px]"
+                />
+                <div className="flex flex-col items-center gap-[5.6px]">
+                  <p className="t1-500 text-white">오늘 쌓은 월급</p>
+                  <div className="flex items-end justify-center gap-[5.6px]">
+                    <span
+                      className="font-bold tracking-[-0.28px] text-white"
+                      style={salaryStyle}
+                    >
+                      2,150,000
+                    </span>
+                    <span
+                      className="text-text-medium font-normal tracking-[-0.2px]"
+                      style={wonStyle}
+                    >
+                      원
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Status card */}
+              <div className="bg-gray-70 flex flex-col gap-5 rounded-[22px] p-[22px]">
+                <div className="flex items-center justify-between">
+                  <span className="t2-500 text-text-medium">근무 상태</span>
+                  <span className="t2-700 text-green-40">근무 중</span>
+                </div>
+                <div className="bg-gray-60 h-px w-full" />
+                <div className="flex items-center justify-between">
+                  <span className="t2-500 text-text-medium">근무 시간</span>
+                  <span className="t2-700 text-white">09:00 - 18:00</span>
+                </div>
+              </div>
             </div>
-            <span className="b2-400 text-text-low">6시간 32분</span>
           </div>
         </div>
       </div>
@@ -51,7 +73,12 @@ export function SalarySection() {
   );
 }
 
-const salaryStyle = {
+const salaryStyle: React.CSSProperties = {
   fontSize: 'clamp(28px, 5vw, 56px)',
-  lineHeight: 'clamp(38px, 6.5vw, 72px)',
+  lineHeight: '70px',
+};
+
+const wonStyle: React.CSSProperties = {
+  fontSize: 'clamp(24px, 4vw, 40px)',
+  lineHeight: '50px',
 };
