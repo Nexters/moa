@@ -6,7 +6,9 @@ export function Footer() {
       {/* Left */}
       <div className="flex flex-1 flex-col gap-4">
         <div className="b1-400 text-text-medium flex items-center gap-2">
-          <span><span className="text-white">📩</span> 문의:</span>
+          <span>
+            <span className="text-white">📩</span> 문의:
+          </span>
           <a
             href="mailto:moa.mymoney@gmail.com"
             className="p-1 underline transition-colors hover:text-white"
