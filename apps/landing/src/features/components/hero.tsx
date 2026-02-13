@@ -18,7 +18,7 @@ export function Hero() {
         </div>
         <a
           href="#download"
-          className="bg-green-40 text-gray-90 b1-600 flex w-[130px] items-center justify-center rounded-[32px] px-5 py-4 transition-opacity hover:opacity-90"
+          className="bg-green-40 text-gray-90 b1-600 flex h-[56px] w-[240px] items-center justify-center rounded-[32px] transition-opacity hover:opacity-90"
         >
           앱 다운로드
         </a>
