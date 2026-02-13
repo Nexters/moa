@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { cn } from 'tailwind-variants';
 
+import { MoaMoneyLottie } from '@moa/shared/moa-money-lottie';
+
 import { APP_VERSION, getDownloadUrl } from './app-version';
 
 export function App() {
@@ -12,7 +14,10 @@ export function App() {
         <section className="grid grid-cols-4 gap-4 md:grid-cols-12 md:gap-6">
           {/* Title Block */}
           <div className="col-span-4 mb-8 md:col-span-8 md:mb-16">
-            <h1 className="h2-700 md:h1-700 mb-4 md:text-8xl">모아</h1>
+            <div className="mb-4 flex items-center gap-3">
+              <MoaMoneyLottie loop className="size-12 md:size-16" />
+              <h1 className="h2-700 md:h1-700 md:text-8xl">모아</h1>
+            </div>
             <p className="t3-400 md:t2-400 text-text-medium max-w-md">
               실시간 월급 체감 서비스
             </p>

@@ -3,7 +3,8 @@ import { listen } from '@tauri-apps/api/event';
 import { useEffect, useState } from 'react';
 import { cn } from 'tailwind-variants';
 
-import { HolidayIcon, MoaMoneyIcon } from '~/ui/icons';
+import { MoaMoneyLottie } from '@moa/shared/moa-money-lottie';
+import { HolidayIcon } from '~/ui/icons';
 
 type HeroVariant = 'empty' | 'partial' | 'full' | 'holiday';
 
@@ -39,7 +40,11 @@ export function HeroSection({ variant, label, amount }: HeroSectionProps) {
 
   return (
     <div className="flex flex-col items-center gap-5">
-      {isHoliday ? <HolidayIcon /> : <MoaMoneyIcon variant={variant} />}
+      {isHoliday ? (
+        <HolidayIcon />
+      ) : (
+        <MoaMoneyLottie key={animKey} loop={false} className="size-20" />
+      )}
       <div className="flex flex-col items-center gap-1">
         <p className="t3-500 text-text-high">{label}</p>
         <div className="flex items-center justify-center gap-1">
