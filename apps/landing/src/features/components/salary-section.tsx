@@ -13,57 +13,55 @@ export function SalarySection() {
         </div>
 
         {/* Popover */}
-        <div className="flex w-full items-center justify-center">
-          <div className="flex flex-col items-center gap-3 overflow-clip rounded-[20px] shadow-[2px_4px_20px_0px_rgba(0,0,0,0.25)]">
-            {/* Tooltip pill + arrow */}
-            <div className="flex flex-col items-center">
-              <div className="bg-gray-70 flex items-center rounded-full px-5 py-[11px]">
-                <span className="t2-500 text-white">
-                  이번달에 쌓은 월급 123,203,000원
-                </span>
+        <div className="flex w-full flex-col items-center">
+          {/* Tooltip pill + arrow */}
+          <div className="z-10 flex flex-col items-center">
+            <div className="bg-gray-70 flex items-center rounded-full px-5 py-[11px]">
+              <span className="t2-500 text-white">
+                이번달에 쌓은 월급 123,203,000원
+              </span>
+            </div>
+            <div className="border-t-gray-70 h-0 w-0 border-x-[12px] border-t-[13px] border-x-transparent" />
+          </div>
+
+          {/* Content card */}
+          <div className="flex w-full flex-col gap-6 rounded-[20px] pt-4 shadow-[2px_4px_20px_0px_rgba(0,0,0,0.25)] md:w-[504px]">
+            {/* Icon + label + salary */}
+            <div className="flex flex-col items-center gap-4 px-5 md:px-7">
+              <img
+                src="/moa/images/moa-money.avif"
+                alt="MOA 아이콘"
+                className="h-[80px] w-[80px] object-contain md:h-[112px] md:w-[112px]"
+              />
+              <div className="flex flex-col items-center gap-[5.6px]">
+                <p className="t1-500 text-white">오늘 쌓은 월급</p>
+                <div className="flex items-end justify-center gap-[5.6px]">
+                  <span
+                    className="font-bold tracking-[-0.28px] text-white"
+                    style={salaryStyle}
+                  >
+                    2,150,000
+                  </span>
+                  <span
+                    className="text-text-medium font-normal tracking-[-0.2px]"
+                    style={wonStyle}
+                  >
+                    원
+                  </span>
+                </div>
               </div>
-              <div className="border-t-gray-70 h-0 w-0 border-x-[12px] border-t-[13px] border-x-transparent" />
             </div>
 
-            {/* Content */}
-            <div className="flex w-full flex-col gap-6 pt-4 md:w-[504px]">
-              {/* Icon + label + salary */}
-              <div className="flex flex-col items-center gap-4 px-5 md:px-7">
-                <img
-                  src="/moa/images/moa-money.avif"
-                  alt="MOA 아이콘"
-                  className="h-[80px] w-[80px] object-contain md:h-[112px] md:w-[112px]"
-                />
-                <div className="flex flex-col items-center gap-[5.6px]">
-                  <p className="t1-500 text-white">오늘 쌓은 월급</p>
-                  <div className="flex items-end justify-center gap-[5.6px]">
-                    <span
-                      className="font-bold tracking-[-0.28px] text-white"
-                      style={salaryStyle}
-                    >
-                      2,150,000
-                    </span>
-                    <span
-                      className="text-text-medium font-normal tracking-[-0.2px]"
-                      style={wonStyle}
-                    >
-                      원
-                    </span>
-                  </div>
-                </div>
+            {/* Status card */}
+            <div className="bg-gray-70 flex flex-col gap-5 rounded-[22px] p-[22px]">
+              <div className="flex items-center justify-between">
+                <span className="t2-500 text-text-medium">근무 상태</span>
+                <span className="t2-700 text-green-40">근무 중</span>
               </div>
-
-              {/* Status card */}
-              <div className="bg-gray-70 flex flex-col gap-5 rounded-[22px] p-[22px]">
-                <div className="flex items-center justify-between">
-                  <span className="t2-500 text-text-medium">근무 상태</span>
-                  <span className="t2-700 text-green-40">근무 중</span>
-                </div>
-                <div className="bg-gray-60 h-px w-full" />
-                <div className="flex items-center justify-between">
-                  <span className="t2-500 text-text-medium">근무 시간</span>
-                  <span className="t2-700 text-white">09:00 - 18:00</span>
-                </div>
+              <div className="bg-gray-60 h-px w-full" />
+              <div className="flex items-center justify-between">
+                <span className="t2-500 text-text-medium">근무 시간</span>
+                <span className="t2-700 text-white">09:00 - 18:00</span>
               </div>
             </div>
           </div>
