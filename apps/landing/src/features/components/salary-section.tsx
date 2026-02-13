@@ -25,7 +25,7 @@ export function SalarySection() {
           </div>
 
           {/* Content card */}
-          <div className="flex w-full flex-col gap-6 rounded-[20px] pt-4 shadow-[2px_4px_20px_0px_rgba(0,0,0,0.25)] md:w-[504px]">
+          <div className="flex w-full flex-col gap-6 pt-4 md:w-[504px]">
             {/* Icon + label + salary */}
             <div className="flex flex-col items-center gap-4 px-5 md:px-7">
               <img
@@ -53,7 +53,7 @@ export function SalarySection() {
             </div>
 
             {/* Status card */}
-            <div className="bg-gray-70 flex flex-col gap-5 rounded-[22px] p-[22px]">
+            <div className="bg-gray-70 flex flex-col gap-5 rounded-[22px] p-[22px] shadow-[2px_4px_20px_0px_rgba(0,0,0,0.25)]">
               <div className="flex items-center justify-between">
                 <span className="t2-500 text-text-medium">근무 상태</span>
                 <span className="t2-700 text-green-40">근무 중</span>
