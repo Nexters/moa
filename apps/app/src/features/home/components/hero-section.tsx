@@ -3,7 +3,7 @@ import { listen } from '@tauri-apps/api/event';
 import { useEffect, useState } from 'react';
 import { cn } from 'tailwind-variants';
 
-import { MoaMoneyLottie } from '@moa/shared/moa-money-lottie';
+import { MoaMoneyLottie } from '@moa/shared';
 import { HolidayIcon } from '~/ui/icons';
 
 type HeroVariant = 'empty' | 'partial' | 'full' | 'holiday';

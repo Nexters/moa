@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { cn } from 'tailwind-variants';
 
-import { MoaMoneyLottie } from '@moa/shared/moa-money-lottie';
+import { MoaMoneyLottie } from '@moa/shared';
 
 import { APP_VERSION, getDownloadUrl } from './app-version';
 

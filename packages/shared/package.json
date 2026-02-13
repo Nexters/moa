@@ -5,8 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./theme.css": "./src/styles/theme.css",
-    "./moa-money-lottie": "./src/components/moa-money-lottie.tsx"
+    "./theme.css": "./src/styles/theme.css"
   },
   "scripts": {
     "check:all": "tsc --noEmit"
