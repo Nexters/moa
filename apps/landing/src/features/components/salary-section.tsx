@@ -21,7 +21,7 @@ export function SalarySection() {
                 이번달에 쌓은 월급 123,203,000원
               </span>
             </div>
-            <div className="border-t-gray-70 h-0 w-0 border-x-[12px] border-t-[13px] border-x-transparent" />
+            <div className="border-t-gray-70 h-0 w-0 border-x-12 border-t-13 border-x-transparent" />
           </div>
 
           {/* Content card */}
