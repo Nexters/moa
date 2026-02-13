@@ -99,11 +99,11 @@ pub fn start_salary_ticker(app_handle: AppHandle) {
             let now = Local::now();
             let today_str = now.format("%Y-%m-%d").to_string();
 
-            let is_on_vacation = load_vacation_state(&recovery_dir)
-                .map_or(false, |date| date == today_str);
+            let is_on_vacation =
+                load_vacation_state(&recovery_dir).map_or(false, |date| date == today_str);
 
-            let today_override = load_today_schedule(&recovery_dir)
-                .and_then(|(date, start, end)| {
+            let today_override =
+                load_today_schedule(&recovery_dir).and_then(|(date, start, end)| {
                     if date == today_str {
                         Some((start, end))
                     } else {
@@ -114,7 +114,9 @@ pub fn start_salary_ticker(app_handle: AppHandle) {
             let Some(payload) = calculate_salary(
                 s,
                 is_on_vacation,
-                today_override.as_ref().map(|(s, e)| (s.as_str(), e.as_str())),
+                today_override
+                    .as_ref()
+                    .map(|(s, e)| (s.as_str(), e.as_str())),
                 now.naive_local(),
             ) else {
                 std::thread::sleep(Duration::from_secs(1));
@@ -295,8 +297,7 @@ fn get_pay_period(today: NaiveDate, pay_day: u8) -> (NaiveDate, NaiveDate) {
         } else {
             (year, month - 1)
         };
-        let start_day =
-            std::cmp::min(pay_day as u32, days_in_month(start_year, start_month));
+        let start_day = std::cmp::min(pay_day as u32, days_in_month(start_year, start_month));
         let end_day = std::cmp::min(pay_day as u32, days_in_month(year, month));
 
         let start = NaiveDate::from_ymd_opt(start_year, start_month, start_day).unwrap();
@@ -372,11 +373,7 @@ fn get_recovery_dir(app: &AppHandle) -> PathBuf {
 }
 
 fn load_settings(app: &AppHandle) -> Option<UserSettings> {
-    let path = app
-        .path()
-        .app_data_dir()
-        .ok()?
-        .join("user-settings.json");
+    let path = app.path().app_data_dir().ok()?.join("user-settings.json");
 
     let contents = std::fs::read_to_string(&path).ok()?;
     serde_json::from_str(&contents).ok()
