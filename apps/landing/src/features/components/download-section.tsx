@@ -1,7 +1,8 @@
 import {
   AppleIcon,
-  AndroidIcon,
+  AppStoreIcon,
   DownloadIcon,
+  PlayStoreIcon,
   WindowsIcon,
 } from '~/assets/icons';
 
@@ -77,11 +78,11 @@ export function DownloadSection() {
             <p className="b1-500 text-text-medium">Mobile</p>
             <div className="flex flex-col gap-3">
               <DownloadRow
-                icon={<AppleIcon className="h-6 w-6" />}
+                icon={<AppStoreIcon className="h-6 w-6" />}
                 label="iOS"
               />
               <DownloadRow
-                icon={<AndroidIcon className="h-6 w-6" />}
+                icon={<PlayStoreIcon className="h-6 w-6" />}
                 label="Android"
               />
             </div>
