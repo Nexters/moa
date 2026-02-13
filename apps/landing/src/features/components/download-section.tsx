@@ -93,7 +93,7 @@ export function DownloadSection() {
             <div className="flex flex-col gap-3">
               <DownloadRow
                 icon={<AppleIcon className="h-6 w-6" />}
-                label="mac OS"
+                label="macOS"
                 href={getDownloadUrl('mac-aarch64')}
               />
               <DownloadRow
