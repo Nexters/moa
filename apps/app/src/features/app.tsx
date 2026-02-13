@@ -1,5 +1,5 @@
 import { listen } from '@tauri-apps/api/event';
-import { Activity, useEffect } from 'react';
+import { useEffect } from 'react';
 
 import { useCheckForUpdates } from '~/lib/check-for-updates';
 import { commands, unwrapResult } from '~/lib/tauri-bindings';
@@ -47,17 +47,14 @@ export function App() {
     void checkOnboarding();
   }, [navigate]);
 
-  return (
-    <>
-      <Activity mode={currentRoute === 'onboarding' ? 'visible' : 'hidden'}>
-        <Onboarding />
-      </Activity>
-      <Activity mode={currentRoute === 'home' ? 'visible' : 'hidden'}>
-        <Home />
-      </Activity>
-      <Activity mode={currentRoute === 'settings' ? 'visible' : 'hidden'}>
-        <Settings />
-      </Activity>
-    </>
-  );
+  switch (currentRoute) {
+    case 'loading':
+      return null;
+    case 'onboarding':
+      return <Onboarding />;
+    case 'home':
+      return <Home />;
+    case 'settings':
+      return <Settings />;
+  }
 }
