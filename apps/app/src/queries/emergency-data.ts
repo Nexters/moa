@@ -14,6 +14,7 @@ export const emergencyDataQueryOptions = {
       queryFn: async (): Promise<T | null> => {
         const result = await commands.loadEmergencyData(filename);
         if (result.status === 'ok') return result.data as T;
+        if (result.error.type === 'FileNotFound') return null;
         throw new Error(`Failed to load emergency data: ${filename}`);
       },
     }),

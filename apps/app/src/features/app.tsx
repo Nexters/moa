@@ -47,18 +47,14 @@ export function App() {
     void checkOnboarding();
   }, [navigate]);
 
-  const renderRoute = () => {
-    switch (currentRoute) {
-      case 'loading':
-        return null;
-      case 'onboarding':
-        return <Onboarding />;
-      case 'home':
-        return <Home />;
-      case 'settings':
-        return <Settings />;
-    }
-  };
-
-  return <>{renderRoute()}</>;
+  switch (currentRoute) {
+    case 'loading':
+      return null;
+    case 'onboarding':
+      return <Onboarding />;
+    case 'home':
+      return <Home />;
+    case 'settings':
+      return <Settings />;
+  }
 }

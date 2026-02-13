@@ -23,15 +23,18 @@ export interface SalaryInfo {
   workedDays: number;
 }
 
+let cachedInfo: SalaryInfo | null = null;
+
 /**
  * Rust 백그라운드 타이머에서 매초 발행하는 salary-tick 이벤트를 구독.
  * 메뉴바와 UI가 동일한 계산 결과를 사용하도록 보장.
  */
 export function useSalaryTick(): SalaryInfo | null {
-  const [info, setInfo] = useState<SalaryInfo | null>(null);
+  const [info, setInfo] = useState<SalaryInfo | null>(cachedInfo);
 
   useEffect(() => {
     const unlisten = listen<SalaryInfo>('salary-tick', (event) => {
+      cachedInfo = event.payload;
       setInfo(event.payload);
     });
     return () => {
