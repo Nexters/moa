@@ -100,7 +100,7 @@ pub fn start_salary_ticker(app_handle: AppHandle) {
             let today_str = now.format("%Y-%m-%d").to_string();
 
             let is_on_vacation =
-                load_vacation_state(&recovery_dir).map_or(false, |date| date == today_str);
+                load_vacation_state(&recovery_dir).is_some_and(|date| date == today_str);
 
             let today_override =
                 load_today_schedule(&recovery_dir).and_then(|(date, start, end)| {
@@ -213,7 +213,7 @@ fn calculate_salary(
     // JS Date.getDay(): 0=Sun, 1=Mon, ..., 6=Sat
     let day_of_week = today.weekday().num_days_from_sunday() as u8;
     let is_work_day = work_days.contains(&day_of_week) || today_override.is_some();
-    let current_minutes = now.time().hour() as u32 * 60 + now.time().minute() as u32;
+    let current_minutes = now.time().hour() * 60 + now.time().minute();
 
     let (today_earnings, work_status) = if !is_work_day || is_on_vacation {
         (0.0, WorkStatus::DayOff)
@@ -223,7 +223,7 @@ fn calculate_salary(
         (daily_rate, WorkStatus::Completed)
     } else {
         let worked_minutes = current_minutes - work_start_minutes;
-        let worked_seconds = worked_minutes * 60 + now.time().second() as u32;
+        let worked_seconds = worked_minutes * 60 + now.time().second();
         (per_second * worked_seconds as f64, WorkStatus::Working)
     };
 
@@ -353,7 +353,7 @@ fn format_with_commas(n: u64) -> String {
     }
     let mut result = String::with_capacity(len + len / 3);
     for (i, ch) in s.chars().enumerate() {
-        if i > 0 && (len - i) % 3 == 0 {
+        if i > 0 && (len - i).is_multiple_of(3) {
             result.push(',');
         }
         result.push(ch);
