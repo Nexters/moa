@@ -69,7 +69,9 @@ useEffect(() => {
   const unlisten = listen<Payload>('event-name', (event) => {
     setData(event.payload);
   });
-  return () => { void unlisten.then(fn => fn()); };
+  return () => {
+    void unlisten.then((fn) => fn());
+  };
 }, []);
 ```
 

@@ -19,11 +19,11 @@ homebrew/
 
 ### 플레이스홀더
 
-| 플레이스홀더 | 치환 값 |
-|---|---|
-| `{{VERSION}}` | 릴리즈 버전 (e.g. `0.5.0`) |
-| `{{SHA_AARCH64}}` | Apple Silicon DMG SHA256 |
-| `{{SHA_X64}}` | Intel DMG SHA256 |
+| 플레이스홀더      | 치환 값                    |
+| ----------------- | -------------------------- |
+| `{{VERSION}}`     | 릴리즈 버전 (e.g. `0.5.0`) |
+| `{{SHA_AARCH64}}` | Apple Silicon DMG SHA256   |
+| `{{SHA_X64}}`     | Intel DMG SHA256           |
 
 `{{}}` 형식을 사용하여 shell 변수(`$VAR`)와 Ruby 문자열 보간(`#{version}`)과의 충돌을 방지한다.
 
