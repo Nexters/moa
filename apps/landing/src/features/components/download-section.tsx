@@ -51,7 +51,7 @@ export function DownloadSection() {
       <div className="mx-auto max-w-[1200px]">
         <div className="mb-10 flex flex-col items-center md:mb-16">
           <img
-            src="/moa/images/coin-rotate.png"
+            src="/moa/images/coin-rotate.gif"
             alt="코인 아이콘"
             className="mb-6 h-16 w-16 md:h-20 md:w-20"
           />

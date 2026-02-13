@@ -3,7 +3,7 @@ export function Hero() {
     <section className="bg-bg-primary px-6 pt-10 pb-20 md:px-[68px] md:pt-[60px] md:pb-[100px] lg:px-[120px]">
       <div className="mx-auto flex max-w-[1200px] flex-col items-center text-center">
         <img
-          src="/moa/images/hero-parachute.png"
+          src="/moa/images/hero-parachute.avif"
           alt="낙하산 일러스트"
           className="mb-6 h-[200px] w-auto md:mb-10 md:h-[300px] lg:h-[360px]"
         />

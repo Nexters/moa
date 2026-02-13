@@ -2,21 +2,21 @@ const CARDS = [
   {
     subtitle: '오늘 쌓은 금액',
     amount: '12,000원',
-    image: '/moa/images/card-graphic-1.png',
+    image: '/moa/images/card-graphic-1.avif',
     title: '오늘은 얼마나 벌었을까?',
     description: '하루 동안 일한 만큼 실시간으로 쌓이는 금액을 확인해 보세요.',
   },
   {
     subtitle: '이번달까지 누적 월급은',
     amount: '1,201,700원',
-    image: '/moa/images/card-graphic-2.png',
+    image: '/moa/images/card-graphic-2.avif',
     title: '실시간으로 올라가는 숫자',
     description: '월급날까지 얼마나 모았는지, 실시간으로 확인할 수 있어요.',
   },
   {
     subtitle: '내년의 총급여',
     amount: '3,400,000원',
-    image: '/moa/images/card-graphic-3.png',
+    image: '/moa/images/card-graphic-3.avif',
     title: '당신의 준비를 함께해요',
     description:
       '연봉 기반으로 예상되는 총급여를 미리 확인하고 계획을 세워보세요.',

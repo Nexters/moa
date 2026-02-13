@@ -21,7 +21,7 @@ export function SalarySection() {
           {/* Money icon + salary */}
           <div className="mb-4 flex items-center gap-3 md:mb-6">
             <img
-              src="/moa/images/moa-money.png"
+              src="/moa/images/moa-money.avif"
               alt="돈 아이콘"
               className="h-10 w-10 md:h-14 md:w-14"
             />
