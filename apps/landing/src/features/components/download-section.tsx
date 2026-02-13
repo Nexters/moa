@@ -1,3 +1,5 @@
+import { cn } from 'tailwind-variants';
+
 import {
   AppleIcon,
   AppStoreIcon,
@@ -26,11 +28,12 @@ function DownloadRow({ icon, label, href }: DownloadRowProps) {
       type="button"
       onClick={handleClick}
       disabled={disabled}
-      className={`bg-container-secondary flex w-full items-center justify-between rounded-[12px] px-5 py-4 transition-colors lg:w-[373px] ${
+      className={cn(
+        'bg-container-secondary flex w-full items-center justify-between rounded-md px-5 py-4 transition-colors lg:w-[373px]',
         disabled
           ? 'cursor-not-allowed opacity-50'
-          : 'hover:bg-gray-60 cursor-pointer'
-      }`}
+          : 'hover:bg-gray-60 cursor-pointer',
+      )}
     >
       <span className="b1-500 flex items-center gap-[14px] text-white">
         <span className="flex h-6 w-6 items-center justify-center">{icon}</span>
