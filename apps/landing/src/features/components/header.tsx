@@ -2,7 +2,7 @@ import { MoaLogo } from '~/assets/icons';
 
 export function Header() {
   return (
-    <header className="bg-bg-primary sticky top-0 z-50 h-16">
+    <header className="sticky top-0 z-50 h-16">
       <div className="mx-auto flex h-full items-center justify-between px-6 md:px-[68px] lg:px-[120px]">
         <MoaLogo className="h-[18px] w-[58px] text-white" />
         <a
