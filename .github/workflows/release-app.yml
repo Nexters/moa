@@ -96,14 +96,20 @@ jobs:
           releaseBody: |
             ## Moa ${{ github.ref_name || inputs.version }}
 
-            ### Installation Instructions
-            - **macOS**: Download the `.dmg` file and drag to Applications folder
-            - **Windows**: Download the `.msi` file and run the installer
+            ### 설치 방법
 
-            ### Auto-Updates
-            Existing users will receive automatic update notifications.
+            #### macOS
+            - **Apple Silicon**: `moa_<version>_aarch64.dmg`
+            - **Intel** (x86_64): `moa_<version>_x64.dmg`
 
-            **Full Changelog**: https://github.com/${{ github.repository }}/commits/${{ github.ref_name || inputs.version }}
+            `.dmg` 파일을 다운로드하여 Applications 폴더로 드래그하세요.
+
+            #### Windows
+            - **EXE**: `moa_<version>_x64-setup.exe`
+            - **MSI**: `moa_<version>_x64_en-US.msi`
+
+            #### 자동 업데이트
+            기존 사용자는 자동 업데이트 알림을 받습니다.
           releaseDraft: true
           prerelease: false
           includeUpdaterJson: true
