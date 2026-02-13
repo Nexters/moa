@@ -1,3 +1,4 @@
+import { CardsSection } from './components/cards-section';
 import { Header } from './components/header';
 import { Hero } from './components/hero';
 import { SalarySection } from './components/salary-section';
@@ -8,6 +9,7 @@ export function App() {
       <Header />
       <Hero />
       <SalarySection />
+      <CardsSection />
     </div>
   );
 }
