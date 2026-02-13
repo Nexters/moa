@@ -19,7 +19,7 @@ use tauri_plugin_positioner::{Position, WindowExt};
 static TRAY_ICON_IDLE: &[u8] = include_bytes!("../icons/tray-idle.png");
 
 /// Embedded animation frames for coin-flip effect (working state)
-static TRAY_FRAMES: [&[u8]; 8] = [
+static TRAY_FRAMES: [&[u8]; 14] = [
     include_bytes!("../icons/tray-frame-0.png"),
     include_bytes!("../icons/tray-frame-1.png"),
     include_bytes!("../icons/tray-frame-2.png"),
@@ -28,13 +28,19 @@ static TRAY_FRAMES: [&[u8]; 8] = [
     include_bytes!("../icons/tray-frame-5.png"),
     include_bytes!("../icons/tray-frame-6.png"),
     include_bytes!("../icons/tray-frame-7.png"),
+    include_bytes!("../icons/tray-frame-8.png"),
+    include_bytes!("../icons/tray-frame-9.png"),
+    include_bytes!("../icons/tray-frame-10.png"),
+    include_bytes!("../icons/tray-frame-11.png"),
+    include_bytes!("../icons/tray-frame-12.png"),
+    include_bytes!("../icons/tray-frame-13.png"),
 ];
 
 /// Animation control flag
 static ANIMATING: AtomicBool = AtomicBool::new(false);
 
-/// Animation frame interval (150ms × 8 frames = 1.2s per rotation)
-const FRAME_INTERVAL: Duration = Duration::from_millis(150);
+/// Animation frame interval (85ms × 14 frames ≈ 1.2s per rotation)
+const FRAME_INTERVAL: Duration = Duration::from_millis(85);
 
 /// Creates the system tray icon with click handlers.
 pub fn create(app_handle: &AppHandle) -> tauri::Result<TrayIcon> {
