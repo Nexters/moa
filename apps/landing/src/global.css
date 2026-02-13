@@ -1,5 +1,9 @@
 @import '@moa/shared/theme.css';
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   overscroll-behavior: none;
 }

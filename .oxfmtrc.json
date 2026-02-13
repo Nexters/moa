@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
-  "ignorePatterns": ["dist", "bun.lock", "*.toml", "*.gen.ts"],
+  "ignorePatterns": ["dist", "bun.lock", "*.toml", "*.gen.ts", ".context"],
 
   "singleQuote": true,
   "semi": true,
