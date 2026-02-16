@@ -44,53 +44,55 @@ export function MoaMoneyIcon({
       fill="none"
       {...props}
     >
-      {isAnimated && (
-        <>
+      <g transform="translate(-0.6274, 0.7102)">
+        {isAnimated && (
+          <>
+            <circle
+              cx="40.6274"
+              cy="39.2898"
+              r="36.7349"
+              fill={variantColors.empty.fill}
+              stroke={variantColors.empty.stroke}
+              strokeWidth="6.46465"
+            />
+            <path
+              d="M24.2905 23.6533H31.7719L40.4541 46.3344H40.7997L49.4819 23.6533H56.9633L58.622 54.9266H52.5236L51.2097 34.4521H50.9505L42.7867 54.9266H38.4672L30.3033 34.3657H30.0441L28.9383 54.9266H22.6318L24.2905 23.6533Z"
+              fill={variantColors.empty.detail}
+            />
+            <rect
+              x="19.6167"
+              y="38.2783"
+              width="42.0202"
+              height="4.42318"
+              fill={variantColors.empty.detail}
+            />
+          </>
+        )}
+        <g
+          className={
+            isAnimated ? 'animate-[fill-up_2s_ease-in-out_infinite]' : undefined
+          }
+        >
           <circle
             cx="40.6274"
             cy="39.2898"
             r="36.7349"
-            fill={variantColors.empty.fill}
-            stroke={variantColors.empty.stroke}
+            fill={colors.fill}
+            stroke={colors.stroke}
             strokeWidth="6.46465"
           />
           <path
             d="M24.2905 23.6533H31.7719L40.4541 46.3344H40.7997L49.4819 23.6533H56.9633L58.622 54.9266H52.5236L51.2097 34.4521H50.9505L42.7867 54.9266H38.4672L30.3033 34.3657H30.0441L28.9383 54.9266H22.6318L24.2905 23.6533Z"
-            fill={variantColors.empty.detail}
+            fill={colors.detail}
           />
           <rect
             x="19.6167"
             y="38.2783"
             width="42.0202"
             height="4.42318"
-            fill={variantColors.empty.detail}
+            fill={colors.detail}
           />
-        </>
-      )}
-      <g
-        className={
-          isAnimated ? 'animate-[fill-up_2s_ease-in-out_infinite]' : undefined
-        }
-      >
-        <circle
-          cx="40.6274"
-          cy="39.2898"
-          r="36.7349"
-          fill={colors.fill}
-          stroke={colors.stroke}
-          strokeWidth="6.46465"
-        />
-        <path
-          d="M24.2905 23.6533H31.7719L40.4541 46.3344H40.7997L49.4819 23.6533H56.9633L58.622 54.9266H52.5236L51.2097 34.4521H50.9505L42.7867 54.9266H38.4672L30.3033 34.3657H30.0441L28.9383 54.9266H22.6318L24.2905 23.6533Z"
-          fill={colors.detail}
-        />
-        <rect
-          x="19.6167"
-          y="38.2783"
-          width="42.0202"
-          height="4.42318"
-          fill={colors.detail}
-        />
+        </g>
       </g>
     </svg>
   );
