@@ -69,7 +69,7 @@ export function MoaMoneyIcon({
       )}
       <g
         className={
-          isAnimated ? 'animate-[fill-up_4s_ease-out_infinite]' : undefined
+          isAnimated ? 'animate-[fill-up_2s_ease-in-out_infinite]' : undefined
         }
       >
         <circle

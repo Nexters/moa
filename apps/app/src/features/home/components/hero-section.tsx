@@ -41,8 +41,10 @@ export function HeroSection({ variant, label, amount }: HeroSectionProps) {
     <div className="flex flex-col items-center gap-5">
       {isHoliday ? (
         <HolidayIcon />
+      ) : variant === 'working' ? (
+        <MoaMoneyIcon key={animKey} variant="animated" />
       ) : (
-        <MoaMoneyIcon variant={variant === 'working' ? 'animated' : variant} />
+        <MoaMoneyIcon variant={variant} />
       )}
       <div className="flex flex-col items-center gap-1">
         <p className="t3-500 text-text-high">{label}</p>
