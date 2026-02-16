@@ -17,7 +17,7 @@
     },
     "apps/app": {
       "name": "@moa/app",
-      "version": "0.2.0",
+      "version": "0.6.0",
       "dependencies": {
         "@base-ui/react": "^1.1.0",
         "@moa/shared": "workspace:*",
@@ -58,6 +58,7 @@
       "dependencies": {
         "@astrojs/react": "^4.4.2",
         "@moa/shared": "workspace:*",
+        "@number-flow/react": "^0.5.11",
         "react": "^19.2.3",
         "react-dom": "^19.2.3",
       },
