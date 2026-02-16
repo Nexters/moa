@@ -3,7 +3,8 @@ import { listen } from '@tauri-apps/api/event';
 import { useEffect, useState } from 'react';
 import { cn } from 'tailwind-variants';
 
-import { HolidayIcon, MoaMoneyIcon } from '~/ui/icons';
+import { MoaMoneyIcon } from '@moa/shared';
+import { HolidayIcon } from '~/ui/icons';
 
 type HeroVariant = 'empty' | 'working' | 'full' | 'holiday';
 
