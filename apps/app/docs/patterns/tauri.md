@@ -80,3 +80,5 @@ useEffect(() => {
 설정/데이터 저장 후 `commands.notifySettingsChanged()`를 호출하여 Rust 스레드에 변경을 알린다.
 
 **현재 사용처**: `salary.rs` — 급여 계산의 single source of truth. 메뉴바 타이틀을 직접 갱신하고, `salary-tick` 이벤트로 React UI(`useSalaryTick` 훅)에도 동일한 계산 결과를 전달한다 (1초 간격).
+
+**Overnight shift 정책**: 근무 종료 시간이 시작 시간 이하인 경우(예: 18:00–00:00, 22:00–06:00) 자정 넘김으로 처리한다. `work_end_minutes`에 +1440(24h)을 더하고, 자정 이후의 `current_minutes`에도 동일하게 +1440을 더해 단일 타임라인으로 정규화한다.
