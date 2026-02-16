@@ -221,14 +221,24 @@ fn calculate_salary(
     let hourly_rate = daily_rate / work_hours_per_day;
     let per_second = hourly_rate / 3600.0;
 
-    // JS Date.getDay(): 0=Sun, 1=Mon, ..., 6=Sat
-    let day_of_week = today.weekday().num_days_from_sunday() as u8;
-    let is_work_day = work_days.contains(&day_of_week) || today_override.is_some();
     let raw_current_minutes = now.time().hour() * 60 + now.time().minute();
+    let is_overnight = raw_end_minutes <= work_start_minutes;
+
+    // Overnight shift: when in the post-midnight working window (before shift ends),
+    // attribute the shift to the previous calendar day for work-day determination.
+    let effective_day =
+        if is_overnight && raw_current_minutes < raw_end_minutes {
+            today.pred_opt().unwrap_or(today)
+        } else {
+            today
+        };
+
+    // JS Date.getDay(): 0=Sun, 1=Mon, ..., 6=Sat
+    let day_of_week = effective_day.weekday().num_days_from_sunday() as u8;
+    let is_work_day = work_days.contains(&day_of_week) || today_override.is_some();
+
     // Overnight shift: normalise current time past midnight
-    let current_minutes = if raw_end_minutes <= work_start_minutes
-        && raw_current_minutes < work_start_minutes
-    {
+    let current_minutes = if is_overnight && raw_current_minutes < work_start_minutes {
         raw_current_minutes + 24 * 60
     } else {
         raw_current_minutes
@@ -595,6 +605,25 @@ mod tests {
             ..make_overnight_settings()
         };
         let now = NaiveDate::from_ymd_opt(2025, 2, 11)
+            .unwrap()
+            .and_hms_opt(2, 0, 0)
+            .unwrap();
+        let result = calculate_salary(&settings, false, None, now).unwrap();
+        assert_eq!(result.work_status, WorkStatus::Working);
+        assert!(result.today_earnings > 0.0);
+    }
+
+    #[test]
+    fn test_overnight_cross_day_boundary() {
+        // Friday 22:00–Saturday 06:00, at Saturday 02:00 → Working (not DayOff)
+        // work_days = Mon-Fri, Saturday is NOT a work day, but the shift started on Friday
+        let settings = UserSettings {
+            work_start_time: "22:00".to_string(),
+            work_end_time: "06:00".to_string(),
+            ..make_overnight_settings()
+        };
+        // 2025-02-15 is Saturday, prev day (Friday) is a work day
+        let now = NaiveDate::from_ymd_opt(2025, 2, 15)
             .unwrap()
             .and_hms_opt(2, 0, 0)
             .unwrap();
