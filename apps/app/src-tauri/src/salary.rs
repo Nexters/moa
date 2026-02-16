@@ -2,6 +2,9 @@
 //!
 //! Runs a background thread that calculates salary every second
 //! and updates the tray title directly, independent of the webview.
+//!
+//! Supports overnight shifts (e.g. 18:00–00:00, 22:00–06:00) by
+//! normalising end/current minutes past midnight when end ≤ start.
 
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -186,7 +189,15 @@ fn calculate_salary(
         .unwrap_or(&settings.work_end_time);
 
     let work_start_minutes = time_to_minutes(work_start_time);
-    let work_end_minutes = time_to_minutes(work_end_time);
+    let raw_end_minutes = time_to_minutes(work_end_time);
+
+    // Overnight shift: treat end as next day when end <= start (e.g. 18:00–00:00)
+    let work_end_minutes = if raw_end_minutes <= work_start_minutes {
+        raw_end_minutes + 24 * 60
+    } else {
+        raw_end_minutes
+    };
+
     let work_hours_per_day = (work_end_minutes as f64 - work_start_minutes as f64) / 60.0;
 
     if work_hours_per_day <= 0.0 {
@@ -213,7 +224,15 @@ fn calculate_salary(
     // JS Date.getDay(): 0=Sun, 1=Mon, ..., 6=Sat
     let day_of_week = today.weekday().num_days_from_sunday() as u8;
     let is_work_day = work_days.contains(&day_of_week) || today_override.is_some();
-    let current_minutes = now.time().hour() * 60 + now.time().minute();
+    let raw_current_minutes = now.time().hour() * 60 + now.time().minute();
+    // Overnight shift: normalise current time past midnight
+    let current_minutes = if raw_end_minutes <= work_start_minutes
+        && raw_current_minutes < work_start_minutes
+    {
+        raw_current_minutes + 24 * 60
+    } else {
+        raw_current_minutes
+    };
 
     let (today_earnings, work_status) = if !is_work_day || is_on_vacation {
         (0.0, WorkStatus::DayOff)
@@ -513,5 +532,74 @@ mod tests {
         let (start, end) = get_pay_period(today, 31);
         assert_eq!(start, NaiveDate::from_ymd_opt(2025, 1, 31).unwrap());
         assert_eq!(end, NaiveDate::from_ymd_opt(2025, 2, 28).unwrap());
+    }
+
+    // -- Overnight shift tests --
+
+    fn make_overnight_settings() -> UserSettings {
+        UserSettings {
+            salary_type: SalaryType::Monthly,
+            salary_amount: 3_000_000,
+            pay_day: 25,
+            work_days: vec![1, 2, 3, 4, 5],
+            work_start_time: "18:00".to_string(),
+            work_end_time: "00:00".to_string(),
+            onboarding_completed: true,
+            menubar_display_mode: MenubarDisplayMode::Daily,
+        }
+    }
+
+    #[test]
+    fn test_overnight_working() {
+        let settings = make_overnight_settings();
+        // Monday 20:00 → Working
+        let now = NaiveDate::from_ymd_opt(2025, 2, 10)
+            .unwrap()
+            .and_hms_opt(20, 0, 0)
+            .unwrap();
+        let result = calculate_salary(&settings, false, None, now).unwrap();
+        assert_eq!(result.work_status, WorkStatus::Working);
+        assert!(result.today_earnings > 0.0);
+    }
+
+    #[test]
+    fn test_overnight_completed_before_start() {
+        let settings = make_overnight_settings();
+        // Monday 15:00 → Completed (shift ended at 00:00, before next shift at 18:00)
+        let now = NaiveDate::from_ymd_opt(2025, 2, 10)
+            .unwrap()
+            .and_hms_opt(15, 0, 0)
+            .unwrap();
+        let result = calculate_salary(&settings, false, None, now).unwrap();
+        assert_eq!(result.work_status, WorkStatus::Completed);
+    }
+
+    #[test]
+    fn test_overnight_completed_after_midnight() {
+        let settings = make_overnight_settings();
+        // Tuesday 01:00 → Completed (shift ended at 00:00)
+        let now = NaiveDate::from_ymd_opt(2025, 2, 11)
+            .unwrap()
+            .and_hms_opt(1, 0, 0)
+            .unwrap();
+        let result = calculate_salary(&settings, false, None, now).unwrap();
+        assert_eq!(result.work_status, WorkStatus::Completed);
+    }
+
+    #[test]
+    fn test_overnight_late_shift_working() {
+        // 22:00–06:00 shift, at 02:00 → Working
+        let settings = UserSettings {
+            work_start_time: "22:00".to_string(),
+            work_end_time: "06:00".to_string(),
+            ..make_overnight_settings()
+        };
+        let now = NaiveDate::from_ymd_opt(2025, 2, 11)
+            .unwrap()
+            .and_hms_opt(2, 0, 0)
+            .unwrap();
+        let result = calculate_salary(&settings, false, None, now).unwrap();
+        assert_eq!(result.work_status, WorkStatus::Working);
+        assert!(result.today_earnings > 0.0);
     }
 }
