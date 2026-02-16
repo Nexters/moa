@@ -1,29 +1,66 @@
 import NumberFlow, { continuous } from '@number-flow/react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-const MONTHLY_AMOUNT = 2_400_000;
-const DAILY_AMOUNT = 100_000;
+// 가정: 월급 400만, 월급일 25일, 오늘 12일, 근무 09:00-18:00, 주5일
+// salary.rs calculate_salary 로직 기반
+const MONTHLY_SALARY = 4_500_000;
+const WORK_DAYS_IN_PERIOD = 21; // 전월 25일~당월 25일 근무일
+const WORKED_DAYS = 12; // 전월 25일~오늘 전까지 근무일
+const WORK_HOURS = 9;
+const DAILY_RATE = MONTHLY_SALARY / WORK_DAYS_IN_PERIOD;
+const PER_SECOND = DAILY_RATE / WORK_HOURS / 3600;
+const INITIAL_WORKED_SECONDS = 3 * 3600; // 12:00 기준 (3시간 근무)
+const INITIAL_TODAY = Math.round(PER_SECOND * INITIAL_WORKED_SECONDS);
+const INITIAL_ACCUMULATED = Math.round(
+  WORKED_DAYS * DAILY_RATE + INITIAL_TODAY,
+);
+const LOOP_SEC = 30;
 
 export function SalarySection() {
   const sectionRef = useRef<HTMLElement>(null);
-  const [inView, setInView] = useState(false);
+  const [accumulated, setAccumulated] = useState(INITIAL_ACCUMULATED);
+  const [todayEarnings, setTodayEarnings] = useState(INITIAL_TODAY);
+
+  const startCounting = useCallback(() => {
+    let tick = 0;
+
+    const id = setInterval(() => {
+      tick++;
+      if (tick >= LOOP_SEC) {
+        tick = 0;
+        setAccumulated(INITIAL_ACCUMULATED);
+        setTodayEarnings(INITIAL_TODAY);
+      } else {
+        const delta = Math.round(PER_SECOND * tick);
+        setAccumulated(INITIAL_ACCUMULATED + delta);
+        setTodayEarnings(INITIAL_TODAY + delta);
+      }
+    }, 1000);
+
+    return id;
+  }, []);
 
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
 
+    let intervalId: ReturnType<typeof setInterval> | undefined;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setInView(true);
+          intervalId = startCounting();
           observer.disconnect();
         }
       },
       { threshold: 0.3 },
     );
     observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+    return () => {
+      observer.disconnect();
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [startCounting]);
 
   return (
     <section
@@ -49,7 +86,7 @@ export function SalarySection() {
               <span className="t2-500 text-white">
                 이번달에 쌓은 월급{' '}
                 <NumberFlow
-                  value={inView ? MONTHLY_AMOUNT : 0}
+                  value={accumulated}
                   locales="ko-KR"
                   format={{ maximumFractionDigits: 0 }}
                   plugins={[continuous]}
@@ -74,7 +111,7 @@ export function SalarySection() {
                 <p className="t1-500 text-white">오늘 쌓은 월급</p>
                 <div className="flex items-end justify-center gap-[5.6px]">
                   <NumberFlow
-                    value={inView ? DAILY_AMOUNT : 0}
+                    value={todayEarnings}
                     locales="ko-KR"
                     format={{ maximumFractionDigits: 0 }}
                     plugins={[continuous]}
