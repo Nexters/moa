@@ -132,12 +132,6 @@ export function DownloadSection() {
 
         {/* Download area */}
         <div className="flex w-full flex-col gap-10 md:gap-[60px] lg:max-w-[806px]">
-          {/* Brew command */}
-          <div className="flex flex-col gap-[14px]">
-            <p className="b1-500 text-text-medium">Homebrew</p>
-            <CodeBlock />
-          </div>
-
           {/* Mobile + Desktop */}
           <div className="flex w-full flex-col gap-8 lg:flex-row lg:gap-[60px]">
             {/* Mobile */}
@@ -188,6 +182,12 @@ export function DownloadSection() {
                 />
               </div>
             </div>
+          </div>
+
+          {/* Brew command */}
+          <div className="flex flex-col gap-[14px]">
+            <p className="b1-500 text-text-medium">Homebrew</p>
+            <CodeBlock />
           </div>
         </div>
       </div>
