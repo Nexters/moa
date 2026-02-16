@@ -22,7 +22,7 @@ export function WorkingScreen({
   return (
     <div className="flex flex-1 flex-col gap-7">
       <HeroSection
-        variant="partial"
+        variant="working"
         label="오늘 쌓은 월급"
         amount={salaryInfo.todayEarnings}
       />

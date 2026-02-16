@@ -5,7 +5,7 @@ import { cn } from 'tailwind-variants';
 
 import { HolidayIcon, MoaMoneyIcon } from '~/ui/icons';
 
-type HeroVariant = 'empty' | 'partial' | 'full' | 'holiday';
+type HeroVariant = 'empty' | 'working' | 'full' | 'holiday';
 
 interface HeroSectionProps {
   variant: HeroVariant;
@@ -41,16 +41,8 @@ export function HeroSection({ variant, label, amount }: HeroSectionProps) {
     <div className="flex flex-col items-center gap-5">
       {isHoliday ? (
         <HolidayIcon />
-      ) : variant === 'partial' ? (
-        <div key={animKey} className="relative">
-          <MoaMoneyIcon variant="empty" />
-          <MoaMoneyIcon
-            variant="partial"
-            className="absolute inset-0 animate-[fill-up_4s_ease-out_infinite]"
-          />
-        </div>
       ) : (
-        <MoaMoneyIcon variant={variant} />
+        <MoaMoneyIcon variant={variant === 'working' ? 'animated' : variant} />
       )}
       <div className="flex flex-col items-center gap-1">
         <p className="t3-500 text-text-high">{label}</p>
