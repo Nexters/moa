@@ -26,7 +26,7 @@ function CodeBlock() {
   };
 
   return (
-    <div className="bg-container-secondary relative rounded-[12px] px-5 py-4 font-mono">
+    <div className="bg-container-secondary relative rounded-md px-5 py-4 font-mono">
       <button
         type="button"
         onClick={handleCopy}

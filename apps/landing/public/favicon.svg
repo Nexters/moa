@@ -1,1 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><!-- Icon from Material Symbols by Google - https://github.com/google/material-design-icons/blob/master/LICENSE --><path fill="#888888" d="M12 22q-2.075 0-3.9-.788t-3.175-2.137T2.788 15.9T2 12t.788-3.9t2.137-3.175T8.1 2.788T12 2t3.9.788t3.175 2.137T21.213 8.1T22 12t-.788 3.9t-2.137 3.175t-3.175 2.138T12 22"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <rect width="1024" height="1024" fill="#212224"/>
+  <g transform="translate(150, 150)">
+    <circle cx="362" cy="362" r="332.724" fill="#1FD683" stroke="#17A968" stroke-width="58.553"/>
+    <path d="M215.062 221H282.385L360.514 425.765H363.621L441.762 221H509.085L524.011 503.33H469.128L457.309 318.486H454.973L381.505 503.33H342.63L269.162 317.715H266.826L256.872 503.33H200.136L215.062 221Z" fill="#17A968"/>
+    <path d="M551.159 352.93H173V393.162H551.159V352.93Z" fill="#17A968"/>
+  </g>
+</svg>
