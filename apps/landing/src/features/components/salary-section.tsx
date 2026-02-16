@@ -1,6 +1,35 @@
+import NumberFlow, { continuous } from '@number-flow/react';
+import { useEffect, useRef, useState } from 'react';
+
+const MONTHLY_AMOUNT = 2_400_000;
+const DAILY_AMOUNT = 100_000;
+
 export function SalarySection() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <section className="bg-bg-secondary px-6 pt-[60px] pb-20 md:px-[68px] md:pt-[100px] md:pb-[160px] lg:px-[120px]">
+    <section
+      ref={sectionRef}
+      className="bg-bg-secondary px-6 pt-[60px] pb-20 md:px-[68px] md:pt-[100px] md:pb-[160px] lg:px-[120px]"
+    >
       <div className="mx-auto flex flex-col items-center gap-10 md:gap-[60px]">
         {/* Title */}
         <div className="flex flex-col items-center gap-4 text-center">
@@ -18,7 +47,15 @@ export function SalarySection() {
           <div className="z-10 flex flex-col items-center">
             <div className="bg-gray-70 flex items-center rounded-full px-5 py-[11px]">
               <span className="t2-500 text-white">
-                이번달에 쌓은 월급 123,203,000원
+                이번달에 쌓은 월급{' '}
+                <NumberFlow
+                  value={inView ? MONTHLY_AMOUNT : 0}
+                  locales="ko-KR"
+                  format={{ maximumFractionDigits: 0 }}
+                  plugins={[continuous]}
+                  className="t2-500 tabular-nums"
+                />
+                원
               </span>
             </div>
             <div className="border-t-gray-70 h-0 w-0 border-x-12 border-t-13 border-x-transparent" />
@@ -36,12 +73,14 @@ export function SalarySection() {
               <div className="flex flex-col items-center gap-[5.6px]">
                 <p className="t1-500 text-white">오늘 쌓은 월급</p>
                 <div className="flex items-end justify-center gap-[5.6px]">
-                  <span
-                    className="font-bold tracking-[-0.28px] text-white"
+                  <NumberFlow
+                    value={inView ? DAILY_AMOUNT : 0}
+                    locales="ko-KR"
+                    format={{ maximumFractionDigits: 0 }}
+                    plugins={[continuous]}
+                    className="font-bold tracking-[-0.28px] text-white tabular-nums"
                     style={salaryStyle}
-                  >
-                    2,150,000
-                  </span>
+                  />
                   <span
                     className="text-text-medium font-normal tracking-[-0.2px]"
                     style={wonStyle}
