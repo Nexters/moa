@@ -1,1 +1,1 @@
-export * from './utils';
+export * from './icons/moa-money';

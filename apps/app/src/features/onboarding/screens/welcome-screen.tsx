@@ -1,4 +1,5 @@
-import { AppBar, Button, MoaMoneyIcon, TooltipBubble } from '~/ui';
+import { MoaMoneyIcon } from '@moa/shared';
+import { AppBar, Button, TooltipBubble } from '~/ui';
 
 import type { OnboardingScreenProps } from '../hooks/use-onboarding-screen';
 

@@ -3,9 +3,10 @@ import { listen } from '@tauri-apps/api/event';
 import { useEffect, useState } from 'react';
 import { cn } from 'tailwind-variants';
 
-import { HolidayIcon, MoaMoneyIcon } from '~/ui/icons';
+import { MoaMoneyIcon } from '@moa/shared';
+import { HolidayIcon } from '~/ui/icons';
 
-type HeroVariant = 'empty' | 'partial' | 'full' | 'holiday';
+type HeroVariant = 'empty' | 'working' | 'full' | 'holiday';
 
 interface HeroSectionProps {
   variant: HeroVariant;
@@ -39,7 +40,13 @@ export function HeroSection({ variant, label, amount }: HeroSectionProps) {
 
   return (
     <div className="flex flex-col items-center gap-5">
-      {isHoliday ? <HolidayIcon /> : <MoaMoneyIcon variant={variant} />}
+      {isHoliday ? (
+        <HolidayIcon />
+      ) : variant === 'working' ? (
+        <MoaMoneyIcon key={animKey} variant="animated" />
+      ) : (
+        <MoaMoneyIcon variant={variant} />
+      )}
       <div className="flex flex-col items-center gap-1">
         <p className="t3-500 text-text-high">{label}</p>
         <div className="flex items-center justify-center gap-1">
