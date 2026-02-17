@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 import type { SalaryInfo } from '~/hooks/use-salary-tick';
 import { useSalaryTick } from '~/hooks/use-salary-tick';
 import type { TodayWorkSchedule } from '~/hooks/use-today-work-schedule';
@@ -36,6 +38,7 @@ export type HomeMainScreen =
       settings: OnboardedUserSettings;
       salaryInfo: SalaryInfo;
       todaySchedule: TodayWorkSchedule | null;
+      isEarlyLeavePending: boolean;
       onEarlyLeave: () => void;
       onVacation: () => void;
     }
@@ -68,6 +71,7 @@ export function useHomeScreen(): HomeScreenState {
   const {
     schedule: todaySchedule,
     isLoading: scheduleLoading,
+    isSaving,
     saveSchedule,
     clearSchedule,
   } = useTodayWorkSchedule();
@@ -84,6 +88,14 @@ export function useHomeScreen(): HomeScreenState {
     acknowledge,
     clearAcknowledge,
   } = useWorkCompletedAck();
+
+  const [isStillWorkingPending, setIsStillWorkingPending] = useState(false);
+
+  useEffect(() => {
+    if (isStillWorkingPending && salaryInfo?.workStatus === 'working') {
+      setIsStillWorkingPending(false);
+    }
+  }, [isStillWorkingPending, salaryInfo?.workStatus]);
 
   // 로딩 체크
   const allLoading =
@@ -164,10 +176,27 @@ export function useHomeScreen(): HomeScreenState {
     void acknowledge();
   };
 
-  const handleStillWorking = () => {
-    void clearAcknowledge();
-    void clearSchedule();
+  const handleStillWorking = async () => {
+    setIsStillWorkingPending(true);
+    await clearSchedule();
+    await clearAcknowledge();
   };
+
+  // "아직 근무중이에요" 전환 중 → optimistic working 화면
+  if (isStillWorkingPending) {
+    return {
+      isLoading: false,
+      mainScreen: {
+        screen: 'working' as const,
+        settings,
+        salaryInfo,
+        todaySchedule,
+        isEarlyLeavePending: false,
+        onEarlyLeave: handleEarlyLeave,
+        onVacation: handleVacation,
+      },
+    };
+  }
 
   // 메인 스크린 결정
   const mainScreen = resolveMainScreen({
@@ -176,6 +205,7 @@ export function useHomeScreen(): HomeScreenState {
     settings,
     todaySchedule,
     isAcknowledged,
+    isSaving,
     onTodayWorkFromVacation: handleTodayWorkFromVacation,
     onTodayWorkFromDayOff: handleTodayWorkFromDayOff,
     onVacation: handleVacation,
@@ -197,6 +227,7 @@ interface ResolveParams {
   settings: OnboardedUserSettings;
   todaySchedule: TodayWorkSchedule | null;
   isAcknowledged: boolean;
+  isSaving: boolean;
   onTodayWorkFromVacation: () => void;
   onTodayWorkFromDayOff: () => void;
   onVacation: () => void;
@@ -213,6 +244,7 @@ function resolveMainScreen(params: ResolveParams): HomeMainScreen {
     settings,
     todaySchedule,
     isAcknowledged,
+    isSaving,
     onTodayWorkFromVacation,
     onTodayWorkFromDayOff,
     onVacation,
@@ -256,6 +288,7 @@ function resolveMainScreen(params: ResolveParams): HomeMainScreen {
         settings,
         salaryInfo,
         todaySchedule,
+        isEarlyLeavePending: isSaving,
         onEarlyLeave,
         onVacation,
       };
