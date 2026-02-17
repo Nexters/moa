@@ -226,12 +226,11 @@ fn calculate_salary(
 
     // Overnight shift: when in the post-midnight working window (before shift ends),
     // attribute the shift to the previous calendar day for work-day determination.
-    let effective_day =
-        if is_overnight && raw_current_minutes < raw_end_minutes {
-            today.pred_opt().unwrap_or(today)
-        } else {
-            today
-        };
+    let effective_day = if is_overnight && raw_current_minutes < raw_end_minutes {
+        today.pred_opt().unwrap_or(today)
+    } else {
+        today
+    };
 
     // JS Date.getDay(): 0=Sun, 1=Mon, ..., 6=Sat
     let day_of_week = effective_day.weekday().num_days_from_sunday() as u8;

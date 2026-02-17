@@ -15,7 +15,7 @@
     "lint:fix": "oxlint --fix-suggestions",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "check:all": "bun lint && bun format:check",
+    "check:all": "bun lint && bun format:check && turbo run check:all",
     "task:complete": "bun scripts/complete-task.ts",
     "task:rename-done": "bun scripts/complete-task.ts --rename-existing",
     "release:prepare": "bun scripts/prepare-release.ts"
