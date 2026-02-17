@@ -54,7 +54,7 @@ export type HomeMainScreen =
       settings: OnboardedUserSettings;
       salaryInfo: SalaryInfo;
       todaySchedule: TodayWorkSchedule | null;
-      onStillWorking: () => void;
+      onStillWorking?: () => void;
     };
 
 export interface HomeScreenState {
@@ -294,12 +294,19 @@ function resolveMainScreen(params: ResolveParams): HomeMainScreen {
       };
     case 'completed':
       if (isAcknowledged) {
+        const now = getCurrentTimeString();
+        const { normalizedEnd, normalizedNow } = normalizeOvernightMinutes(
+          timeToMinutes(settings.workStartTime),
+          timeToMinutes(settings.workEndTime),
+          timeToMinutes(now),
+        );
+        const isBeforeOriginalEnd = normalizedNow < normalizedEnd;
         return {
           screen: 'post-completed',
           settings,
           salaryInfo,
           todaySchedule,
-          onStillWorking,
+          ...(isBeforeOriginalEnd && { onStillWorking }),
         };
       }
       return {

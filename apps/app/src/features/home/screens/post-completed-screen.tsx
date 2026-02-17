@@ -28,14 +28,16 @@ export function PostCompletedScreen({
         <InfoCardDivider />
         <InfoCardRow label="근무 시간" value={`${workStart} - ${workEnd}`} />
       </InfoCard>
-      <Button
-        variant="link"
-        size="md"
-        className="mt-5"
-        onClick={onStillWorking}
-      >
-        아직 근무 중이에요
-      </Button>
+      {onStillWorking && (
+        <Button
+          variant="link"
+          size="md"
+          className="mt-5"
+          onClick={onStillWorking}
+        >
+          아직 근무 중이에요
+        </Button>
+      )}
     </div>
   );
 }
