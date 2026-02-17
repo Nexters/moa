@@ -9,7 +9,12 @@ import {
   assertOnboarded,
   type OnboardedUserSettings,
 } from '~/lib/tauri-bindings';
-import { getCurrentTimeString, minutesToTime, timeToMinutes } from '~/lib/time';
+import {
+  getCurrentTimeString,
+  minutesToTime,
+  normalizeOvernightMinutes,
+  timeToMinutes,
+} from '~/lib/time';
 
 // ============================================================================
 // Types
@@ -107,9 +112,10 @@ export function useHomeScreen(): HomeScreenState {
 
   const handleTodayWorkFromDayOff = () => {
     const now = getCurrentTimeString();
-    const totalWorkMinutes =
-      timeToMinutes(settings.workEndTime) -
-      timeToMinutes(settings.workStartTime);
+    const startMin = timeToMinutes(settings.workStartTime);
+    const endMin = timeToMinutes(settings.workEndTime);
+    const { normalizedEnd } = normalizeOvernightMinutes(startMin, endMin, 0);
+    const totalWorkMinutes = normalizedEnd - startMin;
     const endTime = minutesToTime(timeToMinutes(now) + totalWorkMinutes);
     void saveSchedule(now, endTime);
   };
@@ -122,14 +128,22 @@ export function useHomeScreen(): HomeScreenState {
     const now = getCurrentTimeString();
     const originalStart = getEffectiveStartTime();
     const originalEnd = getEffectiveEndTime();
-    const diffMinutes = timeToMinutes(originalStart) - timeToMinutes(now);
+    const startMin = timeToMinutes(originalStart);
+    const endMin = timeToMinutes(originalEnd);
+    const nowMin = timeToMinutes(now);
+    const { normalizedEnd, normalizedNow } = normalizeOvernightMinutes(
+      startMin,
+      endMin,
+      nowMin,
+    );
+    const diffMinutes = startMin - normalizedNow;
 
     if (diffMinutes <= 0) {
       void saveSchedule(originalStart, originalEnd);
       return;
     }
 
-    const newEnd = minutesToTime(timeToMinutes(originalEnd) - diffMinutes);
+    const newEnd = minutesToTime(normalizedEnd - diffMinutes);
     void saveSchedule(now, newEnd);
   };
 
@@ -137,8 +151,13 @@ export function useHomeScreen(): HomeScreenState {
     const now = getCurrentTimeString();
     const currentStart = getEffectiveStartTime();
     const currentEnd = getEffectiveEndTime();
+    const { normalizedEnd, normalizedNow } = normalizeOvernightMinutes(
+      timeToMinutes(currentStart),
+      timeToMinutes(currentEnd),
+      timeToMinutes(now),
+    );
 
-    if (timeToMinutes(now) >= timeToMinutes(currentEnd)) {
+    if (normalizedNow >= normalizedEnd) {
       return;
     }
 
