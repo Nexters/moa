@@ -1,9 +1,10 @@
 import { listen } from '@tauri-apps/api/event';
 import { useEffect } from 'react';
 
-import { useCheckForUpdates } from '~/lib/check-for-updates';
+import { installUpdate, useCheckForUpdates } from '~/lib/check-for-updates';
 import { commands, unwrapResult } from '~/lib/tauri-bindings';
 import { useUIStore } from '~/stores/ui-store';
+import { AlertDialog } from '~/ui/alert-dialog';
 
 import { Home } from './home';
 import { Onboarding } from './onboarding';
@@ -15,7 +16,7 @@ export function App() {
   const navigate = useUIStore((s) => s.navigate);
   const resetToHome = useUIStore((s) => s.resetToHome);
 
-  useCheckForUpdates();
+  const { update, clearUpdate } = useCheckForUpdates();
 
   useEffect(() => {
     void commands.initMenubar();
@@ -47,14 +48,35 @@ export function App() {
     void checkOnboarding();
   }, [navigate]);
 
-  switch (currentRoute) {
-    case 'loading':
-      return null;
-    case 'onboarding':
-      return <Onboarding />;
-    case 'home':
-      return <Home />;
-    case 'settings':
-      return <Settings />;
-  }
+  const content = (() => {
+    switch (currentRoute) {
+      case 'loading':
+        return null;
+      case 'onboarding':
+        return <Onboarding />;
+      case 'home':
+        return <Home />;
+      case 'settings':
+        return <Settings />;
+    }
+  })();
+
+  return (
+    <>
+      {content}
+      <AlertDialog
+        open={!!update}
+        onOpenChange={(open) => {
+          if (!open) clearUpdate();
+        }}
+        title="새로운 버전이 있어요"
+        description={`v${update?.version} 버전으로 업데이트할 수 있어요.`}
+        confirmText="업데이트"
+        cancelText="나중에"
+        onConfirm={() => {
+          if (update) void installUpdate(update);
+        }}
+      />
+    </>
+  );
 }
