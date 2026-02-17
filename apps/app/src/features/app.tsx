@@ -4,7 +4,16 @@ import { useEffect } from 'react';
 import { installUpdate, useCheckForUpdates } from '~/lib/check-for-updates';
 import { commands, unwrapResult } from '~/lib/tauri-bindings';
 import { useUIStore } from '~/stores/ui-store';
-import { AlertDialog } from '~/ui/alert-dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '~/ui/alert-dialog';
 
 import { Home } from './home';
 import { Onboarding } from './onboarding';
@@ -69,14 +78,26 @@ export function App() {
         onOpenChange={(open) => {
           if (!open) clearUpdate();
         }}
-        title="새로운 버전이 있어요"
-        description={`v${update?.version} 버전으로 업데이트할 수 있어요.`}
-        confirmText="업데이트"
-        cancelText="나중에"
-        onConfirm={() => {
-          if (update) void installUpdate(update);
-        }}
-      />
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>새로운 버전이 있어요</AlertDialogTitle>
+            <AlertDialogDescription>
+              {`v${update?.version} 버전으로 업데이트할 수 있어요.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>나중에</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (update) void installUpdate(update);
+              }}
+            >
+              업데이트
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
