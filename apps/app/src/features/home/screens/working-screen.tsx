@@ -13,6 +13,7 @@ export function WorkingScreen({
   settings,
   salaryInfo,
   todaySchedule,
+  isEarlyLeavePending,
   onEarlyLeave,
   onVacation,
 }: Extract<HomeMainScreen, { screen: 'working' }>) {
@@ -42,6 +43,7 @@ export function WorkingScreen({
             rounded="full"
             size="lg"
             className="w-[240px]"
+            disabled={isEarlyLeavePending}
             onClick={onEarlyLeave}
           >
             일찍 퇴근하기

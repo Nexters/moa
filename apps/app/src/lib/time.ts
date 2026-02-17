@@ -13,12 +13,31 @@ export function timeToMinutes(time: string): number {
   return hours * 60 + minutes;
 }
 
-/** 자정 기준 분을 시간 문자열(HH:MM)로 변환 (00:00 ~ 23:59 범위로 클램핑) */
+/** 자정 기준 분을 시간 문자열(HH:MM)로 변환 (24시간 wrap-around) */
 export function minutesToTime(minutes: number): string {
-  const clamped = Math.max(0, Math.min(minutes, 23 * 60 + 59));
-  const h = Math.floor(clamped / 60);
-  const m = clamped % 60;
+  const wrapped = ((minutes % (24 * 60)) + 24 * 60) % (24 * 60);
+  const h = Math.floor(wrapped / 60);
+  const m = wrapped % 60;
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+/**
+ * 야간 근무(overnight shift) 시 end/now 분값을 정규화.
+ * end <= start이면 야간 근무로 판단하여 end에 24*60을 더하고,
+ * now가 start보다 작으면 now에도 24*60을 더한다.
+ */
+export function normalizeOvernightMinutes(
+  startMinutes: number,
+  endMinutes: number,
+  nowMinutes: number,
+): { normalizedEnd: number; normalizedNow: number } {
+  const isOvernight = endMinutes <= startMinutes;
+  const normalizedEnd = isOvernight ? endMinutes + 24 * 60 : endMinutes;
+  const normalizedNow =
+    isOvernight && nowMinutes < startMinutes
+      ? nowMinutes + 24 * 60
+      : nowMinutes;
+  return { normalizedEnd, normalizedNow };
 }
 
 /** 현재 시각을 HH:MM 형식 문자열로 반환 */

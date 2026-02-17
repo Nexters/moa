@@ -244,8 +244,10 @@ fn calculate_salary(
         raw_current_minutes
     };
 
-    let (today_earnings, work_status) = if !is_work_day || is_on_vacation {
+    let (today_earnings, work_status) = if !is_work_day {
         (0.0, WorkStatus::DayOff)
+    } else if is_on_vacation {
+        (daily_rate, WorkStatus::DayOff)
     } else if current_minutes < work_start_minutes {
         (0.0, WorkStatus::BeforeWork)
     } else if current_minutes >= work_end_minutes {

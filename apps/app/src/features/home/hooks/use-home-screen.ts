@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 import type { SalaryInfo } from '~/hooks/use-salary-tick';
 import { useSalaryTick } from '~/hooks/use-salary-tick';
 import type { TodayWorkSchedule } from '~/hooks/use-today-work-schedule';
@@ -9,7 +11,12 @@ import {
   assertOnboarded,
   type OnboardedUserSettings,
 } from '~/lib/tauri-bindings';
-import { getCurrentTimeString, minutesToTime, timeToMinutes } from '~/lib/time';
+import {
+  getCurrentTimeString,
+  minutesToTime,
+  normalizeOvernightMinutes,
+  timeToMinutes,
+} from '~/lib/time';
 
 // ============================================================================
 // Types
@@ -31,6 +38,7 @@ export type HomeMainScreen =
       settings: OnboardedUserSettings;
       salaryInfo: SalaryInfo;
       todaySchedule: TodayWorkSchedule | null;
+      isEarlyLeavePending: boolean;
       onEarlyLeave: () => void;
       onVacation: () => void;
     }
@@ -46,7 +54,7 @@ export type HomeMainScreen =
       settings: OnboardedUserSettings;
       salaryInfo: SalaryInfo;
       todaySchedule: TodayWorkSchedule | null;
-      onStillWorking: () => void;
+      onStillWorking?: () => void;
     };
 
 export interface HomeScreenState {
@@ -63,6 +71,7 @@ export function useHomeScreen(): HomeScreenState {
   const {
     schedule: todaySchedule,
     isLoading: scheduleLoading,
+    isSaving,
     saveSchedule,
     clearSchedule,
   } = useTodayWorkSchedule();
@@ -79,6 +88,14 @@ export function useHomeScreen(): HomeScreenState {
     acknowledge,
     clearAcknowledge,
   } = useWorkCompletedAck();
+
+  const [isStillWorkingPending, setIsStillWorkingPending] = useState(false);
+
+  useEffect(() => {
+    if (isStillWorkingPending && salaryInfo?.workStatus === 'working') {
+      setIsStillWorkingPending(false);
+    }
+  }, [isStillWorkingPending, salaryInfo?.workStatus]);
 
   // 로딩 체크
   const allLoading =
@@ -107,9 +124,10 @@ export function useHomeScreen(): HomeScreenState {
 
   const handleTodayWorkFromDayOff = () => {
     const now = getCurrentTimeString();
-    const totalWorkMinutes =
-      timeToMinutes(settings.workEndTime) -
-      timeToMinutes(settings.workStartTime);
+    const startMin = timeToMinutes(settings.workStartTime);
+    const endMin = timeToMinutes(settings.workEndTime);
+    const { normalizedEnd } = normalizeOvernightMinutes(startMin, endMin, 0);
+    const totalWorkMinutes = normalizedEnd - startMin;
     const endTime = minutesToTime(timeToMinutes(now) + totalWorkMinutes);
     void saveSchedule(now, endTime);
   };
@@ -122,14 +140,18 @@ export function useHomeScreen(): HomeScreenState {
     const now = getCurrentTimeString();
     const originalStart = getEffectiveStartTime();
     const originalEnd = getEffectiveEndTime();
-    const diffMinutes = timeToMinutes(originalStart) - timeToMinutes(now);
+    const startMin = timeToMinutes(originalStart);
+    const endMin = timeToMinutes(originalEnd);
+    const nowMin = timeToMinutes(now);
+    const { normalizedEnd } = normalizeOvernightMinutes(startMin, endMin, 0);
+    const diffMinutes = startMin - nowMin;
 
     if (diffMinutes <= 0) {
       void saveSchedule(originalStart, originalEnd);
       return;
     }
 
-    const newEnd = minutesToTime(timeToMinutes(originalEnd) - diffMinutes);
+    const newEnd = minutesToTime(normalizedEnd - diffMinutes);
     void saveSchedule(now, newEnd);
   };
 
@@ -137,8 +159,13 @@ export function useHomeScreen(): HomeScreenState {
     const now = getCurrentTimeString();
     const currentStart = getEffectiveStartTime();
     const currentEnd = getEffectiveEndTime();
+    const { normalizedEnd, normalizedNow } = normalizeOvernightMinutes(
+      timeToMinutes(currentStart),
+      timeToMinutes(currentEnd),
+      timeToMinutes(now),
+    );
 
-    if (timeToMinutes(now) >= timeToMinutes(currentEnd)) {
+    if (normalizedNow >= normalizedEnd) {
       return;
     }
 
@@ -149,10 +176,31 @@ export function useHomeScreen(): HomeScreenState {
     void acknowledge();
   };
 
-  const handleStillWorking = () => {
-    void clearAcknowledge();
-    void clearSchedule();
+  const handleStillWorking = async () => {
+    setIsStillWorkingPending(true);
+    try {
+      await clearSchedule();
+      await clearAcknowledge();
+    } catch {
+      setIsStillWorkingPending(false);
+    }
   };
+
+  // "아직 근무중이에요" 전환 중 → optimistic working 화면
+  if (isStillWorkingPending) {
+    return {
+      isLoading: false,
+      mainScreen: {
+        screen: 'working' as const,
+        settings,
+        salaryInfo,
+        todaySchedule,
+        isEarlyLeavePending: false,
+        onEarlyLeave: handleEarlyLeave,
+        onVacation: handleVacation,
+      },
+    };
+  }
 
   // 메인 스크린 결정
   const mainScreen = resolveMainScreen({
@@ -161,6 +209,7 @@ export function useHomeScreen(): HomeScreenState {
     settings,
     todaySchedule,
     isAcknowledged,
+    isSaving,
     onTodayWorkFromVacation: handleTodayWorkFromVacation,
     onTodayWorkFromDayOff: handleTodayWorkFromDayOff,
     onVacation: handleVacation,
@@ -182,6 +231,7 @@ interface ResolveParams {
   settings: OnboardedUserSettings;
   todaySchedule: TodayWorkSchedule | null;
   isAcknowledged: boolean;
+  isSaving: boolean;
   onTodayWorkFromVacation: () => void;
   onTodayWorkFromDayOff: () => void;
   onVacation: () => void;
@@ -198,6 +248,7 @@ function resolveMainScreen(params: ResolveParams): HomeMainScreen {
     settings,
     todaySchedule,
     isAcknowledged,
+    isSaving,
     onTodayWorkFromVacation,
     onTodayWorkFromDayOff,
     onVacation,
@@ -241,17 +292,25 @@ function resolveMainScreen(params: ResolveParams): HomeMainScreen {
         settings,
         salaryInfo,
         todaySchedule,
+        isEarlyLeavePending: isSaving,
         onEarlyLeave,
         onVacation,
       };
     case 'completed':
       if (isAcknowledged) {
+        const now = getCurrentTimeString();
+        const { normalizedEnd, normalizedNow } = normalizeOvernightMinutes(
+          timeToMinutes(settings.workStartTime),
+          timeToMinutes(settings.workEndTime),
+          timeToMinutes(now),
+        );
+        const isBeforeOriginalEnd = normalizedNow < normalizedEnd;
         return {
           screen: 'post-completed',
           settings,
           salaryInfo,
           todaySchedule,
-          onStillWorking,
+          ...(isBeforeOriginalEnd && { onStillWorking }),
         };
       }
       return {

@@ -73,6 +73,7 @@ export function useTodayWorkSchedule() {
   return {
     schedule,
     isLoading,
+    isSaving: saveMutation.isPending,
     saveSchedule: (startTime: string, endTime: string) =>
       saveMutation.mutateAsync({ startTime, endTime }),
     clearSchedule: () => clearMutation.mutateAsync(),
