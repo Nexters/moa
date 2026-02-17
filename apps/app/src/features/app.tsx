@@ -1,7 +1,7 @@
 import { listen } from '@tauri-apps/api/event';
 import { useEffect } from 'react';
 
-import { useCheckForUpdates } from '~/lib/check-for-updates';
+import { UpdateAlertDialog } from '~/lib/check-for-updates';
 import { commands, unwrapResult } from '~/lib/tauri-bindings';
 import { useUIStore } from '~/stores/ui-store';
 
@@ -14,8 +14,6 @@ export function App() {
   const currentRoute = useUIStore((s) => s.currentRoute);
   const navigate = useUIStore((s) => s.navigate);
   const resetToHome = useUIStore((s) => s.resetToHome);
-
-  useCheckForUpdates();
 
   useEffect(() => {
     void commands.initMenubar();
@@ -47,14 +45,23 @@ export function App() {
     void checkOnboarding();
   }, [navigate]);
 
-  switch (currentRoute) {
-    case 'loading':
-      return null;
-    case 'onboarding':
-      return <Onboarding />;
-    case 'home':
-      return <Home />;
-    case 'settings':
-      return <Settings />;
-  }
+  const content = (() => {
+    switch (currentRoute) {
+      case 'loading':
+        return null;
+      case 'onboarding':
+        return <Onboarding />;
+      case 'home':
+        return <Home />;
+      case 'settings':
+        return <Settings />;
+    }
+  })();
+
+  return (
+    <>
+      {content}
+      <UpdateAlertDialog />
+    </>
+  );
 }
