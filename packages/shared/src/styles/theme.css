@@ -1,16 +1,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
-
-@keyframes fill-up {
-  0%,
-  5% {
-    clip-path: inset(100% 0 0 0);
-  }
-  75%,
-  100% {
-    clip-path: inset(0% 0 0 0);
-  }
-}
+@source '../';
 
 @theme {
   /* ===== Colors ===== */
@@ -85,6 +75,21 @@
   --radius-lg: 16px;
   --radius-xl: 20px;
   --radius-full: 999px;
+
+  /* ===== Animations ===== */
+
+  --animate-fill-up: fill-up 2s ease-in-out infinite;
+
+  @keyframes fill-up {
+    0%,
+    10% {
+      clip-path: inset(100% 0 0 0);
+    }
+    90%,
+    100% {
+      clip-path: inset(0% 0 0 0);
+    }
+  }
 
   /* ===== Typography ===== */
 
