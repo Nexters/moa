@@ -68,11 +68,7 @@ export function MoaMoneyIcon({
             />
           </>
         )}
-        <g
-          className={
-            isAnimated ? 'animate-[fill-up_2s_ease-in-out_infinite]' : undefined
-          }
-        >
+        <g className={isAnimated ? 'animate-fill-up' : undefined}>
           <circle
             cx="40.6274"
             cy="39.2898"
