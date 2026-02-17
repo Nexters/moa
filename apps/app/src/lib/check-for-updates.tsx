@@ -3,6 +3,16 @@ import { check, type Update } from '@tauri-apps/plugin-updater';
 import { useEffect, useState } from 'react';
 
 import { logger } from '~/lib/logger';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '~/ui/alert-dialog';
 
 export async function checkForUpdates(): Promise<Update | null> {
   try {
@@ -35,7 +45,7 @@ export async function installUpdate(update: Update) {
   await relaunch();
 }
 
-export function useCheckForUpdates({ delay = 5000 }: { delay?: number } = {}) {
+function useCheckForUpdates({ delay = 5000 }: { delay?: number } = {}) {
   const [update, setUpdate] = useState<Update | null>(null);
 
   useEffect(() => {
@@ -52,4 +62,36 @@ export function useCheckForUpdates({ delay = 5000 }: { delay?: number } = {}) {
     update,
     clearUpdate: () => setUpdate(null),
   };
+}
+
+export function UpdateAlertDialog() {
+  const { update, clearUpdate } = useCheckForUpdates();
+
+  return (
+    <AlertDialog
+      open={!!update}
+      onOpenChange={(open) => {
+        if (!open) clearUpdate();
+      }}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>새로운 버전이 있어요</AlertDialogTitle>
+          <AlertDialogDescription>
+            {`v${update?.version} 버전으로 업데이트할 수 있어요.`}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>나중에</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => {
+              if (update) void installUpdate(update);
+            }}
+          >
+            업데이트
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 }
