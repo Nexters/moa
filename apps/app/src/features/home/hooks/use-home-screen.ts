@@ -178,8 +178,12 @@ export function useHomeScreen(): HomeScreenState {
 
   const handleStillWorking = async () => {
     setIsStillWorkingPending(true);
-    await clearSchedule();
-    await clearAcknowledge();
+    try {
+      await clearSchedule();
+      await clearAcknowledge();
+    } catch {
+      setIsStillWorkingPending(false);
+    }
   };
 
   // "아직 근무중이에요" 전환 중 → optimistic working 화면
