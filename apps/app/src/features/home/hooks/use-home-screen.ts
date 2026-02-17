@@ -131,12 +131,8 @@ export function useHomeScreen(): HomeScreenState {
     const startMin = timeToMinutes(originalStart);
     const endMin = timeToMinutes(originalEnd);
     const nowMin = timeToMinutes(now);
-    const { normalizedEnd, normalizedNow } = normalizeOvernightMinutes(
-      startMin,
-      endMin,
-      nowMin,
-    );
-    const diffMinutes = startMin - normalizedNow;
+    const { normalizedEnd } = normalizeOvernightMinutes(startMin, endMin, 0);
+    const diffMinutes = startMin - nowMin;
 
     if (diffMinutes <= 0) {
       void saveSchedule(originalStart, originalEnd);
