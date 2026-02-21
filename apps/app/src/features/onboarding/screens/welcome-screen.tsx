@@ -1,9 +1,11 @@
 import { MoaMoneyIcon } from '@moa/shared';
 import { AppBar, Button, TooltipBubble } from '~/ui';
 
-import type { OnboardingScreenProps } from '../hooks/use-onboarding-screen';
+import { useOnboardingContext } from '..';
 
-export function WelcomeScreen({ onNext }: OnboardingScreenProps) {
+export function WelcomeScreen() {
+  const { goToNext } = useOnboardingContext();
+
   return (
     <main className="flex flex-1 flex-col">
       <AppBar type="main" />
@@ -27,7 +29,7 @@ export function WelcomeScreen({ onNext }: OnboardingScreenProps) {
       </div>
 
       <div className="mt-15 flex justify-center">
-        <Button rounded="full" size="md" className="w-60" onClick={onNext}>
+        <Button rounded="full" size="md" className="w-60" onClick={goToNext}>
           월급 정보 등록하기
         </Button>
       </div>

@@ -1,12 +1,14 @@
 import { AppBar, AppFooter, Button, DayChipGroup, Field } from '~/ui';
 import { TimePeriodInput } from '~/ui/time-period-input';
 
-import type { OnboardingScreenProps } from '../hooks/use-onboarding-screen';
+import { useOnboardingContext } from '..';
 
-export function ScheduleScreen({ form, onBack }: OnboardingScreenProps) {
+export function ScheduleScreen() {
+  const { form, goToPrevious } = useOnboardingContext();
+
   return (
     <main className="flex flex-1 flex-col">
-      <AppBar type="detail" onBack={onBack} />
+      <AppBar type="detail" onBack={goToPrevious} />
 
       <div className="flex flex-1 flex-col px-6 pt-4">
         <h1 className="t2-700 text-text-high">언제 근무하나요?</h1>

@@ -1,4 +1,5 @@
-import { useUIStore } from '~/stores/ui-store';
+import { useNavigate } from '@tanstack/react-router';
+
 import { AppBar } from '~/ui/app-bar';
 
 import { useHomeScreen } from './hooks/use-home-screen';
@@ -10,14 +11,14 @@ import { VacationScreen } from './screens/vacation-screen';
 import { WorkingScreen } from './screens/working-screen';
 
 export function Home() {
-  const navigate = useUIStore((s) => s.navigate);
+  const navigate = useNavigate();
   const { isLoading, mainScreen } = useHomeScreen();
 
   if (isLoading || !mainScreen) return null;
 
   return (
     <main className="flex flex-1 flex-col">
-      <AppBar type="main" onSettings={() => navigate('settings')} />
+      <AppBar type="main" onSettings={() => navigate({ to: '/settings' })} />
       <div className="flex flex-1 flex-col px-5 pt-3">
         {mainScreen.screen === 'vacation' && <VacationScreen {...mainScreen} />}
         {mainScreen.screen === 'day-off' && <DayOffScreen {...mainScreen} />}

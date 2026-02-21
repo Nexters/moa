@@ -1,3 +1,5 @@
+import { useNavigate } from '@tanstack/react-router';
+
 import { useUserSettings } from '~/hooks/use-user-settings';
 import { MAX_SALARY_AMOUNT } from '~/lib/constants';
 import type { SalaryType, UserSettings } from '~/lib/tauri-bindings';
@@ -15,29 +17,26 @@ import {
   useSettingsForm,
 } from '../hooks/use-settings-form';
 
-interface Props {
-  onBack: () => void;
-}
-
-export function EditSalaryScreen({ onBack }: Props) {
+export function EditSalaryScreen() {
   const { data: settings } = useUserSettings();
 
   if (!settings) return null;
 
-  return <EditSalaryForm settings={settings} onBack={onBack} />;
+  return <EditSalaryForm settings={settings} />;
 }
 
 interface EditSalaryFormProps {
   settings: UserSettings;
-  onBack: () => void;
 }
 
-function EditSalaryForm({ settings, onBack }: EditSalaryFormProps) {
-  const form = useSettingsForm({ settings, onSuccess: onBack });
+function EditSalaryForm({ settings }: EditSalaryFormProps) {
+  const navigate = useNavigate();
+  const goBack = () => navigate({ to: '/settings/salary-info' });
+  const form = useSettingsForm({ settings, onSuccess: goBack });
 
   return (
     <main className="flex flex-1 flex-col">
-      <AppBar type="detail" title="월급 정보" onBack={onBack} />
+      <AppBar type="detail" title="월급 정보" onBack={goBack} />
 
       <div className="scrollbar-overlay flex flex-1 flex-col p-5">
         <div className="flex flex-col gap-6">
