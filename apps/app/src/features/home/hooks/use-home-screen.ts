@@ -135,7 +135,6 @@ export function useHomeScreen(): HomeScreenState {
       endTime: string;
     }) => {
       await saveSchedule(startTime, endTime);
-      await waitForSalaryTick((info) => info.workStatus !== 'before-work');
     },
   });
 
@@ -148,7 +147,6 @@ export function useHomeScreen(): HomeScreenState {
       endTime: string;
     }) => {
       await saveSchedule(startTime, endTime);
-      await waitForSalaryTick((info) => info.workStatus !== 'working');
     },
   });
 
