@@ -15,10 +15,8 @@ use tauri_nspanel::ManagerExt;
 #[cfg(not(target_os = "macos"))]
 use tauri_plugin_positioner::{Position, WindowExt};
 
-/// Embedded tray icons for different states
+/// Embedded tray icons — dark theme (white icons for dark menubar)
 static TRAY_ICON_IDLE: &[u8] = include_bytes!("../icons/tray-idle.png");
-
-/// Embedded animation frames for coin-flip effect (working state)
 static TRAY_FRAMES: [&[u8]; 14] = [
     include_bytes!("../icons/tray-frame-0.png"),
     include_bytes!("../icons/tray-frame-1.png"),
@@ -36,15 +34,70 @@ static TRAY_FRAMES: [&[u8]; 14] = [
     include_bytes!("../icons/tray-frame-13.png"),
 ];
 
+/// Embedded tray icons — light theme (black icons for light menubar)
+static TRAY_ICON_IDLE_LIGHT: &[u8] = include_bytes!("../icons/tray-idle-light.png");
+static TRAY_FRAMES_LIGHT: [&[u8]; 14] = [
+    include_bytes!("../icons/tray-frame-light-0.png"),
+    include_bytes!("../icons/tray-frame-light-1.png"),
+    include_bytes!("../icons/tray-frame-light-2.png"),
+    include_bytes!("../icons/tray-frame-light-3.png"),
+    include_bytes!("../icons/tray-frame-light-4.png"),
+    include_bytes!("../icons/tray-frame-light-5.png"),
+    include_bytes!("../icons/tray-frame-light-6.png"),
+    include_bytes!("../icons/tray-frame-light-7.png"),
+    include_bytes!("../icons/tray-frame-light-8.png"),
+    include_bytes!("../icons/tray-frame-light-9.png"),
+    include_bytes!("../icons/tray-frame-light-10.png"),
+    include_bytes!("../icons/tray-frame-light-11.png"),
+    include_bytes!("../icons/tray-frame-light-12.png"),
+    include_bytes!("../icons/tray-frame-light-13.png"),
+];
+
 /// Animation control flag
 static ANIMATING: AtomicBool = AtomicBool::new(false);
+
+/// Cached system dark mode state
+static IS_DARK_MODE: AtomicBool = AtomicBool::new(true);
 
 /// Animation frame interval (85ms × 14 frames ≈ 1.2s per rotation)
 const FRAME_INTERVAL: Duration = Duration::from_millis(85);
 
+/// Detect macOS dark mode via AppleInterfaceStyle.
+#[cfg(target_os = "macos")]
+fn detect_dark_mode() -> bool {
+    std::process::Command::new("defaults")
+        .args(["read", "-g", "AppleInterfaceStyle"])
+        .output()
+        .map(|o| o.status.success())
+        .unwrap_or(false)
+}
+
+#[cfg(not(target_os = "macos"))]
+fn detect_dark_mode() -> bool {
+    false
+}
+
+fn idle_icon() -> &'static [u8] {
+    if IS_DARK_MODE.load(Ordering::Relaxed) {
+        TRAY_ICON_IDLE
+    } else {
+        TRAY_ICON_IDLE_LIGHT
+    }
+}
+
+fn frames() -> &'static [&'static [u8]; 14] {
+    if IS_DARK_MODE.load(Ordering::Relaxed) {
+        &TRAY_FRAMES
+    } else {
+        &TRAY_FRAMES_LIGHT
+    }
+}
+
 /// Creates the system tray icon with click handlers.
 pub fn create(app_handle: &AppHandle) -> tauri::Result<TrayIcon> {
-    let icon = Image::from_bytes(include_bytes!("../icons/tray.png"))?;
+    IS_DARK_MODE.store(detect_dark_mode(), Ordering::Relaxed);
+
+    let icon = Image::from_bytes(idle_icon())?;
 
     TrayIconBuilder::with_id("tray")
         .icon(icon)
@@ -120,7 +173,7 @@ pub fn update_icon_state(app: &AppHandle, is_working: bool) {
 
             while ANIMATING.load(Ordering::Relaxed) {
                 if let Some(tray) = app_clone.tray_by_id("tray") {
-                    if let Ok(icon) = Image::from_bytes(TRAY_FRAMES[frame_idx]) {
+                    if let Ok(icon) = Image::from_bytes(frames()[frame_idx]) {
                         let _ = tray.set_icon(Some(icon));
                     }
                 }
@@ -131,7 +184,7 @@ pub fn update_icon_state(app: &AppHandle, is_working: bool) {
 
             // 애니메이션 종료 후 idle 아이콘 복원
             if let Some(tray) = app_clone.tray_by_id("tray") {
-                if let Ok(icon) = Image::from_bytes(TRAY_ICON_IDLE) {
+                if let Ok(icon) = Image::from_bytes(idle_icon()) {
                     let _ = tray.set_icon(Some(icon));
                 }
             }
@@ -141,6 +194,25 @@ pub fn update_icon_state(app: &AppHandle, is_working: bool) {
     } else {
         ANIMATING.store(false, Ordering::SeqCst);
         log::debug!("트레이 아이콘 애니메이션 중지");
+    }
+}
+
+/// 시스템 테마 변경 감지 후 아이콘 갱신 (salary ticker에서 매초 호출)
+pub fn refresh_theme(app: &AppHandle) {
+    let dark = detect_dark_mode();
+    let prev = IS_DARK_MODE.swap(dark, Ordering::Relaxed);
+
+    // 테마 변경 + 비애니메이션 상태일 때만 아이콘 교체
+    if prev != dark && !ANIMATING.load(Ordering::Relaxed) {
+        if let Some(tray) = app.tray_by_id("tray") {
+            if let Ok(icon) = Image::from_bytes(idle_icon()) {
+                let _ = tray.set_icon(Some(icon));
+            }
+        }
+        log::debug!(
+            "시스템 테마 변경 감지: {}",
+            if dark { "다크" } else { "라이트" }
+        );
     }
 }
 
