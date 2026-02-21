@@ -1,8 +1,8 @@
 import { useNavigate } from '@tanstack/react-router';
 
+import completionImage from '~/assets/completion.avif';
 import { useConfetti } from '~/hooks/use-confetti';
 import { AppBar, AppFooter, Button } from '~/ui';
-import { CompletionIllustration } from '~/ui/icons/completion-illustration';
 
 export function CompletionScreen() {
   const navigate = useNavigate();
@@ -19,7 +19,7 @@ export function CompletionScreen() {
 
       {/* 컨텐츠 영역 */}
       <div className="relative flex flex-1 flex-col items-center px-6 pt-16">
-        <CompletionIllustration />
+        <img src={completionImage} alt="" className="size-[150px]" />
 
         <h1 className="t2-700 text-text-high mt-6 text-center">
           모든 준비가 끝났어요!
