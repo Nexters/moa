@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
 import { enable, disable } from '@tauri-apps/plugin-autostart';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { exit } from '@tauri-apps/plugin-process';
@@ -7,7 +8,6 @@ import { useUserSettings } from '~/hooks/use-user-settings';
 import type { MenubarDisplayMode } from '~/lib/tauri-bindings';
 import { commands } from '~/lib/tauri-bindings';
 import { appQuery, appQueryOptions, userSettingsQuery } from '~/queries';
-import { useUIStore } from '~/stores/ui-store';
 import { AppBar, Button, InfoRow, SelectInput, SwitchInput } from '~/ui';
 
 import { SettingsSection } from '../components/settings-section';
@@ -18,12 +18,8 @@ const MENUBAR_DISPLAY_OPTIONS = [
   { value: 'accumulated', label: '누적 월급' },
 ] as const;
 
-interface Props {
-  onNavigate: (screen: 'salary-info') => void;
-}
-
-export function SettingsScreen({ onNavigate }: Props) {
-  const navigate = useUIStore((s) => s.navigate);
+export function SettingsScreen() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: settings } = useUserSettings();
 
@@ -70,7 +66,7 @@ export function SettingsScreen({ onNavigate }: Props) {
     onSuccess: () => {
       void commands.notifySettingsChanged();
       queryClient.clear();
-      navigate('onboarding');
+      void navigate({ to: '/onboarding/welcome' });
     },
   });
 
@@ -98,14 +94,14 @@ export function SettingsScreen({ onNavigate }: Props) {
 
   return (
     <div className="bg-bg-primary flex h-full flex-col">
-      <AppBar type="detail" title="설정" onBack={() => navigate('home')} />
+      <AppBar type="detail" title="설정" onBack={() => navigate({ to: '/home' })} />
 
       <div className="scrollbar-overlay flex min-h-0 flex-1 flex-col gap-5 p-5">
         <SettingsSection title="내 정보">
           <InfoRow
             as="button"
             label="월급 · 근무 정보"
-            onClick={() => onNavigate('salary-info')}
+            onClick={() => navigate({ to: '/settings/salary-info' })}
           />
         </SettingsSection>
 

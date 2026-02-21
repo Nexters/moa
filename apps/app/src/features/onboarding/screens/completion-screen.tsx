@@ -1,16 +1,15 @@
+import { useNavigate } from '@tanstack/react-router';
+
 import { useConfetti } from '~/hooks/use-confetti';
-import { useUIStore } from '~/stores/ui-store';
 import { AppBar, AppFooter, Button } from '~/ui';
 
-import type { OnboardingScreenProps } from '../hooks/use-onboarding-screen';
-
-export function CompletionScreen(_props: OnboardingScreenProps) {
-  const navigate = useUIStore((s) => s.navigate);
+export function CompletionScreen() {
+  const navigate = useNavigate();
 
   useConfetti();
 
   const handleComplete = () => {
-    navigate('home');
+    void navigate({ to: '/home' });
   };
 
   return (

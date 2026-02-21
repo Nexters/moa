@@ -1,13 +1,10 @@
+import { useNavigate } from '@tanstack/react-router';
+
 import { useUserSettings } from '~/hooks/use-user-settings';
 import { type SalaryType } from '~/lib/tauri-bindings';
 import { AppBar, InfoRow } from '~/ui';
 
 import { SettingsSection } from '../components/settings-section';
-
-interface Props {
-  onBack: () => void;
-  onNavigate: (screen: 'edit-salary' | 'edit-schedule') => void;
-}
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -48,19 +45,20 @@ function formatTimeRange(
   return `${start}~${end}`;
 }
 
-export function SalaryInfoScreen({ onBack, onNavigate }: Props) {
+export function SalaryInfoScreen() {
+  const navigate = useNavigate();
   const { data: settings } = useUserSettings();
 
   return (
     <main className="flex flex-1 flex-col">
-      <AppBar type="detail" title="월급 · 근무 정보" onBack={onBack} />
+      <AppBar type="detail" title="월급 · 근무 정보" onBack={() => navigate({ to: '/settings' })} />
 
       <div className="flex flex-col gap-5 overflow-y-auto p-5">
         <SettingsSection title="월급 정보">
           <InfoRow
             as="button"
             label="급여"
-            onClick={() => onNavigate('edit-salary')}
+            onClick={() => navigate({ to: '/settings/edit-salary' })}
           >
             <span className="text-green-40">
               {settings
@@ -71,7 +69,7 @@ export function SalaryInfoScreen({ onBack, onNavigate }: Props) {
           <InfoRow
             as="button"
             label="월급일"
-            onClick={() => onNavigate('edit-salary')}
+            onClick={() => navigate({ to: '/settings/edit-salary' })}
           >
             <span className="text-green-40">
               {settings ? `${settings.payDay}일` : '-'}
@@ -83,7 +81,7 @@ export function SalaryInfoScreen({ onBack, onNavigate }: Props) {
           <InfoRow
             as="button"
             label="근무 요일"
-            onClick={() => onNavigate('edit-schedule')}
+            onClick={() => navigate({ to: '/settings/edit-schedule' })}
           >
             <span className="text-green-40">
               {settings ? formatWorkDays(settings.workDays) : '-'}
@@ -92,7 +90,7 @@ export function SalaryInfoScreen({ onBack, onNavigate }: Props) {
           <InfoRow
             as="button"
             label="근무 시간"
-            onClick={() => onNavigate('edit-schedule')}
+            onClick={() => navigate({ to: '/settings/edit-schedule' })}
           >
             <span className="text-green-40">
               {settings
