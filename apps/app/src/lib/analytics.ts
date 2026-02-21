@@ -2,8 +2,6 @@ import posthog from 'posthog-js';
 
 import type { router } from '~/router';
 
-import { getScreenName } from './analytics-screens';
-
 type Router = typeof router;
 
 posthog.init('phc_Vi1if06zeH3nYTze3n3mTXnWMZcd0cTCHiE9kK1kBKs', {
@@ -22,13 +20,11 @@ export function subscribeAnalytics(r: Router): () => void {
       if (!pathChanged) return;
 
       if (fromLocation) {
-        const prevScreen = getScreenName(fromLocation.pathname);
-        posthog.capture('$pageleave', { screen: prevScreen });
+        posthog.capture('$pageleave', { screen: fromLocation.pathname });
       }
 
-      const screen = getScreenName(toLocation.pathname);
-      posthog.register({ screen });
-      posthog.capture('$pageview', { screen });
+      posthog.register({ screen: toLocation.pathname });
+      posthog.capture('$pageview', { screen: toLocation.pathname });
     },
   );
 }
