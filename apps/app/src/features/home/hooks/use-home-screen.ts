@@ -7,6 +7,7 @@ import { useTodayWorkSchedule } from '~/hooks/use-today-work-schedule';
 import { useUserSettings } from '~/hooks/use-user-settings';
 import { useVacation } from '~/hooks/use-vacation';
 import { useWorkCompletedAck } from '~/hooks/use-work-completed-ack';
+import { posthog } from '~/lib/analytics';
 import {
   assertOnboarded,
   type OnboardedUserSettings,
@@ -181,7 +182,8 @@ export function useHomeScreen(): HomeScreenState {
     try {
       await clearSchedule();
       await clearAcknowledge();
-    } catch {
+    } catch (error) {
+      posthog.captureException(error);
       setIsStillWorkingPending(false);
     }
   };
