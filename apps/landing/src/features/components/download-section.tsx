@@ -3,7 +3,6 @@ import { cn } from 'tailwind-variants';
 
 import {
   AppleIcon,
-  AppStoreIcon,
   ArrowRightIcon,
   CheckIcon,
   CopyIcon,
@@ -14,23 +13,27 @@ import {
 
 import { getDownloadUrl } from '../app-version';
 
-const BREW_COMMANDS = ['brew tap nexters/moa', 'brew install --cask moa'];
+const BREW_COMMAND = 'brew install --cask nexters/moa';
 
-function CodeBlock() {
+function HomebrewRow() {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
-    void navigator.clipboard.writeText(BREW_COMMANDS.join('\n'));
+    void navigator.clipboard.writeText(BREW_COMMAND);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <div className="bg-container-secondary relative rounded-md px-5 py-4 font-mono">
+    <div className="bg-container-secondary flex w-full items-center justify-between rounded-xl px-5 py-4 lg:w-[373px]">
+      <span className="b2-400 flex items-center gap-3 font-mono">
+        <span className="text-text-low select-none">$</span>
+        <span className="text-text-high">{BREW_COMMAND}</span>
+      </span>
       <button
         type="button"
         onClick={handleCopy}
-        className="text-text-low hover:text-text-high absolute top-4 right-4 cursor-pointer transition-colors"
+        className="text-text-low hover:text-text-high cursor-pointer transition-colors"
         aria-label="Copy to clipboard"
       >
         {copied ? (
@@ -39,14 +42,6 @@ function CodeBlock() {
           <CopyIcon className="size-4" />
         )}
       </button>
-      <div className="flex flex-col gap-1">
-        {BREW_COMMANDS.map((cmd) => (
-          <div key={cmd} className="b1-400 flex items-center gap-3">
-            <span className="text-text-low select-none">$</span>
-            <span className="text-text-high">{cmd}</span>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
@@ -179,14 +174,9 @@ export function DownloadSection() {
                   href={getDownloadUrl('windows-x64')}
                   rightIcon={<DownloadIcon className="text-text-low size-4" />}
                 />
+                <HomebrewRow />
               </div>
             </div>
-          </div>
-
-          {/* Brew command */}
-          <div className="flex flex-col gap-[14px]">
-            <p className="b1-500 text-text-medium">Homebrew</p>
-            <CodeBlock />
           </div>
         </div>
       </div>
