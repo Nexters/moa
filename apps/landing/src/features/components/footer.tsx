@@ -2,11 +2,11 @@ import { GitHubIcon, InstagramIcon } from '~/assets/icons';
 
 export function Footer() {
   return (
-    <footer className="bg-bg-primary flex items-start gap-4 px-6 pb-10 md:px-[68px] md:pb-10 lg:px-[120px] lg:pb-10">
+    <footer className="bg-bg-primary flex flex-col-reverse gap-4 px-6 pb-10 md:flex-row md:items-start md:px-[68px] md:pb-10 lg:px-[120px] lg:pb-10">
       {/* Left */}
       <div className="flex flex-1 flex-col gap-4">
         <div className="b1-400 text-text-medium flex items-center gap-2">
-          <span>
+          <span className="whitespace-nowrap">
             <span className="text-text-high">📩</span> 문의:
           </span>
           <a

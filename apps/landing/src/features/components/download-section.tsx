@@ -123,7 +123,7 @@ export function DownloadSection() {
                 힘내요!
               </h2>
             </div>
-            <p className="t3-400 text-text-medium">
+            <p className="b2-400 md:t3-400 text-text-medium">
               근무 중에도, 모바일로도 언제든 함께할 수 있어요.
             </p>
           </div>
@@ -138,7 +138,7 @@ export function DownloadSection() {
               <p className="b1-500 text-text-medium">Mobile</p>
               <div className="flex flex-col gap-3">
                 <DownloadRow
-                  icon={<AppStoreIcon className="size-6" />}
+                  icon={<AppleIcon className="size-6" />}
                   label="iOS"
                   rightIcon={
                     <ArrowRightIcon className="text-text-low size-4" />

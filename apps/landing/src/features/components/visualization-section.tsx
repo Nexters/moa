@@ -3,7 +3,9 @@ export function VisualizationSection() {
     <section className="bg-bg-secondary px-6 pt-[60px] pb-20 md:px-[68px] md:pt-[100px] md:pb-[160px] lg:px-[120px]">
       <div className="mx-auto flex flex-col items-center gap-10 md:gap-20">
         <div className="text-center">
-          <p className="t1-400 text-text-medium">Salary Visualization</p>
+          <p className="c1-400 md:t1-400 text-text-medium">
+            Salary Visualization
+          </p>
           <h2 className="b1-600 md:h2-700 text-text-high mt-2.5">
             <span className="text-green-40">실시간으로 벌고 있는 월급</span>을
             <br />
@@ -11,9 +13,9 @@ export function VisualizationSection() {
           </h2>
         </div>
 
-        <div className="flex w-full flex-col items-center gap-8 md:flex-row md:justify-center md:gap-10">
+        <div className="flex w-full flex-col items-center gap-20 md:flex-row md:justify-center md:gap-10">
           <div className="flex flex-col items-center gap-3 md:gap-6">
-            <span className="bg-green-40 t2-700 rounded-full px-6 py-2 text-black">
+            <span className="bg-green-40 c1-600 md:t2-700 text-text-high-reverse rounded-full px-4 py-1 md:px-6 md:py-2">
               Mobile
             </span>
             <img
@@ -24,7 +26,7 @@ export function VisualizationSection() {
           </div>
 
           <div className="flex flex-col items-center gap-3 md:gap-6">
-            <span className="bg-green-40 t2-700 rounded-full px-6 py-2 text-black">
+            <span className="bg-green-40 c1-600 md:t2-700 text-text-high-reverse rounded-full px-4 py-1 md:px-6 md:py-2">
               Desktop
             </span>
             <img
