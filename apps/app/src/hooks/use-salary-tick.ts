@@ -4,6 +4,23 @@ import { useEffect, useState } from 'react';
 /** 근무 상태 */
 export type WorkStatus = 'before-work' | 'working' | 'completed' | 'day-off';
 
+/**
+ * 조건을 만족하는 다음 salary-tick 이벤트를 기다림.
+ * Rust 백엔드 상태 변경 후 확인 대기용.
+ */
+export function waitForSalaryTick(
+  predicate: (info: SalaryInfo) => boolean,
+): Promise<SalaryInfo> {
+  return new Promise((resolve) => {
+    const unlistenPromise = listen<SalaryInfo>('salary-tick', (event) => {
+      if (predicate(event.payload)) {
+        void unlistenPromise.then((fn) => fn());
+        resolve(event.payload);
+      }
+    });
+  });
+}
+
 export interface SalaryInfo {
   /** 일급 (원) */
   dailyRate: number;

@@ -1,13 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 
 import type { SalaryInfo } from '~/hooks/use-salary-tick';
-import { useSalaryTick } from '~/hooks/use-salary-tick';
+import { useSalaryTick, waitForSalaryTick } from '~/hooks/use-salary-tick';
 import type { TodayWorkSchedule } from '~/hooks/use-today-work-schedule';
 import { useTodayWorkSchedule } from '~/hooks/use-today-work-schedule';
 import { useUserSettings } from '~/hooks/use-user-settings';
 import { useVacation } from '~/hooks/use-vacation';
 import { useWorkCompletedAck } from '~/hooks/use-work-completed-ack';
-import { posthog } from '~/lib/analytics';
 import {
   assertOnboarded,
   type OnboardedUserSettings,
@@ -90,13 +89,32 @@ export function useHomeScreen(): HomeScreenState {
     clearAcknowledge,
   } = useWorkCompletedAck();
 
-  const [isStillWorkingPending, setIsStillWorkingPending] = useState(false);
+  const todayWorkMutation = useMutation({
+    mutationFn: async ({
+      startTime,
+      endTime,
+      withVacationClear,
+    }: {
+      startTime: string;
+      endTime: string;
+      withVacationClear: boolean;
+    }) => {
+      if (withVacationClear) {
+        await Promise.all([clearVacation(), saveSchedule(startTime, endTime)]);
+      } else {
+        await saveSchedule(startTime, endTime);
+      }
+      await waitForSalaryTick((info) => info.workStatus !== 'day-off');
+    },
+  });
 
-  useEffect(() => {
-    if (isStillWorkingPending && salaryInfo?.workStatus === 'working') {
-      setIsStillWorkingPending(false);
-    }
-  }, [isStillWorkingPending, salaryInfo?.workStatus]);
+  const stillWorkingMutation = useMutation({
+    mutationFn: async () => {
+      await clearSchedule();
+      await clearAcknowledge();
+      await waitForSalaryTick((info) => info.workStatus === 'working');
+    },
+  });
 
   // 로딩 체크
   const allLoading =
@@ -119,8 +137,11 @@ export function useHomeScreen(): HomeScreenState {
 
   // 핸들러
   const handleTodayWorkFromVacation = () => {
-    void clearVacation();
-    void saveSchedule(settings.workStartTime, settings.workEndTime);
+    todayWorkMutation.mutate({
+      startTime: settings.workStartTime,
+      endTime: settings.workEndTime,
+      withVacationClear: true,
+    });
   };
 
   const handleTodayWorkFromDayOff = () => {
@@ -130,7 +151,11 @@ export function useHomeScreen(): HomeScreenState {
     const { normalizedEnd } = normalizeOvernightMinutes(startMin, endMin, 0);
     const totalWorkMinutes = normalizedEnd - startMin;
     const endTime = minutesToTime(timeToMinutes(now) + totalWorkMinutes);
-    void saveSchedule(now, endTime);
+    todayWorkMutation.mutate({
+      startTime: now,
+      endTime,
+      withVacationClear: false,
+    });
   };
 
   const handleVacation = () => {
@@ -177,19 +202,12 @@ export function useHomeScreen(): HomeScreenState {
     void acknowledge();
   };
 
-  const handleStillWorking = async () => {
-    setIsStillWorkingPending(true);
-    try {
-      await clearSchedule();
-      await clearAcknowledge();
-    } catch (error) {
-      posthog.captureException(error);
-      setIsStillWorkingPending(false);
-    }
+  const handleStillWorking = () => {
+    stillWorkingMutation.mutate();
   };
 
-  // "아직 근무중이에요" 전환 중 → optimistic working 화면
-  if (isStillWorkingPending) {
+  // 화면 전환 중 → optimistic working 화면
+  if (todayWorkMutation.isPending || stillWorkingMutation.isPending) {
     return {
       isLoading: false,
       mainScreen: {
