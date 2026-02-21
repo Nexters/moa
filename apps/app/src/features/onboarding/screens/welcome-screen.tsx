@@ -1,5 +1,4 @@
-import { MoaMoneyIcon } from '@moa/shared';
-import { AppBar, Button, TooltipBubble } from '~/ui';
+import { AppBar, Button, HeroIcon, TooltipBubble } from '~/ui';
 
 import { useOnboardingContext } from '..';
 
@@ -17,7 +16,7 @@ export function WelcomeScreen() {
           쌓이는 월급을 확인하세요!
         </TooltipBubble>
 
-        <MoaMoneyIcon className="size-20" />
+        <HeroIcon variant="empty" />
 
         <div className="flex flex-col items-center gap-[2px]">
           <span className="b1-400 text-text-medium">나는 얼마나 벌까?</span>
