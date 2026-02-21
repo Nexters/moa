@@ -1,5 +1,7 @@
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 
+import { appQueryOptions } from '~/queries';
 import { AppBar } from '~/ui/app-bar';
 
 import { useHomeScreen } from './hooks/use-home-screen';
@@ -13,6 +15,7 @@ import { WorkingScreen } from './screens/working-screen';
 export function Home() {
   const navigate = useNavigate();
   const { isLoading, mainScreen } = useHomeScreen();
+  const { data: version } = useQuery(appQueryOptions.version());
 
   if (isLoading || !mainScreen) return null;
 
@@ -33,6 +36,11 @@ export function Home() {
           <PostCompletedScreen {...mainScreen} />
         )}
       </div>
+      {version && (
+        <span className="c2-400 text-text-low absolute right-4 bottom-2">
+          v{version}
+        </span>
+      )}
     </main>
   );
 }

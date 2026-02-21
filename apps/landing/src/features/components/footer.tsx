@@ -2,31 +2,35 @@ import { GitHubIcon, InstagramIcon } from '~/assets/icons';
 
 export function Footer() {
   return (
-    <footer className="bg-bg-secondary flex items-start gap-4 px-6 pb-10 md:px-[68px] md:pb-10 lg:px-[120px] lg:pb-10">
+    <footer className="bg-bg-primary flex flex-col-reverse gap-4 px-6 pb-10 md:flex-row md:items-start md:px-[68px] md:pb-10 lg:px-[120px] lg:pb-10">
       {/* Left */}
       <div className="flex flex-1 flex-col gap-4">
         <div className="b1-400 text-text-medium flex items-center gap-2">
-          <span>
-            <span className="text-white">📩</span> 문의:
+          <span className="whitespace-nowrap">
+            <span className="text-text-high">📩</span> 문의:
           </span>
           <a
-            href="mailto:moa.mymoney@gmail.com"
-            className="p-1 underline transition-colors hover:text-white"
+            href="mailto:moa.salary@gmail.com"
+            className="hover:text-text-high p-1 underline transition-colors"
           >
-            moa.mymoney@gmail.com
+            moa.salary@gmail.com
           </a>
         </div>
         <div className="flex flex-col gap-1">
           <div className="flex gap-[6px]">
             <a
-              href="#"
-              className="b1-400 text-text-medium p-1 underline transition-colors hover:text-white"
+              href="https://moa-termsofservice.notion.site/304981fba5d4819286d1ee5712145f20"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="b1-400 text-text-medium hover:text-text-high p-1 underline transition-colors"
             >
               이용약관
             </a>
             <a
-              href="#"
-              className="b1-400 text-text-medium p-1 underline transition-colors hover:text-white"
+              href="https://moa-termsofservice.notion.site/304981fba5d481a5a845cf5b0da6c408"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="b1-400 text-text-medium hover:text-text-high p-1 underline transition-colors"
             >
               개인정보 처리방침
             </a>
@@ -40,9 +44,11 @@ export function Footer() {
       {/* Right: social icons */}
       <div className="flex items-center gap-2">
         <a
-          href="#"
+          href="https://www.instagram.com/moa.salary"
+          target="_blank"
+          rel="noopener noreferrer"
           aria-label="Instagram"
-          className="text-text-low flex h-9 w-9 items-center justify-center transition-colors hover:text-white"
+          className="text-text-low hover:text-text-high flex h-9 w-9 items-center justify-center transition-colors"
         >
           <InstagramIcon className="h-5 w-5" />
         </a>
@@ -51,7 +57,7 @@ export function Footer() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="GitHub"
-          className="text-text-low flex h-9 w-9 items-center justify-center transition-colors hover:text-white"
+          className="text-text-low hover:text-text-high flex h-9 w-9 items-center justify-center transition-colors"
         >
           <GitHubIcon className="h-5 w-5" />
         </a>

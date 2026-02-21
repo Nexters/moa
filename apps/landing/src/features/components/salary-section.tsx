@@ -1,8 +1,6 @@
 import NumberFlow, { continuous } from '@number-flow/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { MoaMoneyIcon } from '@moa/shared';
-
 // 가정: 월급 400만, 월급일 25일, 오늘 12일, 근무 09:00-18:00, 주5일
 // salary.rs calculate_salary 로직 기반
 const MONTHLY_SALARY = 4_500_000;
@@ -72,10 +70,10 @@ export function SalarySection() {
       <div className="mx-auto flex flex-col items-center gap-10 md:gap-[60px]">
         {/* Title */}
         <div className="flex flex-col items-center gap-4 text-center">
-          <h2 className="t2-700 md:h2-700 text-white">
+          <h2 className="b1-600 md:h2-700 text-text-high">
             지금 이 시간, 나 얼마 벌고 있을까?
           </h2>
-          <p className="t3-400 text-text-medium">
+          <p className="b2-400 md:t3-400 text-text-medium">
             출근부터 퇴근까지, 내 업무의 보상을 숫자로 바로 느껴보세요.
           </p>
         </div>
@@ -85,14 +83,14 @@ export function SalarySection() {
           {/* Tooltip pill + arrow */}
           <div className="z-10 flex flex-col items-center">
             <div className="bg-gray-70 flex items-center rounded-full px-5 py-[11px]">
-              <span className="t2-500 text-white">
+              <span className="b2-600 md:t2-500 text-text-high">
                 이번달에 쌓은 월급{' '}
                 <NumberFlow
                   value={accumulated}
                   locales="ko-KR"
                   format={{ maximumFractionDigits: 0 }}
                   plugins={[continuous]}
-                  className="t2-500 tabular-nums"
+                  className="tabular-nums"
                 />
                 원
               </span>
@@ -104,19 +102,22 @@ export function SalarySection() {
           <div className="flex w-full flex-col gap-6 pt-4 md:w-[504px]">
             {/* Icon + label + salary */}
             <div className="flex flex-col items-center gap-4 px-5 md:px-7">
-              <MoaMoneyIcon
-                variant="animated"
+              <img
+                src="/moa/images/coin-rotate.gif"
+                alt=""
                 className="size-[80px] md:size-[112px]"
               />
-              <div className="flex flex-col items-center gap-[5.6px]">
-                <p className="t1-500 text-white">오늘 쌓은 월급</p>
-                <div className="flex items-end justify-center gap-[5.6px]">
+              <div className="flex flex-col items-center">
+                <p className="b1-500 md:t1-500 text-text-high">
+                  오늘 쌓은 월급
+                </p>
+                <div className="flex items-center justify-center gap-1">
                   <NumberFlow
                     value={todayEarnings}
                     locales="ko-KR"
                     format={{ maximumFractionDigits: 0 }}
                     plugins={[continuous]}
-                    className="font-bold tracking-[-0.28px] text-white tabular-nums"
+                    className="text-text-high font-bold tracking-[-0.28px] tabular-nums"
                     style={salaryStyle}
                   />
                   <span
@@ -130,15 +131,21 @@ export function SalarySection() {
             </div>
 
             {/* Status card */}
-            <div className="bg-gray-70 flex flex-col gap-5 rounded-[22px] p-[22px] shadow-[2px_4px_20px_0px_rgba(0,0,0,0.25)]">
+            <div className="bg-gray-70 flex flex-col gap-3 rounded-[22px] px-5 py-4 shadow-[2px_4px_20px_0px_rgba(0,0,0,0.25)] md:gap-5 md:p-[22px]">
               <div className="flex items-center justify-between">
-                <span className="t2-500 text-text-medium">근무 상태</span>
-                <span className="t2-700 text-green-40">근무 중</span>
+                <span className="b2-400 md:t2-500 text-text-medium">
+                  근무 상태
+                </span>
+                <span className="b2-600 md:t2-700 text-green-40">근무 중</span>
               </div>
               <div className="bg-gray-60 h-px w-full" />
               <div className="flex items-center justify-between">
-                <span className="t2-500 text-text-medium">근무 시간</span>
-                <span className="t2-700 text-white">09:00 - 18:00</span>
+                <span className="b2-400 md:t2-500 text-text-medium">
+                  근무 시간
+                </span>
+                <span className="b2-600 md:t2-700 text-text-high">
+                  09:00 - 18:00
+                </span>
               </div>
             </div>
           </div>

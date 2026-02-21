@@ -86,7 +86,7 @@ export function SettingsScreen() {
     );
     try {
       await openUrl(
-        `mailto:moa.mymoney@gmail.com?subject=${subject}&body=${body}`,
+        `mailto:moa.salary@gmail.com?subject=${subject}&body=${body}`,
       );
     } catch (error) {
       posthog.captureException(error);

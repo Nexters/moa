@@ -1,9 +1,10 @@
-import { CardsSection } from './components/cards-section';
 import { DownloadSection } from './components/download-section';
 import { Footer } from './components/footer';
 import { Header } from './components/header';
 import { Hero } from './components/hero';
+import { OnboardingSection } from './components/onboarding-section';
 import { SalarySection } from './components/salary-section';
+import { VisualizationSection } from './components/visualization-section';
 
 export function App() {
   return (
@@ -11,7 +12,8 @@ export function App() {
       <Header />
       <Hero />
       <SalarySection />
-      <CardsSection />
+      <OnboardingSection />
+      <VisualizationSection />
       <DownloadSection />
       <Footer />
     </div>
