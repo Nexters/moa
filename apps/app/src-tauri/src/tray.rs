@@ -198,7 +198,7 @@ pub fn update_icon_state(app: &AppHandle, is_working: bool) {
     }
 }
 
-/// 메뉴바 테마 변경 감지 후 아이콘 갱신 (salary ticker에서 매초 호출)
+/// 메뉴바 테마 변경 감지 후 아이콘 갱신 (AppleInterfaceThemeChangedNotification 이벤트 시 호출)
 pub fn refresh_theme(app: &AppHandle) {
     let dark = detect_dark_menubar();
     let prev = IS_DARK_MENUBAR.swap(dark, Ordering::Relaxed);
