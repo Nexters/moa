@@ -71,5 +71,5 @@ Use semantic tokens instead of raw palette values. Token definitions: `packages/
 <div className="bg-container-primary text-text-high hover:bg-interactive-hover">
 
 // BAD - Raw tokens where semantic exists
-<div className="bg-gray-80 text-white hover:bg-gray-70">
+<div className="bg-gray-80 text-text-high hover:bg-gray-70">
 ```

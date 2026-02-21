@@ -70,7 +70,7 @@ export function SalarySection() {
       <div className="mx-auto flex flex-col items-center gap-10 md:gap-[60px]">
         {/* Title */}
         <div className="flex flex-col items-center gap-4 text-center">
-          <h2 className="t2-700 md:h2-700 text-white">
+          <h2 className="t2-700 md:h2-700 text-text-high">
             지금 이 시간, 나 얼마 벌고 있을까?
           </h2>
           <p className="t3-400 text-text-medium">
@@ -83,7 +83,7 @@ export function SalarySection() {
           {/* Tooltip pill + arrow */}
           <div className="z-10 flex flex-col items-center">
             <div className="bg-gray-70 flex items-center rounded-full px-5 py-[11px]">
-              <span className="t2-500 text-white">
+              <span className="t2-500 text-text-high">
                 이번달에 쌓은 월급{' '}
                 <NumberFlow
                   value={accumulated}
@@ -108,14 +108,14 @@ export function SalarySection() {
                 className="size-[80px] md:size-[112px]"
               />
               <div className="flex flex-col items-center gap-[5.6px]">
-                <p className="t1-500 text-white">오늘 쌓은 월급</p>
+                <p className="t1-500 text-text-high">오늘 쌓은 월급</p>
                 <div className="flex items-end justify-center gap-[5.6px]">
                   <NumberFlow
                     value={todayEarnings}
                     locales="ko-KR"
                     format={{ maximumFractionDigits: 0 }}
                     plugins={[continuous]}
-                    className="font-bold tracking-[-0.28px] text-white tabular-nums"
+                    className="text-text-high font-bold tracking-[-0.28px] tabular-nums"
                     style={salaryStyle}
                   />
                   <span
@@ -137,7 +137,7 @@ export function SalarySection() {
               <div className="bg-gray-60 h-px w-full" />
               <div className="flex items-center justify-between">
                 <span className="t2-500 text-text-medium">근무 시간</span>
-                <span className="t2-700 text-white">09:00 - 18:00</span>
+                <span className="t2-700 text-text-high">09:00 - 18:00</span>
               </div>
             </div>
           </div>

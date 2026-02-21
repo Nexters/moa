@@ -9,7 +9,9 @@ export function Hero() {
         />
         <div className="flex flex-col gap-4">
           <div style={titleStyle}>
-            <p className="text-white">일하는 동안 실시간으로 쌓이는 내 월급</p>
+            <p className="text-text-high">
+              일하는 동안 실시간으로 쌓이는 내 월급
+            </p>
             <p className="text-green-40">월급 체감 서비스, MOA</p>
           </div>
           <p className="t3-400 text-text-medium">

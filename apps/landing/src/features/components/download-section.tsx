@@ -30,7 +30,7 @@ function CodeBlock() {
       <button
         type="button"
         onClick={handleCopy}
-        className="text-text-low absolute top-4 right-4 cursor-pointer transition-colors hover:text-white"
+        className="text-text-low hover:text-text-high absolute top-4 right-4 cursor-pointer transition-colors"
         aria-label="Copy to clipboard"
       >
         {copied ? (
@@ -43,7 +43,7 @@ function CodeBlock() {
         {BREW_COMMANDS.map((cmd) => (
           <div key={cmd} className="b1-400 flex items-center gap-3">
             <span className="text-text-low select-none">$</span>
-            <span className="text-white">{cmd}</span>
+            <span className="text-text-high">{cmd}</span>
           </div>
         ))}
       </div>
@@ -72,7 +72,7 @@ function DownloadRow({ icon, label, arch, href, rightIcon }: DownloadRowProps) {
       <span className="flex items-center gap-3">
         <span className="flex size-6 items-center justify-center">{icon}</span>
         <span className="b1-500 flex items-center gap-[6px]">
-          <span className="text-white">{label}</span>
+          <span className="text-text-high">{label}</span>
           {arch && <span className="b1-400 text-text-low">{arch}</span>}
         </span>
       </span>
@@ -104,7 +104,7 @@ export function DownloadSection() {
   return (
     <section
       id="download"
-      className="bg-bg-secondary px-6 pt-[60px] pb-20 md:px-[68px] md:pt-[100px] md:pb-[160px] lg:px-[120px]"
+      className="bg-bg-primary px-6 pt-[60px] pb-20 md:px-[68px] md:pt-[100px] md:pb-[160px] lg:px-[120px]"
     >
       <div className="mx-auto flex flex-col items-center gap-10 md:gap-[60px]">
         {/* Header */}
@@ -116,10 +116,9 @@ export function DownloadSection() {
           />
           <div className="flex flex-col items-center gap-4 text-center">
             <div>
-              <h2 className="t2-700 md:h2-700 text-white">
+              <h2 className="t2-700 md:h2-700 text-text-high">
                 직장인의 지루한 근무시간
-              </h2>
-              <h2 className="t2-700 md:h2-700 text-white">
+                <br />
                 <span className="text-green-40">모아</span>와 함께 오늘도
                 힘내요!
               </h2>
