@@ -1,12 +1,12 @@
 import { useNavigate } from '@tanstack/react-router';
 
-import { useConfetti } from '~/hooks/use-confetti';
+import { useLottieOverlay } from '~/hooks/use-lottie-overlay';
 import { AppBar, AppFooter, Button } from '~/ui';
 
 export function CompletionScreen() {
   const navigate = useNavigate();
 
-  useConfetti();
+  const lottieOverlay = useLottieOverlay();
 
   const handleComplete = () => {
     void navigate({ to: '/home' });
@@ -14,6 +14,7 @@ export function CompletionScreen() {
 
   return (
     <main className="flex flex-1 flex-col">
+      {lottieOverlay}
       <AppBar type="detail" onBack={handleComplete} />
 
       {/* 컨텐츠 영역 */}

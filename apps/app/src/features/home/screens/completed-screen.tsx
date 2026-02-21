@@ -1,4 +1,4 @@
-import { useConfetti } from '~/hooks/use-confetti';
+import { useLottieOverlay } from '~/hooks/use-lottie-overlay';
 import { formatCurrency } from '~/lib/format';
 import {
   AppFooter,
@@ -17,13 +17,14 @@ export function CompletedScreen({
   todaySchedule,
   onAcknowledge,
 }: Extract<HomeMainScreen, { screen: 'completed' }>) {
-  useConfetti();
+  const lottieOverlay = useLottieOverlay();
 
   const workStart = todaySchedule?.workStartTime ?? settings.workStartTime;
   const workEnd = todaySchedule?.workEndTime ?? settings.workEndTime;
 
   return (
     <div className="flex flex-1 flex-col gap-7">
+      {lottieOverlay}
       <HeroSection
         variant="full"
         label="오늘 쌓은 월급"
