@@ -2,7 +2,7 @@ import { listen } from '@tauri-apps/api/event';
 import Lottie from 'lottie-react';
 import { useEffect, useState } from 'react';
 
-import confettiAnimation from '~/assets/confetti.json';
+import particleAnimation from '~/assets/particle.json';
 
 export function useLottieOverlay() {
   const [key, setKey] = useState(0);
@@ -24,7 +24,7 @@ export function useLottieOverlay() {
     <div className="pointer-events-none fixed inset-0 z-50">
       <Lottie
         key={key}
-        animationData={confettiAnimation}
+        animationData={particleAnimation}
         loop={false}
         autoplay
         onComplete={() => setVisible(false)}
