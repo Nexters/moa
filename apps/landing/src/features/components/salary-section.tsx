@@ -1,8 +1,6 @@
 import NumberFlow, { continuous } from '@number-flow/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { MoaMoneyIcon } from '@moa/shared';
-
 // 가정: 월급 400만, 월급일 25일, 오늘 12일, 근무 09:00-18:00, 주5일
 // salary.rs calculate_salary 로직 기반
 const MONTHLY_SALARY = 4_500_000;
@@ -104,8 +102,9 @@ export function SalarySection() {
           <div className="flex w-full flex-col gap-6 pt-4 md:w-[504px]">
             {/* Icon + label + salary */}
             <div className="flex flex-col items-center gap-4 px-5 md:px-7">
-              <MoaMoneyIcon
-                variant="animated"
+              <img
+                src="/moa/images/coin-rotate.gif"
+                alt=""
                 className="size-[80px] md:size-[112px]"
               />
               <div className="flex flex-col items-center gap-[5.6px]">
