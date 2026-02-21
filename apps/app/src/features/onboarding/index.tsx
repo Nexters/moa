@@ -20,7 +20,9 @@ const OnboardingContext = createContext<OnboardingContextValue | null>(null);
 export function useOnboardingContext() {
   const ctx = useContext(OnboardingContext);
   if (!ctx) {
-    throw new Error('useOnboardingContext must be used within OnboardingLayout');
+    throw new Error(
+      'useOnboardingContext must be used within OnboardingLayout',
+    );
   }
   return ctx;
 }
@@ -32,7 +34,9 @@ export function OnboardingLayout() {
   const form = useOnboardingForm({ onSuccess: goToNext });
 
   return (
-    <OnboardingContext value={{ form, goToNext, goToPrevious, isFirstScreen, isLastScreen }}>
+    <OnboardingContext
+      value={{ form, goToNext, goToPrevious, isFirstScreen, isLastScreen }}
+    >
       <Outlet />
     </OnboardingContext>
   );

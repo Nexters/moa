@@ -94,7 +94,11 @@ export function SettingsScreen() {
 
   return (
     <div className="bg-bg-primary flex h-full flex-col">
-      <AppBar type="detail" title="설정" onBack={() => navigate({ to: '/home' })} />
+      <AppBar
+        type="detail"
+        title="설정"
+        onBack={() => navigate({ to: '/home' })}
+      />
 
       <div className="scrollbar-overlay flex min-h-0 flex-1 flex-col gap-5 p-5">
         <SettingsSection title="내 정보">

@@ -51,7 +51,11 @@ export function SalaryInfoScreen() {
 
   return (
     <main className="flex flex-1 flex-col">
-      <AppBar type="detail" title="월급 · 근무 정보" onBack={() => navigate({ to: '/settings' })} />
+      <AppBar
+        type="detail"
+        title="월급 · 근무 정보"
+        onBack={() => navigate({ to: '/settings' })}
+      />
 
       <div className="flex flex-col gap-5 overflow-y-auto p-5">
         <SettingsSection title="월급 정보">

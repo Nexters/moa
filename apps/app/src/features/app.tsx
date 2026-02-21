@@ -1,5 +1,5 @@
-import { listen } from '@tauri-apps/api/event';
 import { Outlet } from '@tanstack/react-router';
+import { listen } from '@tauri-apps/api/event';
 import { useEffect } from 'react';
 
 import { UpdateAlertDialog } from '~/lib/check-for-updates';
