@@ -19,13 +19,17 @@ export function Footer() {
         <div className="flex flex-col gap-1">
           <div className="flex gap-[6px]">
             <a
-              href="#"
+              href="https://moa-termsofservice.notion.site/304981fba5d4819286d1ee5712145f20"
+              target="_blank"
+              rel="noopener noreferrer"
               className="b1-400 text-text-medium hover:text-text-high p-1 underline transition-colors"
             >
               이용약관
             </a>
             <a
-              href="#"
+              href="https://moa-termsofservice.notion.site/304981fba5d481a5a845cf5b0da6c408"
+              target="_blank"
+              rel="noopener noreferrer"
               className="b1-400 text-text-medium hover:text-text-high p-1 underline transition-colors"
             >
               개인정보 처리방침
@@ -40,7 +44,9 @@ export function Footer() {
       {/* Right: social icons */}
       <div className="flex items-center gap-2">
         <a
-          href="#"
+          href="https://www.instagram.com/moa.salary"
+          target="_blank"
+          rel="noopener noreferrer"
           aria-label="Instagram"
           className="text-text-low hover:text-text-high flex h-9 w-9 items-center justify-center transition-colors"
         >
