@@ -6,6 +6,7 @@ import type { HomeMainScreen } from '../hooks/use-home-screen';
 
 export function DayOffScreen({
   salaryInfo,
+  isPending,
   onTodayWork,
 }: Extract<HomeMainScreen, { screen: 'day-off' }>) {
   return (
@@ -20,7 +21,13 @@ export function DayOffScreen({
         <InfoCardRow label="근무 시간" value="근무 예정 없음" />
       </InfoCard>
 
-      <Button variant="link" size="md" className="mt-5" onClick={onTodayWork}>
+      <Button
+        variant="link"
+        size="md"
+        className="mt-5"
+        disabled={isPending}
+        onClick={onTodayWork}
+      >
         오늘 출근했어요
       </Button>
     </div>

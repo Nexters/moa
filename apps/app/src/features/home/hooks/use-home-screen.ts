@@ -23,8 +23,18 @@ import {
 // ============================================================================
 
 export type HomeMainScreen =
-  | { screen: 'vacation'; salaryInfo: SalaryInfo; onTodayWork: () => void }
-  | { screen: 'day-off'; salaryInfo: SalaryInfo; onTodayWork: () => void }
+  | {
+      screen: 'vacation';
+      salaryInfo: SalaryInfo;
+      isPending?: boolean;
+      onTodayWork: () => void;
+    }
+  | {
+      screen: 'day-off';
+      salaryInfo: SalaryInfo;
+      isPending?: boolean;
+      onTodayWork: () => void;
+    }
   | {
       screen: 'before-work';
       settings: OnboardedUserSettings;
@@ -206,8 +216,32 @@ export function useHomeScreen(): HomeScreenState {
     stillWorkingMutation.mutate();
   };
 
-  // 화면 전환 중 → optimistic working 화면
-  if (todayWorkMutation.isPending || stillWorkingMutation.isPending) {
+  // 화면 전환 중 → 현재 화면 유지 (Rust 응답 대기)
+  if (todayWorkMutation.isPending) {
+    const fromVacation = todayWorkMutation.variables?.withVacationClear;
+    if (fromVacation) {
+      return {
+        isLoading: false,
+        mainScreen: {
+          screen: 'vacation' as const,
+          salaryInfo,
+          isPending: true,
+          onTodayWork: () => {},
+        },
+      };
+    }
+    return {
+      isLoading: false,
+      mainScreen: {
+        screen: 'day-off' as const,
+        salaryInfo,
+        isPending: true,
+        onTodayWork: () => {},
+      },
+    };
+  }
+
+  if (stillWorkingMutation.isPending) {
     return {
       isLoading: false,
       mainScreen: {
