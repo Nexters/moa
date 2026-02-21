@@ -39,7 +39,7 @@ export function HeroSection({ variant, label, amount }: HeroSectionProps) {
 
   return (
     <div className="flex flex-col items-center gap-5">
-      <HeroIcon variant={variant} animKey={animKey} />
+      <HeroIcon variant={variant} />
       <div className="flex flex-col items-center gap-1">
         <p className="t3-500 text-text-high">{label}</p>
         <div className="flex items-center justify-center gap-1">
@@ -61,18 +61,10 @@ export function HeroSection({ variant, label, amount }: HeroSectionProps) {
   );
 }
 
-function HeroIcon({
-  variant,
-  animKey,
-}: {
-  variant: HeroVariant;
-  animKey: number;
-}) {
+function HeroIcon({ variant }: { variant: HeroVariant }) {
   switch (variant) {
     case 'working':
-      return (
-        <img key={animKey} src={coinRotateGif} alt="" width={80} height={80} />
-      );
+      return <img src={coinRotateGif} alt="" width={80} height={80} />;
     case 'empty':
       return <EmptyIcon />;
     case 'full':
