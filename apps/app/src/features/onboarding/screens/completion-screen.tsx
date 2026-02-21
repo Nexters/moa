@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 
+import completionImage from '~/assets/completion.avif';
 import { useLottieOverlay } from '~/hooks/use-lottie-overlay';
 import { AppBar, AppFooter, Button } from '~/ui';
 
@@ -19,8 +20,7 @@ export function CompletionScreen() {
 
       {/* 컨텐츠 영역 */}
       <div className="relative flex flex-1 flex-col items-center px-6 pt-16">
-        {/* 이미지 placeholder */}
-        <div className="bg-container-secondary size-[150px] rounded-2xl" />
+        <img src={completionImage} alt="" className="size-[150px]" />
 
         <h1 className="t2-700 text-text-high mt-6 text-center">
           모든 준비가 끝났어요!
