@@ -10,10 +10,10 @@ export function Footer() {
             <span className="text-text-high">📩</span> 문의:
           </span>
           <a
-            href="mailto:moa.mymoney@gmail.com"
+            href="mailto:moa.salary@gmail.com"
             className="hover:text-text-high p-1 underline transition-colors"
           >
-            moa.mymoney@gmail.com
+            moa.salary@gmail.com
           </a>
         </div>
         <div className="flex flex-col gap-1">
