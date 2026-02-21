@@ -21,15 +21,15 @@ export function useLottieOverlay() {
   if (!visible) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-50">
+    <div className="pointer-events-none fixed inset-x-0 -top-[100px] z-50">
       <Lottie
         key={key}
         animationData={particleAnimation}
         loop={false}
         autoplay
         onComplete={() => setVisible(false)}
-        rendererSettings={{ preserveAspectRatio: 'xMidYMid slice' }}
-        className="size-full"
+        rendererSettings={{ preserveAspectRatio: 'xMidYMid meet' }}
+        className="w-full"
       />
     </div>
   );
