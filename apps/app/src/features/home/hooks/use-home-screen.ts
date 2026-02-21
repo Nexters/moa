@@ -83,7 +83,6 @@ export function useHomeScreen(): HomeScreenState {
     schedule: todaySchedule,
     isLoading: scheduleLoading,
     saveSchedule,
-    clearSchedule,
   } = useTodayWorkSchedule();
   const {
     isOnVacation,
@@ -119,10 +118,14 @@ export function useHomeScreen(): HomeScreenState {
   });
 
   const stillWorkingMutation = useMutation({
-    mutationFn: async () => {
-      await clearSchedule();
-      await clearAcknowledge();
-      await waitForSalaryTick((info) => info.workStatus === 'working');
+    mutationFn: async ({
+      startTime,
+      endTime,
+    }: {
+      startTime: string;
+      endTime: string;
+    }) => {
+      await Promise.all([saveSchedule(startTime, endTime), clearAcknowledge()]);
     },
   });
 
@@ -244,11 +247,9 @@ export function useHomeScreen(): HomeScreenState {
       return;
     }
 
-    // endTime이 startTime 이하면 Rust가 24시간 야간근무로 해석하므로 최소 +1분 보장
-    const endMin = Math.max(nowMin, startMin + 1);
     earlyLeaveMutation.mutate({
       startTime: currentStart,
-      endTime: minutesToTime(endMin),
+      endTime: now,
     });
   };
 
@@ -257,7 +258,10 @@ export function useHomeScreen(): HomeScreenState {
   };
 
   const handleStillWorking = () => {
-    stillWorkingMutation.mutate();
+    stillWorkingMutation.mutate({
+      startTime: getEffectiveStartTime(),
+      endTime: settings.workEndTime,
+    });
   };
 
   // 화면 전환 중 → 현재 화면 유지 (Rust 응답 대기)
