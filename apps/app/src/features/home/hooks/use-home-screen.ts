@@ -232,17 +232,24 @@ export function useHomeScreen(): HomeScreenState {
     const now = getCurrentTimeString();
     const currentStart = getEffectiveStartTime();
     const currentEnd = getEffectiveEndTime();
+    const startMin = timeToMinutes(currentStart);
+    const nowMin = timeToMinutes(now);
     const { normalizedEnd, normalizedNow } = normalizeOvernightMinutes(
-      timeToMinutes(currentStart),
+      startMin,
       timeToMinutes(currentEnd),
-      timeToMinutes(now),
+      nowMin,
     );
 
     if (normalizedNow >= normalizedEnd) {
       return;
     }
 
-    earlyLeaveMutation.mutate({ startTime: currentStart, endTime: now });
+    // endTime이 startTime 이하면 Rust가 24시간 야간근무로 해석하므로 최소 +1분 보장
+    const endMin = Math.max(nowMin, startMin + 1);
+    earlyLeaveMutation.mutate({
+      startTime: currentStart,
+      endTime: minutesToTime(endMin),
+    });
   };
 
   const handleAcknowledge = () => {
