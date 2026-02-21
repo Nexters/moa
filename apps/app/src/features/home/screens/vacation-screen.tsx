@@ -6,6 +6,7 @@ import { HomeMainScreen } from '../hooks/use-home-screen';
 
 export function VacationScreen({
   salaryInfo,
+  isPending,
   onTodayWork,
 }: Extract<HomeMainScreen, { screen: 'vacation' }>) {
   return (
@@ -27,7 +28,13 @@ export function VacationScreen({
         />
       </InfoCard>
 
-      <Button variant="link" size="md" className="mt-5" onClick={onTodayWork}>
+      <Button
+        variant="link"
+        size="md"
+        className="mt-5"
+        disabled={isPending}
+        onClick={onTodayWork}
+      >
         오늘 출근했어요
       </Button>
     </div>

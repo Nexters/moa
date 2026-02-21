@@ -191,8 +191,9 @@ fn calculate_salary(
     let work_start_minutes = time_to_minutes(work_start_time);
     let raw_end_minutes = time_to_minutes(work_end_time);
 
-    // Overnight shift: treat end as next day when end <= start (e.g. 18:00–00:00)
-    let work_end_minutes = if raw_end_minutes <= work_start_minutes {
+    // Overnight shift: treat end as next day when end < start (e.g. 18:00–00:00)
+    // When end == start, it means zero-duration work (early leave), not overnight
+    let work_end_minutes = if raw_end_minutes < work_start_minutes {
         raw_end_minutes + 24 * 60
     } else {
         raw_end_minutes
@@ -200,7 +201,7 @@ fn calculate_salary(
 
     let work_hours_per_day = (work_end_minutes as f64 - work_start_minutes as f64) / 60.0;
 
-    if work_hours_per_day <= 0.0 {
+    if work_hours_per_day < 0.0 {
         return None;
     }
 
@@ -218,11 +219,15 @@ fn calculate_salary(
     }
 
     let daily_rate = monthly_salary / work_days_in_period as f64;
-    let hourly_rate = daily_rate / work_hours_per_day;
-    let per_second = hourly_rate / 3600.0;
+    let (hourly_rate, per_second) = if work_hours_per_day > 0.0 {
+        let hr = daily_rate / work_hours_per_day;
+        (hr, hr / 3600.0)
+    } else {
+        (0.0, 0.0)
+    };
 
     let raw_current_minutes = now.time().hour() * 60 + now.time().minute();
-    let is_overnight = raw_end_minutes <= work_start_minutes;
+    let is_overnight = raw_end_minutes < work_start_minutes;
 
     // Overnight shift: when in the post-midnight working window (before shift ends),
     // attribute the shift to the previous calendar day for work-day determination.
