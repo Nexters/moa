@@ -160,7 +160,7 @@ pub fn start_salary_ticker(app_handle: AppHandle) {
                 prev_is_working = Some(is_working);
             }
 
-            // 시스템 테마 변경 감지
+            // 메뉴바 테마 변경 감지
             tray::refresh_theme(&app_handle);
 
             // Emit event to frontend

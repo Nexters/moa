@@ -56,15 +56,16 @@ static TRAY_FRAMES_LIGHT: [&[u8]; 14] = [
 /// Animation control flag
 static ANIMATING: AtomicBool = AtomicBool::new(false);
 
-/// Cached system dark mode state
-static IS_DARK_MODE: AtomicBool = AtomicBool::new(true);
+/// Cached menubar dark/light mode state
+static IS_DARK_MENUBAR: AtomicBool = AtomicBool::new(true);
 
 /// Animation frame interval (85ms × 14 frames ≈ 1.2s per rotation)
 const FRAME_INTERVAL: Duration = Duration::from_millis(85);
 
-/// Detect macOS dark mode via AppleInterfaceStyle.
+/// Detect macOS menubar dark/light mode via AppleInterfaceStyle.
+/// 메뉴바는 시스템 외관 모드를 따르므로 AppleInterfaceStyle로 판별한다.
 #[cfg(target_os = "macos")]
-fn detect_dark_mode() -> bool {
+fn detect_dark_menubar() -> bool {
     std::process::Command::new("defaults")
         .args(["read", "-g", "AppleInterfaceStyle"])
         .output()
@@ -73,12 +74,12 @@ fn detect_dark_mode() -> bool {
 }
 
 #[cfg(not(target_os = "macos"))]
-fn detect_dark_mode() -> bool {
+fn detect_dark_menubar() -> bool {
     false
 }
 
 fn idle_icon() -> &'static [u8] {
-    if IS_DARK_MODE.load(Ordering::Relaxed) {
+    if IS_DARK_MENUBAR.load(Ordering::Relaxed) {
         TRAY_ICON_IDLE
     } else {
         TRAY_ICON_IDLE_LIGHT
@@ -86,7 +87,7 @@ fn idle_icon() -> &'static [u8] {
 }
 
 fn frames() -> &'static [&'static [u8]; 14] {
-    if IS_DARK_MODE.load(Ordering::Relaxed) {
+    if IS_DARK_MENUBAR.load(Ordering::Relaxed) {
         &TRAY_FRAMES
     } else {
         &TRAY_FRAMES_LIGHT
@@ -95,7 +96,7 @@ fn frames() -> &'static [&'static [u8]; 14] {
 
 /// Creates the system tray icon with click handlers.
 pub fn create(app_handle: &AppHandle) -> tauri::Result<TrayIcon> {
-    IS_DARK_MODE.store(detect_dark_mode(), Ordering::Relaxed);
+    IS_DARK_MENUBAR.store(detect_dark_menubar(), Ordering::Relaxed);
 
     let icon = Image::from_bytes(idle_icon())?;
 
@@ -197,10 +198,10 @@ pub fn update_icon_state(app: &AppHandle, is_working: bool) {
     }
 }
 
-/// 시스템 테마 변경 감지 후 아이콘 갱신 (salary ticker에서 매초 호출)
+/// 메뉴바 테마 변경 감지 후 아이콘 갱신 (salary ticker에서 매초 호출)
 pub fn refresh_theme(app: &AppHandle) {
-    let dark = detect_dark_mode();
-    let prev = IS_DARK_MODE.swap(dark, Ordering::Relaxed);
+    let dark = detect_dark_menubar();
+    let prev = IS_DARK_MENUBAR.swap(dark, Ordering::Relaxed);
 
     // 테마 변경 + 비애니메이션 상태일 때만 아이콘 교체
     if prev != dark && !ANIMATING.load(Ordering::Relaxed) {
@@ -210,7 +211,7 @@ pub fn refresh_theme(app: &AppHandle) {
             }
         }
         log::debug!(
-            "시스템 테마 변경 감지: {}",
+            "메뉴바 테마 변경 감지: {}",
             if dark { "다크" } else { "라이트" }
         );
     }
