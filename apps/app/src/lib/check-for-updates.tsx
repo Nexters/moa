@@ -2,6 +2,7 @@ import { relaunch } from '@tauri-apps/plugin-process';
 import { check, type Update } from '@tauri-apps/plugin-updater';
 import { useEffect, useState } from 'react';
 
+import { posthog } from '~/lib/analytics';
 import { logger } from '~/lib/logger';
 import {
   AlertDialog,
@@ -23,6 +24,7 @@ export async function checkForUpdates(): Promise<Update | null> {
     }
     return null;
   } catch (error) {
+    posthog.captureException(error);
     logger.error(`Update check failed: ${String(error)}`);
     return null;
   }

@@ -45,7 +45,11 @@ function MainAppBar({ onSettings }: MainAppBarProps) {
       </h1>
       <div className="flex-1" />
       {onSettings && (
-        <IconButton onClick={onSettings} aria-label="설정">
+        <IconButton
+          data-attr="설정_아이콘_클릭"
+          onClick={onSettings}
+          aria-label="설정"
+        >
           <SettingsIcon />
         </IconButton>
       )}

@@ -1,26 +1,26 @@
-import { useConfetti } from '~/hooks/use-confetti';
-import { useUIStore } from '~/stores/ui-store';
+import { useNavigate } from '@tanstack/react-router';
+
+import completionImage from '~/assets/completion.avif';
+import { useLottieOverlay } from '~/hooks/use-lottie-overlay';
 import { AppBar, AppFooter, Button } from '~/ui';
 
-import type { OnboardingScreenProps } from '../hooks/use-onboarding-screen';
+export function CompletionScreen() {
+  const navigate = useNavigate();
 
-export function CompletionScreen(_props: OnboardingScreenProps) {
-  const navigate = useUIStore((s) => s.navigate);
-
-  useConfetti();
+  const lottieOverlay = useLottieOverlay();
 
   const handleComplete = () => {
-    navigate('home');
+    void navigate({ to: '/home' });
   };
 
   return (
     <main className="flex flex-1 flex-col">
+      {lottieOverlay}
       <AppBar type="detail" onBack={handleComplete} />
 
       {/* 컨텐츠 영역 */}
       <div className="relative flex flex-1 flex-col items-center px-6 pt-16">
-        {/* 이미지 placeholder */}
-        <div className="bg-container-secondary size-[150px] rounded-2xl" />
+        <img src={completionImage} alt="" className="size-[150px]" />
 
         <h1 className="t2-700 text-text-high mt-6 text-center">
           모든 준비가 끝났어요!

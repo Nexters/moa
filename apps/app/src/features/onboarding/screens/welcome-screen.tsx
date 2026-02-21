@@ -1,9 +1,10 @@
-import { MoaMoneyIcon } from '@moa/shared';
-import { AppBar, Button, TooltipBubble } from '~/ui';
+import { AppBar, Button, HeroIcon, TooltipBubble } from '~/ui';
 
-import type { OnboardingScreenProps } from '../hooks/use-onboarding-screen';
+import { useOnboardingContext } from '..';
 
-export function WelcomeScreen({ onNext }: OnboardingScreenProps) {
+export function WelcomeScreen() {
+  const { goToNext } = useOnboardingContext();
+
   return (
     <main className="flex flex-1 flex-col">
       <AppBar type="main" />
@@ -15,7 +16,7 @@ export function WelcomeScreen({ onNext }: OnboardingScreenProps) {
           쌓이는 월급을 확인하세요!
         </TooltipBubble>
 
-        <MoaMoneyIcon className="size-20" />
+        <HeroIcon variant="empty" />
 
         <div className="flex flex-col items-center gap-[2px]">
           <span className="b1-400 text-text-medium">나는 얼마나 벌까?</span>
@@ -27,7 +28,7 @@ export function WelcomeScreen({ onNext }: OnboardingScreenProps) {
       </div>
 
       <div className="mt-15 flex justify-center">
-        <Button rounded="full" size="md" className="w-60" onClick={onNext}>
+        <Button rounded="full" size="md" className="w-60" onClick={goToNext}>
           월급 정보 등록하기
         </Button>
       </div>

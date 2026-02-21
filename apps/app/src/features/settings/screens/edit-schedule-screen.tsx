@@ -1,3 +1,5 @@
+import { useNavigate } from '@tanstack/react-router';
+
 import { useUserSettings } from '~/hooks/use-user-settings';
 import type { UserSettings } from '~/lib/tauri-bindings';
 import { AppBar, AppFooter, Button, DayChipGroup, Field } from '~/ui';
@@ -5,29 +7,26 @@ import { TimePeriodInput } from '~/ui/time-period-input';
 
 import { useSettingsForm } from '../hooks/use-settings-form';
 
-interface Props {
-  onBack: () => void;
-}
-
-export function EditScheduleScreen({ onBack }: Props) {
+export function EditScheduleScreen() {
   const { data: settings } = useUserSettings();
 
   if (!settings) return null;
 
-  return <EditScheduleForm settings={settings} onBack={onBack} />;
+  return <EditScheduleForm settings={settings} />;
 }
 
 interface EditScheduleFormProps {
   settings: UserSettings;
-  onBack: () => void;
 }
 
-function EditScheduleForm({ settings, onBack }: EditScheduleFormProps) {
-  const form = useSettingsForm({ settings, onSuccess: onBack });
+function EditScheduleForm({ settings }: EditScheduleFormProps) {
+  const navigate = useNavigate();
+  const goBack = () => navigate({ to: '/settings/salary-info' });
+  const form = useSettingsForm({ settings, onSuccess: goBack });
 
   return (
     <main className="flex flex-1 flex-col">
-      <AppBar type="detail" title="근무 정보" onBack={onBack} />
+      <AppBar type="detail" title="근무 정보" onBack={goBack} />
 
       <div className="scrollbar-overlay flex flex-1 flex-col p-5">
         <div className="flex flex-col gap-8">

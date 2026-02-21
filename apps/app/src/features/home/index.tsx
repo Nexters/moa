@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
 
 import { appQueryOptions } from '~/queries';
-import { useUIStore } from '~/stores/ui-store';
 import { AppBar } from '~/ui/app-bar';
 
 import { useHomeScreen } from './hooks/use-home-screen';
@@ -13,7 +13,7 @@ import { VacationScreen } from './screens/vacation-screen';
 import { WorkingScreen } from './screens/working-screen';
 
 export function Home() {
-  const navigate = useUIStore((s) => s.navigate);
+  const navigate = useNavigate();
   const { isLoading, mainScreen } = useHomeScreen();
   const { data: version } = useQuery(appQueryOptions.version());
 
@@ -21,7 +21,7 @@ export function Home() {
 
   return (
     <main className="flex flex-1 flex-col">
-      <AppBar type="main" onSettings={() => navigate('settings')} />
+      <AppBar type="main" onSettings={() => navigate({ to: '/settings' })} />
       <div className="flex flex-1 flex-col px-5 pt-3">
         {mainScreen.screen === 'vacation' && <VacationScreen {...mainScreen} />}
         {mainScreen.screen === 'day-off' && <DayOffScreen {...mainScreen} />}

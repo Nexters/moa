@@ -9,13 +9,15 @@ import {
   SelectInput,
 } from '~/ui';
 
+import { useOnboardingContext } from '..';
 import { SALARY_TYPE_OPTIONS } from '../hooks/use-onboarding-form';
-import type { OnboardingScreenProps } from '../hooks/use-onboarding-screen';
 
-export function SalaryScreen({ form, onNext, onBack }: OnboardingScreenProps) {
+export function SalaryScreen() {
+  const { form, goToNext, goToPrevious } = useOnboardingContext();
+
   return (
     <main className="flex flex-1 flex-col">
-      <AppBar type="detail" onBack={onBack} />
+      <AppBar type="detail" onBack={goToPrevious} />
 
       <div className="flex flex-1 flex-col px-6 pt-4">
         <h1 className="t2-700 text-text-high">급여 정보를 알려주세요</h1>
@@ -119,7 +121,7 @@ export function SalaryScreen({ form, onNext, onBack }: OnboardingScreenProps) {
                 size="lg"
                 className="w-60"
                 disabled={!!salaryAmountError || !!payDayError}
-                onClick={onNext}
+                onClick={goToNext}
               >
                 다음
               </Button>
