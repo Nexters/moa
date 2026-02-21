@@ -5,6 +5,7 @@ import { openUrl } from '@tauri-apps/plugin-opener';
 import { exit } from '@tauri-apps/plugin-process';
 
 import { useUserSettings } from '~/hooks/use-user-settings';
+import { posthog } from '~/lib/analytics';
 import type { MenubarDisplayMode } from '~/lib/tauri-bindings';
 import { commands } from '~/lib/tauri-bindings';
 import { appQuery, appQueryOptions, userSettingsQuery } from '~/queries';
@@ -87,8 +88,8 @@ export function SettingsScreen() {
       await openUrl(
         `mailto:moa.mymoney@gmail.com?subject=${subject}&body=${body}`,
       );
-    } catch {
-      // OS handles mailto: errors natively
+    } catch (error) {
+      posthog.captureException(error);
     }
   };
 
