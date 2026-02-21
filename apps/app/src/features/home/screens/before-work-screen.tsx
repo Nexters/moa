@@ -15,6 +15,7 @@ export function BeforeWorkScreen({
   settings,
   salaryInfo,
   todaySchedule,
+  isPending,
   onVacation,
   onStartWork,
 }: Extract<HomeMainScreen, { screen: 'before-work' }>) {
@@ -46,11 +47,17 @@ export function BeforeWorkScreen({
             rounded="full"
             size="lg"
             className="w-[240px]"
+            disabled={isPending}
             onClick={onStartWork}
           >
             일찍 출근하기
           </Button>
-          <Button variant="link" size="md" onClick={onVacation}>
+          <Button
+            variant="link"
+            size="md"
+            disabled={isPending}
+            onClick={onVacation}
+          >
             오늘 휴가예요
           </Button>
         </div>
