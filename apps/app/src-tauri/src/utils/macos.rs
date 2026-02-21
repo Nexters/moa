@@ -136,6 +136,40 @@ fn register_workspace_listener(name: String, callback: Box<dyn Fn()>) {
     }
 }
 
+/// Registers a listener for NSDistributedNotificationCenter notifications.
+fn register_distributed_listener(name: String, callback: Box<dyn Fn()>) {
+    let notification_center: id =
+        unsafe { msg_send![class!(NSDistributedNotificationCenter), defaultCenter] };
+
+    let block = ConcreteBlock::new(move |_notif: id| {
+        callback();
+    });
+
+    let block = block.copy();
+
+    let name: id =
+        unsafe { msg_send![class!(NSString), stringWithCString: CString::new(name).unwrap()] };
+
+    unsafe {
+        let _: () = msg_send![
+            notification_center,
+            addObserverForName: name object: nil queue: nil usingBlock: block
+        ];
+    }
+}
+
+/// macOS 테마 변경 알림을 구독하여 트레이 아이콘 테마를 자동 갱신한다.
+pub fn setup_theme_change_listener(app_handle: &AppHandle) {
+    let handle = app_handle.clone();
+
+    register_distributed_listener(
+        "AppleInterfaceThemeChangedNotification".into(),
+        Box::new(move || {
+            crate::tray::refresh_theme(&handle);
+        }),
+    );
+}
+
 /// Returns the current application's process ID.
 fn app_pid() -> i32 {
     let process_info: id = unsafe { msg_send![class!(NSProcessInfo), processInfo] };

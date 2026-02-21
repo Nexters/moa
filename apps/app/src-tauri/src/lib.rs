@@ -127,6 +127,10 @@ pub fn run() {
             // Create system tray icon
             tray::create(app.handle())?;
 
+            // macOS: Listen for system theme changes to update tray icon
+            #[cfg(target_os = "macos")]
+            utils::macos::setup_theme_change_listener(app.handle());
+
             // Start background salary ticker (updates tray title every second)
             salary::start_salary_ticker(app.handle().clone());
 
