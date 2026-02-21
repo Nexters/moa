@@ -13,7 +13,7 @@ import {
 
 import { APP_VERSION, getDownloadUrl } from '../app-version';
 
-const BREW_COMMAND = 'brew install --cask nexters/moa';
+const BREW_COMMAND = 'brew install --cask nexters/moa/moa';
 
 function HomebrewRow() {
   const [copied, setCopied] = useState(false);
