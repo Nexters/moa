@@ -153,7 +153,7 @@ export function DownloadSection() {
             <div className="flex flex-col gap-[14px]">
               <p className="b1-500 text-text-medium flex items-center justify-between">
                 <span>Desktop</span>
-                <span className="b2-400 text-text-low">v{APP_VERSION}</span>
+                <span className="b1-500 text-green-40">v{APP_VERSION}</span>
               </p>
               <div className="flex flex-col gap-3">
                 <DownloadRow
