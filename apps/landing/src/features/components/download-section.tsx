@@ -26,7 +26,7 @@ function HomebrewRow() {
 
   return (
     <div className="bg-container-secondary flex w-full items-center justify-between rounded-xl px-5 py-4 lg:w-[373px]">
-      <span className="b2-400 flex items-center gap-3 font-mono">
+      <span className="b2-400 flex items-center gap-2 font-mono">
         <span className="text-text-low select-none">$</span>
         <span className="text-text-high">{BREW_COMMAND}</span>
       </span>
