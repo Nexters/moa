@@ -126,6 +126,7 @@ export function useHomeScreen(): HomeScreenState {
       endTime: string;
     }) => {
       await Promise.all([saveSchedule(startTime, endTime), clearAcknowledge()]);
+      await waitForSalaryTick((info) => info.workStatus !== 'completed');
     },
   });
 
