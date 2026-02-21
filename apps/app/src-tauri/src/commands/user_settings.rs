@@ -86,6 +86,13 @@ pub async fn reset_all_data(app: AppHandle) -> Result<(), String> {
         }
     }
 
+    // recovery 디렉토리 삭제 (임시 출근시간 등)
+    let recovery_dir = app_data_dir.join("recovery");
+    if recovery_dir.exists() {
+        std::fs::remove_dir_all(&recovery_dir)
+            .map_err(|e| format!("recovery 디렉토리 삭제 실패: {e}"))?;
+    }
+
     log::info!("모든 사용자 데이터 초기화 완료");
     Ok(())
 }
