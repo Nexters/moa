@@ -128,17 +128,17 @@ pub fn start_salary_ticker(app_handle: AppHandle) {
 
             // Update tray title
             let new_title = match s.menubar_display_mode {
-                MenubarDisplayMode::None => None,
+                MenubarDisplayMode::None => Some(String::new()),
                 MenubarDisplayMode::Daily => {
                     if payload.work_status == WorkStatus::DayOff {
-                        None
+                        Some(String::new())
                     } else {
                         Some(format_tray_title(payload.today_earnings))
                     }
                 }
                 MenubarDisplayMode::Accumulated => {
                     if payload.work_status == WorkStatus::DayOff {
-                        None
+                        Some(String::new())
                     } else {
                         Some(format_tray_title(payload.accumulated_earnings))
                     }
