@@ -11,7 +11,7 @@ import {
   WindowsIcon,
 } from '~/assets/icons';
 
-import { getDownloadUrl } from '../app-version';
+import { APP_VERSION, getDownloadUrl } from '../app-version';
 
 const BREW_COMMAND = 'brew install --cask nexters/moa';
 
@@ -151,7 +151,10 @@ export function DownloadSection() {
 
             {/* Desktop */}
             <div className="flex flex-col gap-[14px]">
-              <p className="b1-500 text-text-medium">Desktop</p>
+              <p className="b1-500 text-text-medium flex items-center justify-between">
+                <span>Desktop</span>
+                <span className="b2-400 text-text-low">v{APP_VERSION}</span>
+              </p>
               <div className="flex flex-col gap-3">
                 <DownloadRow
                   icon={<AppleIcon className="size-6" />}
