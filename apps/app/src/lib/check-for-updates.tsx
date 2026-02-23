@@ -10,7 +10,6 @@ import {
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
-  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from '~/ui/alert-dialog';
@@ -68,12 +67,13 @@ function useCheckForUpdates({ delay = 5000 }: { delay?: number } = {}) {
 
 export function UpdateAlertDialog() {
   const { update, clearUpdate } = useCheckForUpdates();
+  const [installing, setInstalling] = useState(false);
 
   return (
     <AlertDialog
       open={!!update}
       onOpenChange={(open) => {
-        if (!open) clearUpdate();
+        if (!open && !installing) clearUpdate();
       }}
     >
       <AlertDialogContent>
@@ -83,16 +83,27 @@ export function UpdateAlertDialog() {
             {`v${update?.version} 버전으로 업데이트할 수 있어요.`}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>나중에</AlertDialogCancel>
+        <div className="flex flex-col items-center gap-2">
+          <AlertDialogCancel variant="link" disabled={installing}>
+            나중에
+          </AlertDialogCancel>
           <AlertDialogAction
-            onClick={() => {
-              if (update) void installUpdate(update);
+            autoFocus
+            disabled={installing}
+            onClick={async () => {
+              if (!update) return;
+              setInstalling(true);
+              try {
+                await installUpdate(update);
+              } catch (error) {
+                logger.error(`Update install failed: ${String(error)}`);
+                setInstalling(false);
+              }
             }}
           >
-            업데이트
+            {installing ? '업데이트 중...' : '업데이트'}
           </AlertDialogAction>
-        </AlertDialogFooter>
+        </div>
       </AlertDialogContent>
     </AlertDialog>
   );
