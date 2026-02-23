@@ -20,6 +20,7 @@ export const buttonVariants = tv({
       full: 'rounded-full',
     },
     size: {
+      flat: 'py-0',
       md: 'py-3',
       lg: 'py-4',
     },

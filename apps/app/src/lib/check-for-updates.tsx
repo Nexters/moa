@@ -47,8 +47,9 @@ export async function installUpdate(update: Update) {
   await relaunch();
 }
 
-function useCheckForUpdates({ delay = 5000 }: { delay?: number } = {}) {
+export function useCheckForUpdates({ delay = 5000 }: { delay?: number } = {}) {
   const [update, setUpdate] = useState<Update | null>(null);
+  const [installing, setInstalling] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -60,20 +61,33 @@ function useCheckForUpdates({ delay = 5000 }: { delay?: number } = {}) {
     return () => clearTimeout(timer);
   }, [delay]);
 
+  const install = async () => {
+    if (!update) return;
+    setInstalling(true);
+    try {
+      await installUpdate(update);
+    } catch (error) {
+      logger.error(`Update install failed: ${String(error)}`);
+      setInstalling(false);
+    }
+  };
+
   return {
     update,
     clearUpdate: () => setUpdate(null),
+    installing,
+    install,
   };
 }
 
 export function UpdateAlertDialog() {
-  const { update, clearUpdate } = useCheckForUpdates();
+  const { update, clearUpdate, installing, install } = useCheckForUpdates();
 
   return (
     <AlertDialog
       open={!!update}
       onOpenChange={(open) => {
-        if (!open) clearUpdate();
+        if (!open && !installing) clearUpdate();
       }}
     >
       <AlertDialogContent>
@@ -84,13 +98,11 @@ export function UpdateAlertDialog() {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>나중에</AlertDialogCancel>
-          <AlertDialogAction
-            onClick={() => {
-              if (update) void installUpdate(update);
-            }}
-          >
-            업데이트
+          <AlertDialogCancel variant="secondary" disabled={installing}>
+            나중에
+          </AlertDialogCancel>
+          <AlertDialogAction autoFocus disabled={installing} onClick={install}>
+            {installing ? '업데이트 중...' : '업데이트'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

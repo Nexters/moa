@@ -6,6 +6,7 @@ import { exit } from '@tauri-apps/plugin-process';
 
 import { useUserSettings } from '~/hooks/use-user-settings';
 import { posthog } from '~/lib/analytics';
+import { useCheckForUpdates } from '~/lib/check-for-updates';
 import type { MenubarDisplayMode } from '~/lib/tauri-bindings';
 import { commands } from '~/lib/tauri-bindings';
 import { appQuery, appQueryOptions, userSettingsQuery } from '~/queries';
@@ -25,6 +26,7 @@ export function SettingsScreen() {
   const { data: settings } = useUserSettings();
 
   const { data: version } = useQuery(appQueryOptions.version());
+  const { update, installing, install } = useCheckForUpdates({ delay: 0 });
 
   const { data: autoStartEnabled = false, isLoading: isAutoStartLoading } =
     useQuery(appQueryOptions.autostart());
@@ -130,8 +132,20 @@ export function SettingsScreen() {
 
         <SettingsSection title="앱 정보">
           <InfoRow label="버전 정보">
-            <span className="text-text-medium">
-              {version ? `v${version}` : '-'}
+            <span className="flex items-center gap-2">
+              <span className="text-text-medium">
+                {version ? `v${version}` : '-'}
+              </span>
+              {update && (
+                <Button
+                  variant="link"
+                  size="flat"
+                  disabled={installing}
+                  onClick={install}
+                >
+                  {installing ? '업데이트 중...' : '업데이트'}
+                </Button>
+              )}
             </span>
           </InfoRow>
           <InfoRow as="button" label="문의하기" onClick={handleContactUs} />
