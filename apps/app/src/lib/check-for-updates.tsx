@@ -10,6 +10,7 @@ import {
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
+  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from '~/ui/alert-dialog';
@@ -83,8 +84,8 @@ export function UpdateAlertDialog() {
             {`v${update?.version} 버전으로 업데이트할 수 있어요.`}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <div className="flex flex-col items-center gap-2">
-          <AlertDialogCancel variant="link" disabled={installing}>
+        <AlertDialogFooter>
+          <AlertDialogCancel variant="secondary" disabled={installing}>
             나중에
           </AlertDialogCancel>
           <AlertDialogAction
@@ -103,7 +104,7 @@ export function UpdateAlertDialog() {
           >
             {installing ? '업데이트 중...' : '업데이트'}
           </AlertDialogAction>
-        </div>
+        </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
   );
