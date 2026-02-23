@@ -49,6 +49,7 @@ export async function installUpdate(update: Update) {
 
 export function useCheckForUpdates({ delay = 5000 }: { delay?: number } = {}) {
   const [update, setUpdate] = useState<Update | null>(null);
+  const [installing, setInstalling] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -60,15 +61,27 @@ export function useCheckForUpdates({ delay = 5000 }: { delay?: number } = {}) {
     return () => clearTimeout(timer);
   }, [delay]);
 
+  const install = async () => {
+    if (!update) return;
+    setInstalling(true);
+    try {
+      await installUpdate(update);
+    } catch (error) {
+      logger.error(`Update install failed: ${String(error)}`);
+      setInstalling(false);
+    }
+  };
+
   return {
     update,
     clearUpdate: () => setUpdate(null),
+    installing,
+    install,
   };
 }
 
 export function UpdateAlertDialog() {
-  const { update, clearUpdate } = useCheckForUpdates();
-  const [installing, setInstalling] = useState(false);
+  const { update, clearUpdate, installing, install } = useCheckForUpdates();
 
   return (
     <AlertDialog
@@ -88,20 +101,7 @@ export function UpdateAlertDialog() {
           <AlertDialogCancel variant="secondary" disabled={installing}>
             나중에
           </AlertDialogCancel>
-          <AlertDialogAction
-            autoFocus
-            disabled={installing}
-            onClick={async () => {
-              if (!update) return;
-              setInstalling(true);
-              try {
-                await installUpdate(update);
-              } catch (error) {
-                logger.error(`Update install failed: ${String(error)}`);
-                setInstalling(false);
-              }
-            }}
-          >
+          <AlertDialogAction autoFocus disabled={installing} onClick={install}>
             {installing ? '업데이트 중...' : '업데이트'}
           </AlertDialogAction>
         </AlertDialogFooter>
