@@ -3,9 +3,11 @@ import { useNavigate } from '@tanstack/react-router';
 import { enable, disable } from '@tauri-apps/plugin-autostart';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { exit } from '@tauri-apps/plugin-process';
+import { useState } from 'react';
 
 import { useUserSettings } from '~/hooks/use-user-settings';
 import { posthog } from '~/lib/analytics';
+import { installUpdate, useCheckForUpdates } from '~/lib/check-for-updates';
 import type { MenubarDisplayMode } from '~/lib/tauri-bindings';
 import { commands } from '~/lib/tauri-bindings';
 import { appQuery, appQueryOptions, userSettingsQuery } from '~/queries';
@@ -25,6 +27,8 @@ export function SettingsScreen() {
   const { data: settings } = useUserSettings();
 
   const { data: version } = useQuery(appQueryOptions.version());
+  const { update } = useCheckForUpdates({ delay: 0 });
+  const [installing, setInstalling] = useState(false);
 
   const { data: autoStartEnabled = false, isLoading: isAutoStartLoading } =
     useQuery(appQueryOptions.autostart());
@@ -130,8 +134,27 @@ export function SettingsScreen() {
 
         <SettingsSection title="앱 정보">
           <InfoRow label="버전 정보">
-            <span className="text-text-medium">
-              {version ? `v${version}` : '-'}
+            <span className="flex items-center gap-2">
+              <span className="text-text-medium">
+                {version ? `v${version}` : '-'}
+              </span>
+              {update && (
+                <Button
+                  variant="link"
+                  size="flat"
+                  disabled={installing}
+                  onClick={async () => {
+                    setInstalling(true);
+                    try {
+                      await installUpdate(update);
+                    } catch {
+                      setInstalling(false);
+                    }
+                  }}
+                >
+                  {installing ? '업데이트 중...' : '업데이트'}
+                </Button>
+              )}
             </span>
           </InfoRow>
           <InfoRow as="button" label="문의하기" onClick={handleContactUs} />

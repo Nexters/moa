@@ -47,7 +47,7 @@ export async function installUpdate(update: Update) {
   await relaunch();
 }
 
-function useCheckForUpdates({ delay = 5000 }: { delay?: number } = {}) {
+export function useCheckForUpdates({ delay = 5000 }: { delay?: number } = {}) {
   const [update, setUpdate] = useState<Update | null>(null);
 
   useEffect(() => {
