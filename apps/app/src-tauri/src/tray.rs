@@ -5,7 +5,8 @@ use std::time::Duration;
 
 use tauri::{
     image::Image,
-    tray::{MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent},
+    menu::{Menu, MenuItem},
+    tray::{MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent},
     AppHandle, Manager,
 };
 
@@ -100,19 +101,32 @@ pub fn create(app_handle: &AppHandle) -> tauri::Result<TrayIcon> {
 
     let icon = Image::from_bytes(idle_icon())?;
 
+    let quit_item = MenuItem::with_id(app_handle, "quit", "앱 종료", true, None::<&str>)?;
+    let menu = Menu::with_items(app_handle, &[&quit_item])?;
+
     TrayIconBuilder::with_id("tray")
         .icon(icon)
         .icon_as_template(false)
+        .menu(&menu)
+        .show_menu_on_left_click(false)
         .on_tray_icon_event(|tray, event| {
             // Let positioner handle tray events for positioning
             tauri_plugin_positioner::on_tray_event(tray.app_handle(), &event);
 
-            let app_handle = tray.app_handle();
-
-            if let TrayIconEvent::Click { button_state, .. } = event {
-                if button_state == MouseButtonState::Up {
-                    toggle_main_window(app_handle);
+            if let TrayIconEvent::Click {
+                button,
+                button_state,
+                ..
+            } = event
+            {
+                if button == MouseButton::Left && button_state == MouseButtonState::Up {
+                    toggle_main_window(tray.app_handle());
                 }
+            }
+        })
+        .on_menu_event(|app, event| {
+            if event.id() == "quit" {
+                app.exit(0);
             }
         })
         .build(app_handle)
