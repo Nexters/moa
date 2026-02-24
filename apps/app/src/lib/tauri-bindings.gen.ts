@@ -9,6 +9,14 @@
 
 export const commands = {
 /**
+ * Restart the app after destroying the single-instance lock.
+ * Without this, `app.restart()` races with the single-instance plugin
+ * and the new process exits immediately (sees old process still alive).
+ */
+async restartApp() : Promise<void> {
+    await TAURI_INVOKE("restart_app");
+},
+/**
  * Initializes the menubar panel (macOS) or main window (Windows).
  * This should be called once from the frontend after the app is ready.
  */

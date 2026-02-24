@@ -1,10 +1,12 @@
 use tauri_specta::{collect_commands, Builder};
 
 pub fn generate_bindings() -> Builder<tauri::Wry> {
-    use crate::commands::{menubar, notifications, preferences, recovery, user_settings};
+    use crate::commands::{app, menubar, notifications, preferences, recovery, user_settings};
     use crate::{salary, tray};
 
     Builder::<tauri::Wry>::new().commands(collect_commands![
+        // App lifecycle
+        app::restart_app,
         // Menubar panel
         menubar::init_menubar,
         menubar::show_menubar_panel,

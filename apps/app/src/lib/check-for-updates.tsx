@@ -1,9 +1,9 @@
-import { relaunch } from '@tauri-apps/plugin-process';
 import { check, type Update } from '@tauri-apps/plugin-updater';
 import { useEffect, useState } from 'react';
 
 import { posthog } from '~/lib/analytics';
 import { logger } from '~/lib/logger';
+import { commands } from '~/lib/tauri-bindings';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,7 +44,7 @@ export async function installUpdate(update: Update) {
         break;
     }
   });
-  await relaunch();
+  await commands.restartApp();
 }
 
 export function useCheckForUpdates({ delay = 5000 }: { delay?: number } = {}) {
