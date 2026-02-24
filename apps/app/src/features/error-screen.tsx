@@ -29,10 +29,7 @@ export function ErrorScreen({ error }: ErrorComponentProps) {
           같은 문제가 계속되면 알려 주세요.
         </p>
 
-        <AppFooter>
-          <Button variant="link" size="flat" onClick={handleContactUs}>
-            문의하기
-          </Button>
+        <AppFooter className="flex-col-reverse">
           <Button
             autoFocus
             rounded="full"
@@ -41,6 +38,9 @@ export function ErrorScreen({ error }: ErrorComponentProps) {
             onClick={() => relaunch()}
           >
             앱 재시작하기
+          </Button>
+          <Button variant="link" size="flat" onClick={handleContactUs}>
+            문의하기
           </Button>
         </AppFooter>
       </div>
