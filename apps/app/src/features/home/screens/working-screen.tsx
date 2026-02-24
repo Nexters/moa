@@ -37,26 +37,24 @@ export function WorkingScreen({
       </InfoCard>
 
       <AppFooter>
-        <div className="flex flex-col items-center gap-3">
-          <Button
-            variant="primary"
-            rounded="full"
-            size="lg"
-            className="w-[240px]"
-            disabled={isPending}
-            onClick={onEarlyLeave}
-          >
-            일찍 퇴근하기
-          </Button>
-          <Button
-            variant="link"
-            size="md"
-            disabled={isPending}
-            onClick={onVacation}
-          >
-            오늘 휴가예요
-          </Button>
-        </div>
+        <Button
+          variant="primary"
+          rounded="full"
+          size="lg"
+          className="w-[240px]"
+          disabled={isPending}
+          onClick={onEarlyLeave}
+        >
+          일찍 퇴근하기
+        </Button>
+        <Button
+          variant="link"
+          size="md"
+          disabled={isPending}
+          onClick={onVacation}
+        >
+          오늘 휴가예요
+        </Button>
       </AppFooter>
     </div>
   );

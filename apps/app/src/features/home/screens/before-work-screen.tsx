@@ -40,27 +40,25 @@ export function BeforeWorkScreen({
       </InfoCard>
 
       <AppFooter>
-        <div className="flex flex-col items-center gap-3">
-          <TooltipBubble>{workStart} 자동 출근 예정</TooltipBubble>
-          <Button
-            variant="primary"
-            rounded="full"
-            size="lg"
-            className="w-[240px]"
-            disabled={isPending}
-            onClick={onStartWork}
-          >
-            일찍 출근하기
-          </Button>
-          <Button
-            variant="link"
-            size="md"
-            disabled={isPending}
-            onClick={onVacation}
-          >
-            오늘 휴가예요
-          </Button>
-        </div>
+        <TooltipBubble>{workStart} 자동 출근 예정</TooltipBubble>
+        <Button
+          variant="primary"
+          rounded="full"
+          size="lg"
+          className="w-[240px]"
+          disabled={isPending}
+          onClick={onStartWork}
+        >
+          일찍 출근하기
+        </Button>
+        <Button
+          variant="link"
+          size="md"
+          disabled={isPending}
+          onClick={onVacation}
+        >
+          오늘 휴가예요
+        </Button>
       </AppFooter>
     </div>
   );
