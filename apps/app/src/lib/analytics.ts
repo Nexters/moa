@@ -4,12 +4,15 @@ import type { router } from '~/router';
 
 type Router = typeof router;
 
-posthog.init('phc_Vi1if06zeH3nYTze3n3mTXnWMZcd0cTCHiE9kK1kBKs', {
-  api_host: 'https://us.i.posthog.com',
-  capture_pageview: false,
-  capture_pageleave: false,
-  persistence: 'localStorage',
-});
+if (import.meta.env.PROD) {
+  posthog.init('phc_Vi1if06zeH3nYTze3n3mTXnWMZcd0cTCHiE9kK1kBKs', {
+    api_host: 'https://us.i.posthog.com',
+    capture_pageview: false,
+    capture_pageleave: false,
+    persistence: 'localStorage',
+  });
+  posthog.register({ app_version: __APP_VERSION__ });
+}
 
 export { posthog };
 
