@@ -2,10 +2,10 @@ import {
   createRootRoute,
   type ErrorComponentProps,
 } from '@tanstack/react-router';
+import { relaunch } from '@tauri-apps/plugin-process';
 import { usePostHog } from 'posthog-js/react';
 
 import { RootLayout } from '~/features/app';
-import { commands } from '~/lib/tauri-bindings';
 import { Button } from '~/ui';
 
 function RootErrorBoundary({ error }: ErrorComponentProps) {
@@ -19,7 +19,7 @@ function RootErrorBoundary({ error }: ErrorComponentProps) {
         rounded="full"
         size="md"
         className="w-60"
-        onClick={() => commands.restartApp()}
+        onClick={() => relaunch()}
       >
         앱 재시작하기
       </Button>
