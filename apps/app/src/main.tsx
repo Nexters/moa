@@ -8,6 +8,7 @@ import ReactDOM from 'react-dom/client';
 import { posthog, subscribeAnalytics } from './lib/analytics';
 import { queryClient } from './lib/query-client';
 import { router } from './router';
+import './global.css';
 
 subscribeAnalytics(router);
 
