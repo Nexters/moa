@@ -4,6 +4,6 @@ import { ErrorScreen } from '~/features/error-screen';
 import { RootLayout } from '~/features/root-layout';
 
 export const Route = createRootRoute({
-  component: () => <ErrorScreen error={new Error('test')} reset={() => {}} />,
+  component: RootLayout,
   errorComponent: ErrorScreen,
 });
