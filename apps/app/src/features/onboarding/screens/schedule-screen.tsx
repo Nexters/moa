@@ -74,22 +74,20 @@ export function ScheduleScreen() {
 
             return (
               <AppFooter>
-                <div className="flex flex-col items-center gap-2">
-                  {submitError && (
-                    <p className="b2-400 text-error">
-                      저장에 실패했습니다. 다시 시도해주세요.
-                    </p>
-                  )}
-                  <Button
-                    rounded="full"
-                    size="lg"
-                    className="w-60"
-                    disabled={hasErrors || isSubmitting}
-                    onClick={() => form.handleSubmit()}
-                  >
-                    {isSubmitting ? '저장 중...' : '다음'}
-                  </Button>
-                </div>
+                {submitError && (
+                  <p className="b2-400 text-error">
+                    저장에 실패했습니다. 다시 시도해주세요.
+                  </p>
+                )}
+                <Button
+                  rounded="full"
+                  size="lg"
+                  className="w-60"
+                  disabled={hasErrors || isSubmitting}
+                  onClick={() => form.handleSubmit()}
+                >
+                  {isSubmitting ? '저장 중...' : '다음'}
+                </Button>
               </AppFooter>
             );
           }}

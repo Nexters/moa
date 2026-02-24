@@ -8,8 +8,6 @@ import { commands } from '~/lib/tauri-bindings';
 import { userSettingsQuery } from '~/queries';
 import { router } from '~/router';
 
-import './app.css';
-
 export function RootLayout() {
   const queryClient = useQueryClient();
 
