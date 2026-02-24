@@ -1,13 +1,17 @@
 import { type ErrorComponentProps } from '@tanstack/react-router';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { usePostHog } from 'posthog-js/react';
+import { useEffect } from 'react';
 
 import { openContactEmail } from '~/lib/contact';
 import { AppFooter, Button } from '~/ui';
 
 export function ErrorScreen({ error }: ErrorComponentProps) {
   const posthog = usePostHog();
-  posthog.captureException(error);
+
+  useEffect(() => {
+    posthog.captureException(error);
+  }, [posthog, error]);
 
   const handleContactUs = async () => {
     try {
