@@ -11,6 +11,44 @@ on:
         type: string
 
 jobs:
+  notify-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Discord Notification
+        continue-on-error: true
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          VERSION: ${{ github.event.release.tag_name || inputs.version }}
+          ACTOR: ${{ github.actor }}
+          REPO: ${{ github.repository }}
+        run: |
+          RELEASE_URL="https://github.com/${REPO}/releases/tag/${VERSION}"
+          TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          PAYLOAD=$(jq -n \
+            --arg title "🚀 Moa App ${VERSION} 릴리즈 배포" \
+            --argjson color 3447003 \
+            --arg version "$VERSION" \
+            --arg actor "$ACTOR" \
+            --arg release_url "$RELEASE_URL" \
+            --arg timestamp "$TIMESTAMP" \
+            '{
+              embeds: [{
+                title: $title,
+                color: $color,
+                fields: [
+                  {name: "버전", value: $version, inline: true},
+                  {name: "배포자", value: $actor, inline: true},
+                  {name: "릴리스", value: $release_url}
+                ],
+                timestamp: $timestamp
+              }]
+            }')
+
+          curl -f -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "$DISCORD_WEBHOOK"
+
   update-cask:
     runs-on: ubuntu-latest
     steps:
@@ -84,3 +122,52 @@ jobs:
           git add Casks/moa.rb
           git commit -m "Update moa to v${{ steps.release.outputs.version }}"
           git push
+
+  notify-homebrew:
+    needs: [update-cask]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Discord Notification
+        continue-on-error: true
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          RESULT: ${{ needs.update-cask.result }}
+          VERSION: ${{ github.event.release.tag_name || inputs.version }}
+          ACTOR: ${{ github.actor }}
+          REPO: ${{ github.repository }}
+        run: |
+          if [ "$RESULT" == "success" ]; then
+            COLOR=5763719
+            TITLE="✅ Homebrew Cask ${VERSION} 업데이트 완료"
+          else
+            COLOR=15548997
+            TITLE="❌ Homebrew Cask ${VERSION} 업데이트 실패"
+          fi
+
+          RELEASE_URL="https://github.com/${REPO}/releases/tag/${VERSION}"
+          TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          PAYLOAD=$(jq -n \
+            --arg title "$TITLE" \
+            --argjson color "$COLOR" \
+            --arg version "$VERSION" \
+            --arg actor "$ACTOR" \
+            --arg release_url "$RELEASE_URL" \
+            --arg timestamp "$TIMESTAMP" \
+            '{
+              embeds: [{
+                title: $title,
+                color: $color,
+                fields: [
+                  {name: "버전", value: $version, inline: true},
+                  {name: "배포자", value: $actor, inline: true},
+                  {name: "릴리스", value: $release_url}
+                ],
+                timestamp: $timestamp
+              }]
+            }')
+
+          curl -f -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "$DISCORD_WEBHOOK"

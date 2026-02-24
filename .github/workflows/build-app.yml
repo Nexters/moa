@@ -1,4 +1,4 @@
-name: Release Moa App
+name: Build Moa App
 
 on:
   push:
