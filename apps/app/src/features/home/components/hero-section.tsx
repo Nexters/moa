@@ -43,7 +43,7 @@ export function HeroSection({ variant, label, amount }: HeroSectionProps) {
         <div className="flex items-center justify-center gap-1">
           <NumberFlow
             key={animKey}
-            value={mounted ? amount : 0}
+            value={mounted ? Math.floor(amount) : 0}
             locales="ko-KR"
             format={{ maximumFractionDigits: 0 }}
             plugins={[continuous]}

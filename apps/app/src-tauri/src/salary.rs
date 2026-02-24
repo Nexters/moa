@@ -266,7 +266,7 @@ fn calculate_salary(
     };
 
     let worked_days = get_worked_days_since_pay_day(period_start, today, work_days);
-    let accumulated_earnings = worked_days as f64 * daily_rate + today_earnings;
+    let accumulated_earnings = (worked_days as f64 * daily_rate + today_earnings).round();
 
     Some(SalaryTickPayload {
         daily_rate,
