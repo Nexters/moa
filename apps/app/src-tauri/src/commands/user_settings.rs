@@ -6,7 +6,7 @@ use tauri::{AppHandle, Manager};
 use crate::types::{validate_pay_day, validate_salary_amount, UserSettings};
 
 /// 사용자 설정 파일 경로
-fn get_user_settings_path(app: &AppHandle) -> Result<PathBuf, String> {
+pub(crate) fn get_user_settings_path(app: &AppHandle) -> Result<PathBuf, String> {
     let app_data_dir = app
         .path()
         .app_data_dir()
@@ -38,26 +38,31 @@ pub async fn load_user_settings(app: AppHandle) -> Result<UserSettings, String> 
     Ok(settings)
 }
 
-/// 사용자 설정 저장
-#[tauri::command]
-#[specta::specta]
-pub async fn save_user_settings(app: AppHandle, settings: UserSettings) -> Result<(), String> {
-    // Validation
+/// 사용자 설정 저장 (내부 동기 헬퍼)
+pub(crate) fn save_user_settings_sync(
+    app: &AppHandle,
+    settings: &UserSettings,
+) -> Result<(), String> {
     validate_salary_amount(settings.salary_amount)?;
     validate_pay_day(settings.pay_day)?;
 
-    let path = get_user_settings_path(&app)?;
-
-    let json = serde_json::to_string_pretty(&settings).map_err(|e| format!("직렬화 실패: {e}"))?;
+    let path = get_user_settings_path(app)?;
+    let json = serde_json::to_string_pretty(settings).map_err(|e| format!("직렬화 실패: {e}"))?;
 
     // Atomic write
     let temp_path = path.with_extension("tmp");
     std::fs::write(&temp_path, &json).map_err(|e| format!("임시 파일 쓰기 실패: {e}"))?;
-
     std::fs::rename(&temp_path, &path).map_err(|e| format!("파일 저장 실패: {e}"))?;
 
     log::info!("사용자 설정 저장 완료");
     Ok(())
+}
+
+/// 사용자 설정 저장
+#[tauri::command]
+#[specta::specta]
+pub async fn save_user_settings(app: AppHandle, settings: UserSettings) -> Result<(), String> {
+    save_user_settings_sync(&app, &settings)
 }
 
 /// 온보딩 완료 여부 확인

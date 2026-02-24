@@ -1,13 +1,17 @@
 //! System tray/menu bar icon functionality.
 
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Mutex;
 use std::time::Duration;
 
 use tauri::{
     image::Image,
-    tray::{MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent},
-    AppHandle, Manager,
+    menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem, Submenu},
+    tray::{MouseButton, MouseButtonState, TrayIcon, TrayIconBuilder, TrayIconEvent},
+    AppHandle, Emitter, Manager,
 };
+
+use crate::types::{MenubarDisplayMode, UserSettings};
 
 #[cfg(target_os = "macos")]
 use tauri_nspanel::ManagerExt;
@@ -62,6 +66,15 @@ static IS_DARK_MENUBAR: AtomicBool = AtomicBool::new(true);
 /// Animation frame interval (85ms × 14 frames ≈ 1.2s per rotation)
 const FRAME_INTERVAL: Duration = Duration::from_millis(85);
 
+/// 메뉴바 표시 모드 CheckMenuItem 참조 보관
+struct MenuDisplayItems {
+    none_item: CheckMenuItem<tauri::Wry>,
+    daily_item: CheckMenuItem<tauri::Wry>,
+    accumulated_item: CheckMenuItem<tauri::Wry>,
+}
+
+static MENU_DISPLAY_ITEMS: Mutex<Option<MenuDisplayItems>> = Mutex::new(None);
+
 /// Detect macOS menubar dark/light mode via AppleInterfaceStyle.
 /// 메뉴바는 시스템 외관 모드를 따르므로 AppleInterfaceStyle로 판별한다.
 #[cfg(target_os = "macos")]
@@ -99,21 +112,78 @@ pub fn create(app_handle: &AppHandle) -> tauri::Result<TrayIcon> {
     IS_DARK_MENUBAR.store(detect_dark_menubar(), Ordering::Relaxed);
 
     let icon = Image::from_bytes(idle_icon())?;
+    let current_mode = load_current_display_mode(app_handle);
+
+    // 메뉴바 표시 모드 CheckMenuItem (라디오 스타일)
+    let none_item = CheckMenuItem::with_id(
+        app_handle,
+        "display_none",
+        "표기 안함",
+        true,
+        current_mode == MenubarDisplayMode::None,
+        None::<&str>,
+    )?;
+    let daily_item = CheckMenuItem::with_id(
+        app_handle,
+        "display_daily",
+        "누적 일급",
+        true,
+        current_mode == MenubarDisplayMode::Daily,
+        None::<&str>,
+    )?;
+    let accumulated_item = CheckMenuItem::with_id(
+        app_handle,
+        "display_accumulated",
+        "누적 월급",
+        true,
+        current_mode == MenubarDisplayMode::Accumulated,
+        None::<&str>,
+    )?;
+
+    let display_submenu = Submenu::with_items(
+        app_handle,
+        "금액 표기",
+        true,
+        &[&none_item, &daily_item, &accumulated_item],
+    )?;
+
+    // 참조 보관 (설정 변경 시 checked 상태 갱신용)
+    *MENU_DISPLAY_ITEMS.lock().unwrap() = Some(MenuDisplayItems {
+        none_item: none_item.clone(),
+        daily_item: daily_item.clone(),
+        accumulated_item: accumulated_item.clone(),
+    });
+
+    let separator = PredefinedMenuItem::separator(app_handle)?;
+    let quit_item = MenuItem::with_id(app_handle, "quit", "앱 종료", true, None::<&str>)?;
+    let menu = Menu::with_items(app_handle, &[&display_submenu, &separator, &quit_item])?;
 
     TrayIconBuilder::with_id("tray")
         .icon(icon)
         .icon_as_template(false)
+        .menu(&menu)
+        .show_menu_on_left_click(false)
         .on_tray_icon_event(|tray, event| {
             // Let positioner handle tray events for positioning
             tauri_plugin_positioner::on_tray_event(tray.app_handle(), &event);
 
-            let app_handle = tray.app_handle();
-
-            if let TrayIconEvent::Click { button_state, .. } = event {
-                if button_state == MouseButtonState::Up {
-                    toggle_main_window(app_handle);
+            if let TrayIconEvent::Click {
+                button,
+                button_state,
+                ..
+            } = event
+            {
+                if button == MouseButton::Left && button_state == MouseButtonState::Up {
+                    toggle_main_window(tray.app_handle());
                 }
             }
+        })
+        .on_menu_event(|app, event| match event.id().as_ref() {
+            "quit" => app.exit(0),
+            id @ ("display_none" | "display_daily" | "display_accumulated") => {
+                handle_display_mode_change(app, id);
+            }
+            _ => {}
         })
         .build(app_handle)
 }
@@ -156,6 +226,69 @@ fn toggle_main_window(app_handle: &AppHandle) {
             let _ = window.move_window(Position::TrayBottomCenter);
             let _ = window.show();
             let _ = window.set_focus();
+        }
+    }
+}
+
+/// 설정 파일에서 현재 메뉴바 표시 모드 읽기
+fn load_current_display_mode(app: &AppHandle) -> MenubarDisplayMode {
+    app.path()
+        .app_data_dir()
+        .ok()
+        .and_then(|d| std::fs::read_to_string(d.join("user-settings.json")).ok())
+        .and_then(|c| serde_json::from_str::<UserSettings>(&c).ok())
+        .map(|s| s.menubar_display_mode)
+        .unwrap_or_default()
+}
+
+/// 트레이 메뉴에서 표시 모드 변경 시 호출
+fn handle_display_mode_change(app: &AppHandle, menu_id: &str) {
+    let new_mode = match menu_id {
+        "display_none" => MenubarDisplayMode::None,
+        "display_daily" => MenubarDisplayMode::Daily,
+        "display_accumulated" => MenubarDisplayMode::Accumulated,
+        _ => return,
+    };
+
+    // 현재 설정 로드 → 모드 변경 → 저장
+    let settings_path = app
+        .path()
+        .app_data_dir()
+        .ok()
+        .map(|d| d.join("user-settings.json"));
+
+    let Some(path) = settings_path else { return };
+
+    let mut settings = std::fs::read_to_string(&path)
+        .ok()
+        .and_then(|c| serde_json::from_str::<UserSettings>(&c).ok())
+        .unwrap_or_default();
+
+    settings.menubar_display_mode = new_mode;
+
+    if let Err(e) = crate::commands::user_settings::save_user_settings_sync(app, &settings) {
+        log::error!("트레이 메뉴에서 설정 저장 실패: {e}");
+        return;
+    }
+
+    crate::salary::notify_settings_changed();
+    let _ = app.emit("user-settings-changed", ());
+    log::debug!("트레이 메뉴에서 메뉴바 표시 모드 변경: {menu_id}");
+}
+
+/// 메뉴바 표시 모드 CheckMenuItem checked 상태 갱신 (ticker에서 호출)
+pub fn update_menu_check_states(mode: &MenubarDisplayMode) {
+    if let Ok(guard) = MENU_DISPLAY_ITEMS.lock() {
+        if let Some(items) = guard.as_ref() {
+            let _ = items
+                .none_item
+                .set_checked(*mode == MenubarDisplayMode::None);
+            let _ = items
+                .daily_item
+                .set_checked(*mode == MenubarDisplayMode::Daily);
+            let _ = items
+                .accumulated_item
+                .set_checked(*mode == MenubarDisplayMode::Accumulated);
         }
     }
 }
