@@ -17,6 +17,7 @@ if (import.meta.env.PROD) {
 export { posthog };
 
 export function subscribeAnalytics(r: Router): () => void {
+  if (!import.meta.env.PROD) return () => {};
   return r.subscribe(
     'onResolved',
     ({ fromLocation, toLocation, pathChanged }) => {
