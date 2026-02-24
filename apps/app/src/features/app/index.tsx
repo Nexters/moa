@@ -10,6 +10,8 @@ import { router } from '~/router';
 
 import './app.css';
 
+export { ErrorScreen } from './error-screen';
+
 export function RootLayout() {
   const queryClient = useQueryClient();
 
