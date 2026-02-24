@@ -25,7 +25,6 @@ export function SettingsScreen() {
   const queryClient = useQueryClient();
   const { data: settings } = useUserSettings();
 
-  const { data: version } = useQuery(appQueryOptions.version());
   const { update, installing, install } = useCheckForUpdates({ delay: 0 });
 
   const { data: autoStartEnabled = false, isLoading: isAutoStartLoading } =
@@ -83,7 +82,7 @@ export function SettingsScreen() {
         '',
         '-----------------------------------------------',
         '아래 정보는 앱에서 자동 기입됨',
-        `앱 버전/빌드: v${version ?? 'unknown'}`,
+        `앱 버전/빌드: v${__APP_VERSION__}`,
       ].join('\n'),
     );
     try {
@@ -133,9 +132,7 @@ export function SettingsScreen() {
         <SettingsSection title="앱 정보">
           <InfoRow label="버전 정보">
             <span className="flex items-center gap-2">
-              <span className="text-text-medium">
-                {version ? `v${version}` : '-'}
-              </span>
+              <span className="text-text-medium">{`v${__APP_VERSION__}`}</span>
               {update && (
                 <Button
                   variant="link"
