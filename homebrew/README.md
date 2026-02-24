@@ -5,6 +5,9 @@ Moa 앱의 Homebrew Cask formula 템플릿. CI가 릴리즈 시 자동으로 [ne
 ## 사용자 설치
 
 ```sh
+brew install --cask nexters/moa/moa
+
+# or 
 brew tap nexters/moa
 brew install --cask moa
 ```
@@ -38,7 +41,7 @@ release:published 이벤트
     └─ nexters/homebrew-moa 에 push
 ```
 
-워크플로우: [`.github/workflows/update-homebrew.yml`](../.github/workflows/update-homebrew.yml)
+워크플로우: [`.github/workflows/deploy-app.yml`](../.github/workflows/deploy-app.yml)
 
 ## Formula 수정
 
