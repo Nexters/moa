@@ -25,7 +25,7 @@ function HomebrewRow() {
   };
 
   return (
-    <div className="bg-container-secondary flex w-full items-center justify-between rounded-xl px-5 py-4 lg:w-[373px]">
+    <div className="bg-container-secondary flex w-full items-center justify-between rounded-md px-5 py-4 lg:w-[373px]">
       <span className="b2-400 flex items-center gap-2 font-mono">
         <span className="text-text-low select-none">$</span>
         <span className="text-text-high">{BREW_COMMAND}</span>
@@ -56,7 +56,7 @@ interface DownloadRowProps {
 
 function DownloadRow({ icon, label, arch, href, rightIcon }: DownloadRowProps) {
   const classes = cn(
-    'bg-container-secondary flex w-full items-center justify-between rounded-xl px-5 py-4 transition-colors lg:w-[373px]',
+    'bg-container-secondary flex w-full items-center justify-between rounded-md px-5 py-4 transition-colors lg:w-[373px]',
     href
       ? 'hover:bg-interactive-active cursor-pointer'
       : 'cursor-not-allowed opacity-50',
