@@ -78,17 +78,15 @@ export function DownloadIcon({ className, ...props }: SvgProps) {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       className={className}
-      viewBox="0 0 24 24"
+      viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
-      strokeWidth={2}
+      strokeWidth={1.2}
       strokeLinecap="round"
       strokeLinejoin="round"
       {...props}
     >
-      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-      <polyline points="7 10 12 15 17 10" />
-      <line x1="12" y1="15" x2="12" y2="3" />
+      <path d="M2.66663 10.1363L2.66663 12.595C2.66663 12.9676 2.8071 13.325 3.05715 13.5885C3.3072 13.852 3.64634 14 3.99996 14H12C12.3536 14 12.6927 13.852 12.9428 13.5885C13.1928 13.325 13.3333 12.9676 13.3333 12.595V10.1363M8.0007 2V9.96164M8.0007 9.96164L11.0483 6.91953M8.0007 9.96164L4.95308 6.91953" />
     </svg>
   );
 }
@@ -118,13 +116,13 @@ export function CopyIcon({ className, ...props }: SvgProps) {
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.2}
+      strokeWidth={1.06667}
       strokeLinecap="round"
       strokeLinejoin="round"
       {...props}
     >
-      <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" />
-      <path d="M10.5 5.5V3.5a1.5 1.5 0 00-1.5-1.5H3.5A1.5 1.5 0 002 3.5V9a1.5 1.5 0 001.5 1.5h2" />
+      <path d="M10.661 2.69189H3.99434C3.25796 2.69189 2.66101 3.28885 2.66101 4.02523V11.3586" />
+      <path d="M5.55225 5.52148H13.339V11.9749C13.339 12.7113 12.742 13.3082 12.0057 13.3082H6.88558C6.1492 13.3082 5.55225 12.7113 5.55225 11.9749V5.52148Z" />
     </svg>
   );
 }
@@ -155,12 +153,12 @@ export function ArrowRightIcon({ className, ...props }: SvgProps) {
       viewBox="0 0 16 16"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.5}
+      strokeWidth={1.2}
       strokeLinecap="round"
       strokeLinejoin="round"
       {...props}
     >
-      <path d="M6 3l5 5-5 5" />
+      <path d="M8.00008 12.6665L12.6667 7.99984M12.6667 7.99984L8.00008 3.33317M12.6667 7.99984L3.36425 7.99984" />
     </svg>
   );
 }
