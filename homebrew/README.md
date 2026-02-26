@@ -7,7 +7,7 @@ Moa 앱의 Homebrew Cask formula 템플릿. CI가 릴리즈 시 자동으로 [ne
 ```sh
 brew install --cask nexters/moa/moa
 
-# or 
+# or
 brew tap nexters/moa
 brew install --cask moa
 ```
