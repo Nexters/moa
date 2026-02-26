@@ -70,7 +70,7 @@ export function SalarySection() {
       <div className="mx-auto flex flex-col items-center gap-10 md:gap-[60px]">
         {/* Title */}
         <div className="flex flex-col items-center gap-4 text-center">
-          <h2 className="b1-600 md:h2-700 text-text-high">
+          <h2 className="t2-700 md:h2-700 text-text-high">
             지금 이 시간, 나 얼마 벌고 있을까?
           </h2>
           <p className="b2-400 md:t3-400 text-text-medium">

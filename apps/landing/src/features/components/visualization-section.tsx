@@ -6,7 +6,7 @@ export function VisualizationSection() {
           <p className="c1-400 md:t1-400 text-text-medium">
             Salary Visualization
           </p>
-          <h2 className="b1-600 md:h2-700 text-text-high mt-2.5">
+          <h2 className="t2-700 md:h2-700 text-text-high mt-2.5">
             <span className="text-green-40">실시간으로 벌고 있는 월급</span>을
             <br />
             <span>바로 확인할 수 있어요</span>
