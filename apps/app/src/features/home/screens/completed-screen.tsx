@@ -23,7 +23,7 @@ export function CompletedScreen({
   const workEnd = todaySchedule?.workEndTime ?? settings.workEndTime;
 
   return (
-    <div className="flex flex-1 flex-col gap-7">
+    <div className="flex flex-1 flex-col gap-5">
       {lottieOverlay}
       <HeroSection
         variant="full"

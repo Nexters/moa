@@ -48,7 +48,7 @@ export function HeroSection({
   return (
     <div className="flex flex-col items-center gap-5">
       <HeroIcon variant={variant} />
-      <div className="flex flex-col items-center gap-1">
+      <div className="flex flex-col items-center">
         <p className="t3-500 text-text-high">{label}</p>
         <div className="flex items-center justify-center gap-1">
           <NumberFlow
