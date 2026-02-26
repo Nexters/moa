@@ -8,7 +8,10 @@ import { useUserSettings } from '~/hooks/use-user-settings';
 import { posthog } from '~/lib/analytics';
 import { useCheckForUpdates } from '~/lib/check-for-updates';
 import { openContactEmail } from '~/lib/contact';
-import type { MenubarDisplayMode, MenubarIconTheme } from '~/lib/tauri-bindings';
+import type {
+  MenubarDisplayMode,
+  MenubarIconTheme,
+} from '~/lib/tauri-bindings';
 import { commands } from '~/lib/tauri-bindings';
 import { appQuery, appQueryOptions, userSettingsQuery } from '~/queries';
 import { AppBar, Button, InfoRow, SelectInput, SwitchInput } from '~/ui';
@@ -16,9 +19,9 @@ import { AppBar, Button, InfoRow, SelectInput, SwitchInput } from '~/ui';
 import { SettingsSection } from '../components/settings-section';
 
 const MENUBAR_DISPLAY_OPTIONS = [
-  { value: 'none', label: '표기 안함' },
-  { value: 'daily', label: '누적 일급' },
-  { value: 'accumulated', label: '누적 월급' },
+  { value: 'none', label: '표기 안 함' },
+  { value: 'daily', label: '누적 일급 표기' },
+  { value: 'accumulated', label: '누적 월급 표기' },
 ] as const;
 
 const ICON_THEME_OPTIONS = [
@@ -76,18 +79,25 @@ export function SettingsScreen() {
 
   const iconThemeMutation = useMutation({
     mutationFn: async (menubarIconTheme: MenubarIconTheme) => {
-      if (!settings) return;
+      if (!settings) return menubarIconTheme;
       const result = await commands.saveUserSettings({
         ...settings,
         menubarIconTheme,
       });
       if (result.status === 'error') throw new Error(result.error);
+      return menubarIconTheme;
     },
-    onSuccess: () => {
+    onSuccess: (theme) => {
       void queryClient.invalidateQueries({
         queryKey: userSettingsQuery.all(),
       });
       void commands.notifySettingsChanged();
+
+      const messages: Record<MenubarIconTheme, string> = {
+        light: '밝은 아이콘으로 변경되었습니다.',
+        dark: '어두운 아이콘으로 변경되었습니다.',
+      };
+      if (theme) toast(messages[theme]);
     },
   });
 
@@ -129,6 +139,13 @@ export function SettingsScreen() {
         </SettingsSection>
 
         <SettingsSection title="메뉴바 설정">
+          <InfoRow label="로그인 시 MOA 자동 실행">
+            <SwitchInput
+              value={autoStartEnabled}
+              onSave={(enabled) => autoStartMutation.mutate(enabled)}
+              disabled={isAutoStartLoading || autoStartMutation.isPending}
+            />
+          </InfoRow>
           <SelectInput
             options={MENUBAR_DISPLAY_OPTIONS}
             value={settings?.menubarDisplayMode ?? 'daily'}
@@ -145,13 +162,6 @@ export function SettingsScreen() {
             }
             disabled={!settings || iconThemeMutation.isPending}
           />
-          <InfoRow label="로그인 시 MOA 자동 실행">
-            <SwitchInput
-              value={autoStartEnabled}
-              onSave={(enabled) => autoStartMutation.mutate(enabled)}
-              disabled={isAutoStartLoading || autoStartMutation.isPending}
-            />
-          </InfoRow>
         </SettingsSection>
 
         <SettingsSection title="앱 정보">
