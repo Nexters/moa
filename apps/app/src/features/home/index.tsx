@@ -32,9 +32,6 @@ export function Home() {
           <PostCompletedScreen {...mainScreen} />
         )}
       </div>
-      <span className="c2-400 text-text-low absolute right-4 bottom-2">
-        v{__APP_VERSION__}
-      </span>
     </main>
   );
 }
