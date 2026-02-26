@@ -1,20 +1,20 @@
 export function Hero() {
   return (
-    <section className="bg-bg-primary px-6 pt-10 pb-20 md:px-[68px] md:pt-[60px] md:pb-[100px] lg:px-[120px] lg:pt-[100px] lg:pb-[160px]">
-      <div className="mx-auto flex flex-col items-center gap-6 text-center md:gap-10">
+    <section className="bg-bg-primary px-6 pt-20 pb-20 md:px-[68px] md:pt-[100px] md:pb-[160px] lg:px-[120px]">
+      <div className="mx-auto flex flex-col items-center gap-10 text-center">
         <img
           src="/moa/images/hero-parachute.avif"
           alt="낙하산 일러스트"
-          className="h-[120px] w-[120px] object-contain md:h-[150px] md:w-[150px] lg:h-[180px] lg:w-[180px]"
+          className="size-[180px] object-contain"
         />
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-2.5 md:gap-4">
           <div style={titleStyle}>
             <p className="text-text-high">
               일하는 동안 실시간으로 쌓이는 내 월급
             </p>
             <p className="text-green-40">월급 체감 서비스, MOA</p>
           </div>
-          <p className="t3-400 text-text-medium">
+          <p className="b2-400 md:t3-400 text-text-medium">
             고르기 힘들까 봐 모바일, 데스크톱 앱 둘다 준비했어요!
           </p>
         </div>

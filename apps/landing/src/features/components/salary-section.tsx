@@ -67,9 +67,9 @@ export function SalarySection() {
       ref={sectionRef}
       className="bg-bg-secondary px-6 pt-[60px] pb-20 md:px-[68px] md:pt-[100px] md:pb-[160px] lg:px-[120px]"
     >
-      <div className="mx-auto flex flex-col items-center gap-10 md:gap-[60px]">
+      <div className="mx-auto flex flex-col items-center gap-[60px]">
         {/* Title */}
-        <div className="flex flex-col items-center gap-4 text-center">
+        <div className="flex flex-col items-center gap-2.5 text-center md:gap-4">
           <h2 className="t2-700 md:h2-700 text-text-high">
             지금 이 시간, 나 얼마 벌고 있을까?
           </h2>
@@ -101,14 +101,14 @@ export function SalarySection() {
           {/* Content card */}
           <div className="flex w-full flex-col gap-6 pt-4 md:w-[504px]">
             {/* Icon + label + salary */}
-            <div className="flex flex-col items-center gap-4 px-5 md:px-7">
+            <div className="flex flex-col items-center gap-2 px-5 md:px-7">
               <img
                 src="/moa/images/coin-rotate.gif"
                 alt=""
-                className="size-[80px] md:size-[112px]"
+                className="size-[100px] md:size-[120px]"
               />
               <div className="flex flex-col items-center">
-                <p className="b1-500 md:t1-500 text-text-high">
+                <p className="b1-400 md:t1-500 text-text-high">
                   오늘 쌓은 월급
                 </p>
                 <div className="flex items-center justify-center gap-1">
