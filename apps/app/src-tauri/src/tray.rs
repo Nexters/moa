@@ -11,7 +11,7 @@ use tauri::{
     AppHandle, Emitter, Manager,
 };
 
-use crate::types::{MenubarDisplayMode, UserSettings};
+use crate::types::{MenubarDisplayMode, MenubarIconTheme, UserSettings};
 
 #[cfg(target_os = "macos")]
 use tauri_nspanel::ManagerExt;
@@ -19,7 +19,7 @@ use tauri_nspanel::ManagerExt;
 #[cfg(not(target_os = "macos"))]
 use tauri_plugin_positioner::{Position, WindowExt};
 
-/// Embedded tray icons — dark theme (white icons for dark menubar)
+/// Embedded tray icons — light theme (white icons for dark menubar)
 static TRAY_ICON_IDLE: &[u8] = include_bytes!("../icons/tray-idle.png");
 static TRAY_FRAMES: [&[u8]; 14] = [
     include_bytes!("../icons/tray-frame-0.png"),
@@ -38,9 +38,9 @@ static TRAY_FRAMES: [&[u8]; 14] = [
     include_bytes!("../icons/tray-frame-13.png"),
 ];
 
-/// Embedded tray icons — light theme (black icons for light menubar)
-static TRAY_ICON_IDLE_LIGHT: &[u8] = include_bytes!("../icons/tray-idle-light.png");
-static TRAY_FRAMES_LIGHT: [&[u8]; 14] = [
+/// Embedded tray icons — dark theme (black icons for light menubar)
+static TRAY_ICON_IDLE_DARK: &[u8] = include_bytes!("../icons/tray-idle-light.png");
+static TRAY_FRAMES_DARK: [&[u8]; 14] = [
     include_bytes!("../icons/tray-frame-light-0.png"),
     include_bytes!("../icons/tray-frame-light-1.png"),
     include_bytes!("../icons/tray-frame-light-2.png"),
@@ -60,67 +60,56 @@ static TRAY_FRAMES_LIGHT: [&[u8]; 14] = [
 /// Animation control flag
 static ANIMATING: AtomicBool = AtomicBool::new(false);
 
-/// Cached menubar dark/light mode state
-static IS_DARK_MENUBAR: AtomicBool = AtomicBool::new(true);
+/// true = 밝은 아이콘 (Light), false = 어두운 아이콘 (Dark)
+static IS_LIGHT_ICON: AtomicBool = AtomicBool::new(true);
 
 /// Animation frame interval (85ms × 14 frames ≈ 1.2s per rotation)
 const FRAME_INTERVAL: Duration = Duration::from_millis(85);
 
-/// 메뉴바 표시 모드 CheckMenuItem 참조 보관
-struct MenuDisplayItems {
-    none_item: CheckMenuItem<tauri::Wry>,
-    daily_item: CheckMenuItem<tauri::Wry>,
-    accumulated_item: CheckMenuItem<tauri::Wry>,
-}
-
-static MENU_DISPLAY_ITEMS: Mutex<Option<MenuDisplayItems>> = Mutex::new(None);
-
-/// Detect macOS menubar dark/light mode via AppleInterfaceStyle.
-/// 메뉴바는 시스템 외관 모드를 따르므로 AppleInterfaceStyle로 판별한다.
-#[cfg(target_os = "macos")]
-fn detect_dark_menubar() -> bool {
-    std::process::Command::new("defaults")
-        .args(["read", "-g", "AppleInterfaceStyle"])
-        .output()
-        .map(|o| o.status.success())
-        .unwrap_or(false)
-}
-
-#[cfg(not(target_os = "macos"))]
-fn detect_dark_menubar() -> bool {
-    false
-}
-
 fn idle_icon() -> &'static [u8] {
-    if IS_DARK_MENUBAR.load(Ordering::Relaxed) {
+    if IS_LIGHT_ICON.load(Ordering::Relaxed) {
         TRAY_ICON_IDLE
     } else {
-        TRAY_ICON_IDLE_LIGHT
+        TRAY_ICON_IDLE_DARK
     }
 }
 
 fn frames() -> &'static [&'static [u8]; 14] {
-    if IS_DARK_MENUBAR.load(Ordering::Relaxed) {
+    if IS_LIGHT_ICON.load(Ordering::Relaxed) {
         &TRAY_FRAMES
     } else {
-        &TRAY_FRAMES_LIGHT
+        &TRAY_FRAMES_DARK
     }
 }
 
+/// 트레이 메뉴 CheckMenuItem 참조 보관
+struct MenuItems {
+    none_item: CheckMenuItem<tauri::Wry>,
+    daily_item: CheckMenuItem<tauri::Wry>,
+    accumulated_item: CheckMenuItem<tauri::Wry>,
+    icon_light_item: CheckMenuItem<tauri::Wry>,
+    icon_dark_item: CheckMenuItem<tauri::Wry>,
+}
+
+static MENU_ITEMS: Mutex<Option<MenuItems>> = Mutex::new(None);
+
 /// Creates the system tray icon with click handlers.
 pub fn create(app_handle: &AppHandle) -> tauri::Result<TrayIcon> {
-    IS_DARK_MENUBAR.store(detect_dark_menubar(), Ordering::Relaxed);
+    let settings = load_current_settings(app_handle);
+    IS_LIGHT_ICON.store(
+        settings.menubar_icon_theme == MenubarIconTheme::Light,
+        Ordering::Relaxed,
+    );
 
     let icon = Image::from_bytes(idle_icon())?;
-    let current_mode = load_current_display_mode(app_handle);
 
-    // 메뉴바 표시 모드 CheckMenuItem (라디오 스타일)
+    // 금액 표기 서브메뉴
     let none_item = CheckMenuItem::with_id(
         app_handle,
         "display_none",
         "표기 안함",
         true,
-        current_mode == MenubarDisplayMode::None,
+        settings.menubar_display_mode == MenubarDisplayMode::None,
         None::<&str>,
     )?;
     let daily_item = CheckMenuItem::with_id(
@@ -128,7 +117,7 @@ pub fn create(app_handle: &AppHandle) -> tauri::Result<TrayIcon> {
         "display_daily",
         "누적 일급",
         true,
-        current_mode == MenubarDisplayMode::Daily,
+        settings.menubar_display_mode == MenubarDisplayMode::Daily,
         None::<&str>,
     )?;
     let accumulated_item = CheckMenuItem::with_id(
@@ -136,7 +125,7 @@ pub fn create(app_handle: &AppHandle) -> tauri::Result<TrayIcon> {
         "display_accumulated",
         "누적 월급",
         true,
-        current_mode == MenubarDisplayMode::Accumulated,
+        settings.menubar_display_mode == MenubarDisplayMode::Accumulated,
         None::<&str>,
     )?;
 
@@ -147,16 +136,46 @@ pub fn create(app_handle: &AppHandle) -> tauri::Result<TrayIcon> {
         &[&none_item, &daily_item, &accumulated_item],
     )?;
 
+    // 아이콘 테마 서브메뉴
+    let icon_light_item = CheckMenuItem::with_id(
+        app_handle,
+        "icon_light",
+        "밝은 아이콘",
+        true,
+        settings.menubar_icon_theme == MenubarIconTheme::Light,
+        None::<&str>,
+    )?;
+    let icon_dark_item = CheckMenuItem::with_id(
+        app_handle,
+        "icon_dark",
+        "어두운 아이콘",
+        true,
+        settings.menubar_icon_theme == MenubarIconTheme::Dark,
+        None::<&str>,
+    )?;
+
+    let icon_submenu = Submenu::with_items(
+        app_handle,
+        "아이콘 테마",
+        true,
+        &[&icon_light_item, &icon_dark_item],
+    )?;
+
     // 참조 보관 (설정 변경 시 checked 상태 갱신용)
-    *MENU_DISPLAY_ITEMS.lock().unwrap() = Some(MenuDisplayItems {
+    *MENU_ITEMS.lock().unwrap() = Some(MenuItems {
         none_item: none_item.clone(),
         daily_item: daily_item.clone(),
         accumulated_item: accumulated_item.clone(),
+        icon_light_item: icon_light_item.clone(),
+        icon_dark_item: icon_dark_item.clone(),
     });
 
     let separator = PredefinedMenuItem::separator(app_handle)?;
     let quit_item = MenuItem::with_id(app_handle, "quit", "앱 종료", true, None::<&str>)?;
-    let menu = Menu::with_items(app_handle, &[&display_submenu, &separator, &quit_item])?;
+    let menu = Menu::with_items(
+        app_handle,
+        &[&display_submenu, &icon_submenu, &separator, &quit_item],
+    )?;
 
     TrayIconBuilder::with_id("tray")
         .icon(icon)
@@ -182,6 +201,9 @@ pub fn create(app_handle: &AppHandle) -> tauri::Result<TrayIcon> {
             "quit" => app.exit(0),
             id @ ("display_none" | "display_daily" | "display_accumulated") => {
                 handle_display_mode_change(app, id);
+            }
+            id @ ("icon_light" | "icon_dark") => {
+                handle_icon_theme_change(app, id);
             }
             _ => {}
         })
@@ -230,14 +252,13 @@ fn toggle_main_window(app_handle: &AppHandle) {
     }
 }
 
-/// 설정 파일에서 현재 메뉴바 표시 모드 읽기
-fn load_current_display_mode(app: &AppHandle) -> MenubarDisplayMode {
+/// 설정 파일에서 현재 설정 읽기
+fn load_current_settings(app: &AppHandle) -> UserSettings {
     app.path()
         .app_data_dir()
         .ok()
         .and_then(|d| std::fs::read_to_string(d.join("user-settings.json")).ok())
         .and_then(|c| serde_json::from_str::<UserSettings>(&c).ok())
-        .map(|s| s.menubar_display_mode)
         .unwrap_or_default()
 }
 
@@ -250,47 +271,76 @@ fn handle_display_mode_change(app: &AppHandle, menu_id: &str) {
         _ => return,
     };
 
-    // 현재 설정 로드 → 모드 변경 → 저장
-    let settings_path = app
-        .path()
-        .app_data_dir()
-        .ok()
-        .map(|d| d.join("user-settings.json"));
-
-    let Some(path) = settings_path else { return };
-
-    let mut settings = std::fs::read_to_string(&path)
-        .ok()
-        .and_then(|c| serde_json::from_str::<UserSettings>(&c).ok())
-        .unwrap_or_default();
-
+    let mut settings = load_current_settings(app);
     settings.menubar_display_mode = new_mode;
+    save_and_notify(app, &settings, "메뉴바 표시 모드 변경");
+}
 
-    if let Err(e) = crate::commands::user_settings::save_user_settings_sync(app, &settings) {
+/// 트레이 메뉴에서 아이콘 테마 변경 시 호출
+fn handle_icon_theme_change(app: &AppHandle, menu_id: &str) {
+    let new_theme = match menu_id {
+        "icon_light" => MenubarIconTheme::Light,
+        "icon_dark" => MenubarIconTheme::Dark,
+        _ => return,
+    };
+
+    IS_LIGHT_ICON.store(new_theme == MenubarIconTheme::Light, Ordering::Relaxed);
+
+    // 비애니메이션 상태일 때 즉시 아이콘 교체
+    if !ANIMATING.load(Ordering::Relaxed) {
+        if let Some(tray) = app.tray_by_id("tray") {
+            if let Ok(icon) = Image::from_bytes(idle_icon()) {
+                let _ = tray.set_icon(Some(icon));
+            }
+        }
+    }
+
+    let mut settings = load_current_settings(app);
+    settings.menubar_icon_theme = new_theme;
+    save_and_notify(app, &settings, "아이콘 테마 변경");
+}
+
+/// 설정 저장 + 변경 알림 공통 헬퍼
+fn save_and_notify(app: &AppHandle, settings: &UserSettings, context: &str) {
+    if let Err(e) = crate::commands::user_settings::save_user_settings_sync(app, settings) {
         log::error!("트레이 메뉴에서 설정 저장 실패: {e}");
         return;
     }
 
     crate::salary::notify_settings_changed();
     let _ = app.emit("user-settings-changed", ());
-    log::debug!("트레이 메뉴에서 메뉴바 표시 모드 변경: {menu_id}");
+    log::debug!("트레이 메뉴: {context}");
 }
 
-/// 메뉴바 표시 모드 CheckMenuItem checked 상태 갱신 (ticker에서 호출)
-pub fn update_menu_check_states(mode: &MenubarDisplayMode) {
-    if let Ok(guard) = MENU_DISPLAY_ITEMS.lock() {
+/// 메뉴 CheckMenuItem checked 상태 갱신 (ticker에서 호출)
+pub fn update_menu_check_states(settings: &UserSettings) {
+    if let Ok(guard) = MENU_ITEMS.lock() {
         if let Some(items) = guard.as_ref() {
             let _ = items
                 .none_item
-                .set_checked(*mode == MenubarDisplayMode::None);
+                .set_checked(settings.menubar_display_mode == MenubarDisplayMode::None);
             let _ = items
                 .daily_item
-                .set_checked(*mode == MenubarDisplayMode::Daily);
+                .set_checked(settings.menubar_display_mode == MenubarDisplayMode::Daily);
             let _ = items
                 .accumulated_item
-                .set_checked(*mode == MenubarDisplayMode::Accumulated);
+                .set_checked(settings.menubar_display_mode == MenubarDisplayMode::Accumulated);
+            let _ = items
+                .icon_light_item
+                .set_checked(settings.menubar_icon_theme == MenubarIconTheme::Light);
+            let _ = items
+                .icon_dark_item
+                .set_checked(settings.menubar_icon_theme == MenubarIconTheme::Dark);
         }
     }
+}
+
+/// 설정 변경 시 아이콘 테마 동기화 (salary ticker에서 호출)
+pub fn refresh_icon_theme(settings: &UserSettings) {
+    IS_LIGHT_ICON.store(
+        settings.menubar_icon_theme == MenubarIconTheme::Light,
+        Ordering::Relaxed,
+    );
 }
 
 /// 트레이 아이콘 상태 변경 로직 (커맨드와 내부 모두에서 사용)
@@ -328,25 +378,6 @@ pub fn update_icon_state(app: &AppHandle, is_working: bool) {
     } else {
         ANIMATING.store(false, Ordering::SeqCst);
         log::debug!("트레이 아이콘 애니메이션 중지");
-    }
-}
-
-/// 메뉴바 테마 변경 감지 후 아이콘 갱신 (AppleInterfaceThemeChangedNotification 이벤트 시 호출)
-pub fn refresh_theme(app: &AppHandle) {
-    let dark = detect_dark_menubar();
-    let prev = IS_DARK_MENUBAR.swap(dark, Ordering::Relaxed);
-
-    // 테마 변경 + 비애니메이션 상태일 때만 아이콘 교체
-    if prev != dark && !ANIMATING.load(Ordering::Relaxed) {
-        if let Some(tray) = app.tray_by_id("tray") {
-            if let Ok(icon) = Image::from_bytes(idle_icon()) {
-                let _ = tray.set_icon(Some(icon));
-            }
-        }
-        log::debug!(
-            "메뉴바 테마 변경 감지: {}",
-            if dark { "다크" } else { "라이트" }
-        );
     }
 }
 

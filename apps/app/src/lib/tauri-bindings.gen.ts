@@ -221,6 +221,18 @@ export type MenubarDisplayMode =
  */
 "accumulated"
 /**
+ * Menubar icon theme
+ */
+export type MenubarIconTheme = 
+/**
+ * 밝은 아이콘 (흰색, 어두운 메뉴바용)
+ */
+"light" | 
+/**
+ * 어두운 아이콘 (검정, 밝은 메뉴바용)
+ */
+"dark"
+/**
  * Error types for recovery operations (typed for frontend matching)
  */
 export type RecoveryError = 
@@ -283,7 +295,11 @@ onboardingCompleted: boolean;
 /**
  * Menubar display mode (macOS only): none, daily, accumulated
  */
-menubarDisplayMode?: MenubarDisplayMode }
+menubarDisplayMode?: MenubarDisplayMode; 
+/**
+ * Menubar icon theme: light (white) or dark (black)
+ */
+menubarIconTheme?: MenubarIconTheme }
 
 /** tauri-specta globals **/
 

@@ -26,6 +26,7 @@ export type {
   AppPreferences,
   JsonValue,
   MenubarDisplayMode,
+  MenubarIconTheme,
   RecoveryError,
   SalaryType,
   UserSettings,

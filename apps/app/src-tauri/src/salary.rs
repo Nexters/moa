@@ -87,7 +87,8 @@ pub fn start_salary_ticker(app_handle: AppHandle) {
             if SETTINGS_CHANGED.swap(false, Ordering::Relaxed) {
                 settings = load_settings(&app_handle);
                 if let Some(ref s) = settings {
-                    tray::update_menu_check_states(&s.menubar_display_mode);
+                    tray::update_menu_check_states(s);
+                    tray::refresh_icon_theme(s);
                 }
             }
 
