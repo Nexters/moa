@@ -15,6 +15,8 @@ export function OnboardingSection() {
         <img
           src="/moa/images/onboarding-mockup.avif"
           alt="근무 시간과 급여 입력 화면"
+          width={2608}
+          height={1632}
           className="w-full max-w-[632px]"
         />
       </div>

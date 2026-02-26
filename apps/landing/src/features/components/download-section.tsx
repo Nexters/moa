@@ -103,13 +103,13 @@ export function DownloadSection() {
     >
       <div className="mx-auto flex flex-col items-center gap-10 md:gap-[60px]">
         {/* Header */}
-        <div className="flex flex-col items-center gap-8">
+        <div className="flex flex-col items-center gap-6 md:gap-8">
           <img
             src="/moa/images/coin-rotate.gif"
             alt="코인 아이콘"
             className="size-20"
           />
-          <div className="flex flex-col items-center gap-4 text-center">
+          <div className="flex flex-col items-center gap-2.5 text-center md:gap-4">
             <div>
               <h2 className="t2-700 md:h2-700 text-text-high">
                 직장인의 지루한 근무시간

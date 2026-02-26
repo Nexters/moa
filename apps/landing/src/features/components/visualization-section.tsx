@@ -6,7 +6,7 @@ export function VisualizationSection() {
           <p className="c1-400 md:t1-400 text-text-medium">
             Salary Visualization
           </p>
-          <h2 className="b1-600 md:h2-700 text-text-high mt-2.5">
+          <h2 className="t2-700 md:h2-700 text-text-high mt-2.5">
             <span className="text-green-40">실시간으로 벌고 있는 월급</span>을
             <br />
             <span>바로 확인할 수 있어요</span>
@@ -21,6 +21,8 @@ export function VisualizationSection() {
             <img
               src="/moa/images/salary-mobile.avif"
               alt="모바일 앱 실시간 월급 화면"
+              width={1160}
+              height={1200}
               className="w-full max-w-[580px]"
             />
           </div>
@@ -32,6 +34,8 @@ export function VisualizationSection() {
             <img
               src="/moa/images/salary-desktop.avif"
               alt="데스크톱 앱 실시간 월급 화면"
+              width={1160}
+              height={1200}
               className="w-full max-w-[580px]"
             />
           </div>
