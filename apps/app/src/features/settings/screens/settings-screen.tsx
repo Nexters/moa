@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { enable, disable } from '@tauri-apps/plugin-autostart';
 import { exit } from '@tauri-apps/plugin-process';
+import { toast } from 'sonner';
 
 import { useUserSettings } from '~/hooks/use-user-settings';
 import { posthog } from '~/lib/analytics';
@@ -50,18 +51,26 @@ export function SettingsScreen() {
 
   const menubarDisplayModeMutation = useMutation({
     mutationFn: async (menubarDisplayMode: MenubarDisplayMode) => {
-      if (!settings) return;
+      if (!settings) return menubarDisplayMode;
       const result = await commands.saveUserSettings({
         ...settings,
         menubarDisplayMode,
       });
       if (result.status === 'error') throw new Error(result.error);
+      return menubarDisplayMode;
     },
-    onSuccess: () => {
+    onSuccess: (mode) => {
       void queryClient.invalidateQueries({
         queryKey: userSettingsQuery.all(),
       });
       void commands.notifySettingsChanged();
+
+      const messages: Record<MenubarDisplayMode, string> = {
+        none: '메뉴바 금액 표시를 껐습니다.',
+        daily: '실시간 금액이 일급으로 노출됩니다.',
+        accumulated: '실시간 금액이 월급으로 노출됩니다.',
+      };
+      if (mode) toast(messages[mode]);
     },
   });
 

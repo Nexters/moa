@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Outlet } from '@tanstack/react-router';
 import { listen } from '@tauri-apps/api/event';
 import { useEffect } from 'react';
+import { Toaster } from 'sonner';
 
 import { UpdateAlertDialog } from '~/lib/check-for-updates';
 import { commands } from '~/lib/tauri-bindings';
@@ -43,6 +44,22 @@ export function RootLayout() {
     <>
       <Outlet />
       <UpdateAlertDialog />
+      <Toaster
+        position="bottom-center"
+        toastOptions={{
+          style: {
+            background: '#343639',
+            color: '#ffffff',
+            border: 'none',
+            borderRadius: '999px',
+            fontSize: '14px',
+            lineHeight: '21px',
+            letterSpacing: '-0.2px',
+            fontWeight: 500,
+            justifyContent: 'center',
+          },
+        }}
+      />
     </>
   );
 }
