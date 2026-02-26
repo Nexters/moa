@@ -41,7 +41,7 @@ export function BeforeWorkScreen({
       </InfoCard>
 
       <AppFooter>
-        <TooltipBubble>{workStart} 자동 출근 예정</TooltipBubble>
+        <TooltipBubble size="sm">{workStart} 자동 출근 예정</TooltipBubble>
         <Button
           variant="primary"
           rounded="full"

@@ -1,13 +1,22 @@
 import type { ReactNode } from 'react';
+import { cn } from 'tailwind-variants';
 
 interface TooltipBubbleProps {
   children: ReactNode;
+  size?: 'sm' | 'md';
 }
 
-export function TooltipBubble({ children }: TooltipBubbleProps) {
+export function TooltipBubble({ children, size = 'md' }: TooltipBubbleProps) {
+  const sizeStyles = {
+    sm: 'px-3.5 py-2',
+    md: 'px-5 py-2',
+  };
+
   return (
     <div className="relative flex flex-col items-center">
-      <div className="bg-container-secondary rounded-xl px-5 py-2">
+      <div
+        className={cn('bg-container-secondary rounded-xl', sizeStyles[size])}
+      >
         <p className="b2-400 text-text-high text-center">{children}</p>
       </div>
       <svg
