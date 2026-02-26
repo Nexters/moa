@@ -23,7 +23,7 @@ export function BeforeWorkScreen({
   const workEnd = todaySchedule?.workEndTime ?? settings.workEndTime;
 
   return (
-    <div className="flex flex-1 flex-col gap-7">
+    <div className="flex flex-1 flex-col gap-5">
       <HeroSection
         variant="empty"
         label={`${formatMonth()} 누적 월급`}
@@ -41,7 +41,7 @@ export function BeforeWorkScreen({
       </InfoCard>
 
       <AppFooter>
-        <TooltipBubble>{workStart} 자동 출근 예정</TooltipBubble>
+        <TooltipBubble size="sm">{workStart} 자동 출근 예정</TooltipBubble>
         <Button
           variant="primary"
           rounded="full"
@@ -54,7 +54,7 @@ export function BeforeWorkScreen({
         </Button>
         <Button
           variant="link"
-          size="md"
+          size="flat"
           disabled={isPending}
           onClick={onVacation}
         >

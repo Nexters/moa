@@ -7,7 +7,7 @@ export function AppFooter({
   return (
     <div
       className={cn(
-        'absolute inset-x-0 bottom-9 flex flex-col items-center justify-center gap-3',
+        'absolute inset-x-0 bottom-6 flex flex-col items-center justify-center gap-3',
         className,
       )}
     >

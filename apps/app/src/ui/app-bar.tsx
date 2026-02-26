@@ -23,7 +23,10 @@ export function AppBar({
 }: AppBarProps) {
   return (
     <header
-      className={cn('bg-bg-primary flex items-center gap-1 px-1', className)}
+      className={cn(
+        'bg-bg-primary flex h-16 items-center gap-1 px-1',
+        className,
+      )}
     >
       {type === 'main' ? (
         <MainAppBar onSettings={onSettings} />

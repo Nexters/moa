@@ -21,7 +21,7 @@ export function WorkingScreen({
   const workEnd = todaySchedule?.workEndTime ?? settings.workEndTime;
 
   return (
-    <div className="flex flex-1 flex-col gap-7">
+    <div className="flex flex-1 flex-col gap-5">
       <HeroSection
         variant="working"
         label="오늘 쌓은 월급"
@@ -49,7 +49,7 @@ export function WorkingScreen({
         </Button>
         <Button
           variant="link"
-          size="md"
+          size="flat"
           disabled={isPending}
           onClick={onVacation}
         >
