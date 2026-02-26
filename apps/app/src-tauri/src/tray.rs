@@ -170,11 +170,25 @@ pub fn create(app_handle: &AppHandle) -> tauri::Result<TrayIcon> {
         icon_dark_item: icon_dark_item.clone(),
     });
 
+    let salary_work_settings_item = MenuItem::with_id(
+        app_handle,
+        "salary_work_settings",
+        "월급 · 근무 설정",
+        true,
+        None::<&str>,
+    )?;
+
     let separator = PredefinedMenuItem::separator(app_handle)?;
     let quit_item = MenuItem::with_id(app_handle, "quit", "앱 종료", true, None::<&str>)?;
     let menu = Menu::with_items(
         app_handle,
-        &[&display_submenu, &icon_submenu, &separator, &quit_item],
+        &[
+            &display_submenu,
+            &icon_submenu,
+            &salary_work_settings_item,
+            &separator,
+            &quit_item,
+        ],
     )?;
 
     TrayIconBuilder::with_id("tray")
@@ -199,6 +213,10 @@ pub fn create(app_handle: &AppHandle) -> tauri::Result<TrayIcon> {
         })
         .on_menu_event(|app, event| match event.id().as_ref() {
             "quit" => app.exit(0),
+            "salary_work_settings" => {
+                let _ = app.emit("open-salary-settings", ());
+                show_main_window(app);
+            }
             id @ ("display_none" | "display_daily" | "display_accumulated") => {
                 handle_display_mode_change(app, id);
             }
@@ -245,6 +263,39 @@ fn toggle_main_window(app_handle: &AppHandle) {
         if window.is_visible().unwrap_or(false) {
             let _ = window.hide();
         } else {
+            let _ = window.move_window(Position::TrayBottomCenter);
+            let _ = window.show();
+            let _ = window.set_focus();
+        }
+    }
+}
+
+/// Show main window (without toggling).
+#[cfg(target_os = "macos")]
+fn show_main_window(app_handle: &AppHandle) {
+    use crate::utils::macos::position_menubar_panel;
+
+    if let Ok(panel) = app_handle.get_webview_panel("main") {
+        if !panel.is_visible() {
+            position_menubar_panel(app_handle, 5.0);
+            panel.show();
+        }
+        return;
+    }
+
+    if let Some(window) = app_handle.get_webview_window("main") {
+        if !window.is_visible().unwrap_or(false) {
+            position_menubar_panel(app_handle, 5.0);
+            let _ = window.show();
+            let _ = window.set_focus();
+        }
+    }
+}
+
+#[cfg(not(target_os = "macos"))]
+fn show_main_window(app_handle: &AppHandle) {
+    if let Some(window) = app_handle.get_webview_window("main") {
+        if !window.is_visible().unwrap_or(false) {
             let _ = window.move_window(Position::TrayBottomCenter);
             let _ = window.show();
             let _ = window.set_focus();
