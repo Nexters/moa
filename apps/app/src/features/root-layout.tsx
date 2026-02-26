@@ -7,6 +7,7 @@ import { UpdateAlertDialog } from '~/lib/check-for-updates';
 import { commands } from '~/lib/tauri-bindings';
 import { userSettingsQuery } from '~/queries';
 import { router } from '~/router';
+import { AppToaster } from '~/ui';
 
 export function RootLayout() {
   const queryClient = useQueryClient();
@@ -43,6 +44,7 @@ export function RootLayout() {
     <>
       <Outlet />
       <UpdateAlertDialog />
+      <AppToaster />
     </>
   );
 }
