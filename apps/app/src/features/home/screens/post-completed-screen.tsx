@@ -19,6 +19,7 @@ export function PostCompletedScreen({
         variant="full"
         label={`${formatMonth()} 누적 월급`}
         amount={salaryInfo.accumulatedEarnings}
+        highlighted
       />
       <InfoCard>
         <InfoCardRow

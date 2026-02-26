@@ -9,10 +9,20 @@ interface HeroSectionProps {
   variant: HeroIconVariant;
   label: string;
   amount: number;
+  highlighted?: boolean;
 }
 
-export function HeroSection({ variant, label, amount }: HeroSectionProps) {
-  const isHoliday = variant === 'holiday';
+export function HeroSection({
+  variant,
+  label,
+  amount,
+  highlighted,
+}: HeroSectionProps) {
+  const amountColor = highlighted
+    ? 'text-green-40'
+    : variant === 'holiday'
+      ? 'text-blue'
+      : 'text-text-high';
   const [animKey, setAnimKey] = useState(0);
   const [mounted, setMounted] = useState(false);
 
@@ -47,10 +57,7 @@ export function HeroSection({ variant, label, amount }: HeroSectionProps) {
             locales="ko-KR"
             format={{ maximumFractionDigits: 0 }}
             plugins={[continuous]}
-            className={cn(
-              'h1-700 tabular-nums',
-              isHoliday ? 'text-blue' : 'text-text-high',
-            )}
+            className={cn('h1-700 tabular-nums', amountColor)}
           />
           <p className="h3-500 text-text-medium">원</p>
         </div>

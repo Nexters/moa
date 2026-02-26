@@ -28,6 +28,7 @@ export function BeforeWorkScreen({
         variant="empty"
         label={`${formatMonth()} 누적 월급`}
         amount={salaryInfo.accumulatedEarnings}
+        highlighted
       />
 
       <InfoCard>
