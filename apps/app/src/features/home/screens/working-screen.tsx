@@ -49,7 +49,7 @@ export function WorkingScreen({
         </Button>
         <Button
           variant="link"
-          size="md"
+          size="flat"
           disabled={isPending}
           onClick={onVacation}
         >

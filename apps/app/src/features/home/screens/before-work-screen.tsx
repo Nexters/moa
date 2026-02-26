@@ -54,7 +54,7 @@ export function BeforeWorkScreen({
         </Button>
         <Button
           variant="link"
-          size="md"
+          size="flat"
           disabled={isPending}
           onClick={onVacation}
         >
