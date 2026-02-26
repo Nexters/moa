@@ -7,7 +7,7 @@ import { useUserSettings } from '~/hooks/use-user-settings';
 import { posthog } from '~/lib/analytics';
 import { useCheckForUpdates } from '~/lib/check-for-updates';
 import { openContactEmail } from '~/lib/contact';
-import type { MenubarDisplayMode } from '~/lib/tauri-bindings';
+import type { MenubarDisplayMode, MenubarIconTheme } from '~/lib/tauri-bindings';
 import { commands } from '~/lib/tauri-bindings';
 import { appQuery, appQueryOptions, userSettingsQuery } from '~/queries';
 import { AppBar, Button, InfoRow, SelectInput, SwitchInput } from '~/ui';
@@ -18,6 +18,11 @@ const MENUBAR_DISPLAY_OPTIONS = [
   { value: 'none', label: '표기 안함' },
   { value: 'daily', label: '누적 일급' },
   { value: 'accumulated', label: '누적 월급' },
+] as const;
+
+const ICON_THEME_OPTIONS = [
+  { value: 'light', label: '밝은 아이콘' },
+  { value: 'dark', label: '어두운 아이콘' },
 ] as const;
 
 export function SettingsScreen() {
@@ -49,6 +54,23 @@ export function SettingsScreen() {
       const result = await commands.saveUserSettings({
         ...settings,
         menubarDisplayMode,
+      });
+      if (result.status === 'error') throw new Error(result.error);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: userSettingsQuery.all(),
+      });
+      void commands.notifySettingsChanged();
+    },
+  });
+
+  const iconThemeMutation = useMutation({
+    mutationFn: async (menubarIconTheme: MenubarIconTheme) => {
+      if (!settings) return;
+      const result = await commands.saveUserSettings({
+        ...settings,
+        menubarIconTheme,
       });
       if (result.status === 'error') throw new Error(result.error);
     },
@@ -105,6 +127,14 @@ export function SettingsScreen() {
               menubarDisplayModeMutation.mutate(v as MenubarDisplayMode)
             }
             disabled={!settings || menubarDisplayModeMutation.isPending}
+          />
+          <SelectInput
+            options={ICON_THEME_OPTIONS}
+            value={settings?.menubarIconTheme ?? 'light'}
+            onValueChange={(v) =>
+              iconThemeMutation.mutate(v as MenubarIconTheme)
+            }
+            disabled={!settings || iconThemeMutation.isPending}
           />
           <InfoRow label="로그인 시 MOA 자동 실행">
             <SwitchInput

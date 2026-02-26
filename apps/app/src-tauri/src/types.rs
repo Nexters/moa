@@ -127,6 +127,17 @@ pub enum SalaryType {
     Yearly,
 }
 
+/// Menubar icon theme
+#[derive(Debug, Clone, Serialize, Deserialize, Type, Default, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum MenubarIconTheme {
+    /// 밝은 아이콘 (흰색, 어두운 메뉴바용)
+    #[default]
+    Light,
+    /// 어두운 아이콘 (검정, 밝은 메뉴바용)
+    Dark,
+}
+
 /// Menubar display mode for salary
 #[derive(Debug, Clone, Serialize, Deserialize, Type, Default, PartialEq)]
 #[serde(rename_all = "lowercase")]
@@ -165,6 +176,9 @@ pub struct UserSettings {
     /// Menubar display mode (macOS only): none, daily, accumulated
     #[serde(default)]
     pub menubar_display_mode: MenubarDisplayMode,
+    /// Menubar icon theme: light (white) or dark (black)
+    #[serde(default)]
+    pub menubar_icon_theme: MenubarIconTheme,
 }
 
 fn default_work_days() -> Vec<u8> {
@@ -190,6 +204,7 @@ impl Default for UserSettings {
             work_end_time: default_work_end_time(),
             onboarding_completed: false,
             menubar_display_mode: MenubarDisplayMode::default(),
+            menubar_icon_theme: MenubarIconTheme::default(),
         }
     }
 }

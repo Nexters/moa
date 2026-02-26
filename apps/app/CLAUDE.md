@@ -79,7 +79,7 @@ apps/app/
 │       ├── lib.rs           # App setup, plugins
 │       ├── bindings.rs      # tauri-specta registration
 │       ├── types.rs         # Shared types
-│       ├── tray.rs          # System tray icon/animation + menubar theme detection
+│       ├── tray.rs          # System tray icon/animation + icon theme setting
 │       ├── salary.rs        # Salary calculation (single source of truth) + background ticker
 │       └── commands/        # Command handlers
 │
