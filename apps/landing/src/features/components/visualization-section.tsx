@@ -21,6 +21,8 @@ export function VisualizationSection() {
             <img
               src="/moa/images/salary-mobile.avif"
               alt="모바일 앱 실시간 월급 화면"
+              width={1160}
+              height={1200}
               className="w-full max-w-[580px]"
             />
           </div>
@@ -32,6 +34,8 @@ export function VisualizationSection() {
             <img
               src="/moa/images/salary-desktop.avif"
               alt="데스크톱 앱 실시간 월급 화면"
+              width={1160}
+              height={1200}
               className="w-full max-w-[580px]"
             />
           </div>
