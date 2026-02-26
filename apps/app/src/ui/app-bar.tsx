@@ -1,3 +1,4 @@
+import { openUrl } from '@tauri-apps/plugin-opener';
 import { cn } from 'tailwind-variants';
 
 import { IconButton } from './icon-button';
@@ -40,9 +41,13 @@ interface MainAppBarProps {
 function MainAppBar({ onSettings }: MainAppBarProps) {
   return (
     <>
-      <h1 className="text-text-high px-5 py-2.5" aria-label="Moa">
+      <button
+        className="text-text-high cursor-pointer px-5 py-2.5"
+        aria-label="Moa 홈페이지"
+        onClick={() => openUrl('https://nexters.github.io/moa')}
+      >
         <MoaLogoIcon aria-hidden="true" />
-      </h1>
+      </button>
       <div className="flex-1" />
       {onSettings && (
         <IconButton
