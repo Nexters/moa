@@ -135,6 +135,7 @@ export function DownloadSection() {
                 <DownloadRow
                   icon={<AppleIcon className="size-6" />}
                   label="iOS"
+                  href="https://apps.apple.com/kr/app/moa-%EC%8B%A4%EC%8B%9C%EA%B0%84-%EC%9B%94%EA%B8%89-%EC%B2%B4%EA%B0%90/id6759603878"
                   rightIcon={
                     <ArrowRightIcon className="text-text-low size-4" />
                   }
