@@ -25,6 +25,7 @@ export function CelebrateButton() {
   return (
     <>
       <IconButton
+        className="animate-wiggle"
         data-attr="월급날_축하_클릭"
         onClick={handleClick}
         aria-label="월급날 축하"

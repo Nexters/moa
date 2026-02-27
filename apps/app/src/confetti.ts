@@ -1,43 +1,45 @@
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import confetti from 'canvas-confetti';
 
-const DURATION_MS = 3000;
-const COLORS = [
-  '#ff0000',
-  '#00ff00',
-  '#0000ff',
-  '#ffff00',
-  '#ff00ff',
-  '#00ffff',
-  '#ff8800',
-  '#ff0088',
-];
+const COLORS = ['#0a4b30', '#0f7449', '#17a968', '#1fd683', '#6de9b1'];
 
-const end = Date.now() + DURATION_MS;
+const defaults: confetti.Options = {
+  colors: COLORS,
+  ticks: 300,
+  gravity: 4,
+  decay: 0.95,
+  startVelocity: 60,
+  scalar: 1.5,
+  particleCount: 200,
+};
 
-function frame() {
-  void confetti({
-    particleCount: 4,
+void Promise.all([
+  // 좌측
+  confetti({
+    ...defaults,
     angle: 60,
-    spread: 55,
-    origin: { x: 0, y: 0.5 },
-    colors: COLORS,
-  });
-  void confetti({
-    particleCount: 4,
+    spread: 90,
+    origin: { x: 0, y: 0.8 },
+  }),
+  confetti({
+    ...defaults,
+    angle: 60,
+    spread: 80,
+    origin: { x: 0, y: 0.9 },
+  }),
+  // 우측
+  confetti({
+    ...defaults,
     angle: 120,
-    spread: 55,
-    origin: { x: 1, y: 0.5 },
-    colors: COLORS,
-  });
-
-  if (Date.now() < end) {
-    requestAnimationFrame(frame);
-  } else {
-    setTimeout(() => {
-      void getCurrentWindow().destroy();
-    }, 1500);
-  }
-}
-
-requestAnimationFrame(frame);
+    spread: 90,
+    origin: { x: 1, y: 0.8 },
+  }),
+  confetti({
+    ...defaults,
+    angle: 120,
+    spread: 80,
+    origin: { x: 1, y: 0.9 },
+  }),
+]).then(() => {
+  void getCurrentWindow().destroy();
+});

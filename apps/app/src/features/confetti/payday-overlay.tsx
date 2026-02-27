@@ -40,7 +40,7 @@ export function PaydayOverlay({
   return (
     <div
       className={cn(
-        'fixed inset-0 z-50 flex flex-col items-center justify-center pb-20',
+        'fixed inset-0 z-50 flex flex-col items-center justify-center pb-10',
         'bg-dim-dark backdrop-blur-md',
         'transition-opacity',
         visible ? 'opacity-100 duration-300' : 'opacity-0 duration-700',
@@ -50,7 +50,7 @@ export function PaydayOverlay({
       }}
     >
       {/* 초록색 blob */}
-      <div className="bg-green-40 pointer-events-none absolute bottom-[10%] left-1/2 h-[200px] w-[280px] -translate-x-1/2 rounded-full opacity-20 blur-[80px]" />
+      <div className="pointer-events-none absolute top-1/2 left-1/2 size-[240px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-green-50 opacity-50 blur-[80px]" />
 
       {/* 콘텐츠 */}
       <div className="relative flex flex-col items-center px-5">
@@ -67,15 +67,16 @@ export function PaydayOverlay({
           <span className="h3-500 text-text-medium">원</span>
         </div>
 
-        <p className="t3-500 text-text-high mt-1">오늘은 월급날!</p>
-        <p className="t3-500 text-text-high mt-1">
+        <p className="t3-500 text-text-high mt-1 text-center">
+          오늘은 월급날!
+          <br />
           한달간 열심히 일한 보상이에요
         </p>
 
-        <p className="c1-400 text-text-low mt-1 text-center whitespace-pre-line">
-          {
-            '누적 월급액은 입력한 월급/연봉을 기준으로 계산된\n금액이에요. 실제 급여와 다를 수 있어요.'
-          }
+        <p className="c1-400 text-text-low mt-2 text-center">
+          누적 월급액은 입력한 월급/연봉을 기준으로 계산된
+          <br />
+          금액이에요. 실제 급여와 다를 수 있어요.
         </p>
       </div>
     </div>
