@@ -15,7 +15,41 @@ env:
   RUST_BACKTRACE: 1
 
 jobs:
+  notify-start:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Discord Build Start Notification
+        continue-on-error: true
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          VERSION: ${{ github.ref_name || inputs.version }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          PAYLOAD=$(jq -n \
+            --arg version "$VERSION" \
+            --arg actor "$ACTOR" \
+            --arg timestamp "$TIMESTAMP" \
+            '{
+              embeds: [{
+                title: ("🚀 Moa App " + $version + " 빌드 시작"),
+                color: 3447003,
+                fields: [
+                  {name: "버전", value: $version, inline: true},
+                  {name: "배포자", value: $actor, inline: true},
+                  {name: "대상", value: "macOS (aarch64), macOS (x86_64), Windows"}
+                ],
+                timestamp: $timestamp
+              }]
+            }')
+
+          curl -f -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "$DISCORD_WEBHOOK"
+
   publish-tauri:
+    needs: [notify-start]
     permissions:
       contents: write
     strategy:
@@ -115,7 +149,7 @@ jobs:
           includeUpdaterJson: true
           args: ${{ matrix.args }}
 
-  notify:
+  notify-end:
     needs: [publish-tauri]
     runs-on: ubuntu-latest
     if: always()
