@@ -446,6 +446,7 @@ pub fn set_tray_attributed_title(tray: &TrayIcon, title: Option<&str>) -> Result
     #![allow(deprecated)]
     use std::ffi::CString;
     use tauri_nspanel::cocoa::base::{id, nil};
+    use tauri_nspanel::cocoa::foundation::NSRect;
     use tauri_nspanel::objc::{class, msg_send, sel, sel_impl};
 
     let title_owned = title.map(|s| s.to_string());
@@ -497,6 +498,17 @@ pub fn set_tray_attributed_title(tray: &TrayIcon, title: Option<&str>) -> Result
                     let empty: id = msg_send![class!(NSString), string];
                     let _: () = msg_send![button, setTitle: empty];
                 }
+            }
+
+            // 타이틀 변경 후 button frame이 확장/축소되므로,
+            // tray-icon 내부의 TaoTrayTarget subview frame을 동기화하여
+            // 확장된 영역에서도 클릭 이벤트가 정상 전달되도록 한다.
+            let button_frame: NSRect = msg_send![button, frame];
+            let subviews: id = msg_send![button, subviews];
+            let count: usize = msg_send![subviews, count];
+            for i in 0..count {
+                let subview: id = msg_send![subviews, objectAtIndex: i];
+                let _: () = msg_send![subview, setFrame: button_frame];
             }
         }
         Ok(())
