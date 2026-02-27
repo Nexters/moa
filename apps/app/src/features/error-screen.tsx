@@ -3,7 +3,7 @@ import { relaunch } from '@tauri-apps/plugin-process';
 import { usePostHog } from 'posthog-js/react';
 import { useEffect } from 'react';
 
-import { openContactEmail } from '~/lib/contact';
+import { openContactForm } from '~/lib/contact';
 import { AppFooter, Button } from '~/ui';
 
 export function ErrorScreen({ error }: ErrorComponentProps) {
@@ -15,7 +15,7 @@ export function ErrorScreen({ error }: ErrorComponentProps) {
 
   const handleContactUs = async () => {
     try {
-      await openContactEmail(__APP_VERSION__);
+      await openContactForm();
     } catch (err) {
       posthog.captureException(err);
     }
