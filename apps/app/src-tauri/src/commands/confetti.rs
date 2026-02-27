@@ -28,7 +28,7 @@ pub fn show_confetti_window(app_handle: tauri::AppHandle) -> Result<(), String> 
     let confetti_window = WebviewWindowBuilder::new(
         &app_handle,
         "confetti",
-        WebviewUrl::App("index.html".into()),
+        WebviewUrl::App("confetti.html".into()),
     )
     .transparent(true)
     .decorations(false)
