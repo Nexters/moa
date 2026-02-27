@@ -17,6 +17,24 @@ async restartApp() : Promise<void> {
     await TAURI_INVOKE("restart_app");
 },
 /**
+ * Creates a full-screen transparent overlay window for the confetti animation.
+ * The window is click-through so the user can interact with other apps.
+ */
+async showConfettiWindow() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("show_confetti_window") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Closes the confetti overlay window.
+ */
+async closeConfettiWindow() : Promise<void> {
+    await TAURI_INVOKE("close_confetti_window");
+},
+/**
  * Initializes the menubar panel (macOS) or main window (Windows).
  * This should be called once from the frontend after the app is ready.
  */
@@ -180,23 +198,6 @@ async setTrayTitle(title: string | null) : Promise<Result<null, string>> {
 },
 async notifySettingsChanged() : Promise<void> {
     await TAURI_INVOKE("notify_settings_changed");
-},
-/**
- * Creates a full-screen transparent overlay window for the confetti animation.
- */
-async showConfettiWindow() : Promise<Result<null, string>> {
-    try {
-    return { status: "ok", data: await TAURI_INVOKE("show_confetti_window") };
-} catch (e) {
-    if(e instanceof Error) throw e;
-    else return { status: "error", error: e  as any };
-}
-},
-/**
- * Closes the confetti overlay window.
- */
-async closeConfettiWindow() : Promise<void> {
-    await TAURI_INVOKE("close_confetti_window");
 }
 }
 
