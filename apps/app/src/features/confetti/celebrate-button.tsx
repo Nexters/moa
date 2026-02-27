@@ -2,6 +2,7 @@ import { useState } from 'react';
 
 import { useIsPayday } from '~/hooks/use-is-payday';
 import { useUserSettings } from '~/hooks/use-user-settings';
+import { posthog } from '~/lib/analytics';
 import { assertOnboarded, commands } from '~/lib/tauri-bindings';
 import { IconButton } from '~/ui/icon-button';
 import { CelebrationIcon } from '~/ui/icons';
@@ -18,7 +19,18 @@ export function CelebrateButton() {
   assertOnboarded(settings);
 
   const handleClick = () => {
-    void commands.showConfettiWindow();
+    void commands
+      .showConfettiWindow()
+      .then((result) => {
+        if (result.status === 'error') {
+          posthog.captureException(new Error(result.error));
+        }
+      })
+      .catch((error: unknown) => {
+        posthog.captureException(
+          error instanceof Error ? error : new Error(String(error)),
+        );
+      });
     setShowOverlay(true);
   };
 
