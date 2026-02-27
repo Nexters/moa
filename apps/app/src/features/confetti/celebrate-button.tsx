@@ -19,11 +19,18 @@ export function CelebrateButton() {
   assertOnboarded(settings);
 
   const handleClick = () => {
-    void commands.showConfettiWindow().then((result) => {
-      if (result.status === 'error') {
-        posthog.captureException(new Error(result.error));
-      }
-    });
+    void commands
+      .showConfettiWindow()
+      .then((result) => {
+        if (result.status === 'error') {
+          posthog.captureException(new Error(result.error));
+        }
+      })
+      .catch((error: unknown) => {
+        posthog.captureException(
+          error instanceof Error ? error : new Error(String(error)),
+        );
+      });
     setShowOverlay(true);
   };
 
