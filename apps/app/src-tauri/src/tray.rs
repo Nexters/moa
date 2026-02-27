@@ -440,6 +440,82 @@ pub fn set_tray_icon_state(app: AppHandle, is_working: bool) -> Result<(), Strin
     Ok(())
 }
 
+/// Monospaced digit 폰트로 트레이 타이틀 설정 (메뉴바 너비 고정용)
+#[cfg(target_os = "macos")]
+pub fn set_tray_attributed_title(tray: &TrayIcon, title: Option<&str>) -> Result<(), String> {
+    #![allow(deprecated)]
+    use std::ffi::CString;
+    use tauri_nspanel::cocoa::base::{id, nil};
+    use tauri_nspanel::cocoa::foundation::NSRect;
+    use tauri_nspanel::objc::{class, msg_send, sel, sel_impl};
+
+    let title_owned = title.map(|s| s.to_string());
+    tray.with_inner_tray_icon(move |inner| -> Result<(), String> {
+        let Some(ns_status_item) = inner.ns_status_item() else {
+            return Err("NSStatusItem을 찾을 수 없습니다".into());
+        };
+        let item: id = &*ns_status_item as *const _ as *mut _;
+
+        unsafe {
+            let button: id = msg_send![item, button];
+            if button == nil {
+                return Err("NSStatusBarButton을 찾을 수 없습니다".into());
+            }
+
+            match &title_owned {
+                Some(t) if !t.is_empty() => {
+                    let title_c = CString::new(t.as_str()).unwrap();
+                    let ns_string: id =
+                        msg_send![class!(NSString), stringWithUTF8String: title_c.as_ptr()];
+
+                    let font: id = msg_send![
+                        class!(NSFont),
+                        monospacedDigitSystemFontOfSize: 0.0_f64
+                        weight: 0.0_f64
+                    ];
+
+                    let font_key_c = CString::new("NSFont").unwrap();
+                    let font_key: id =
+                        msg_send![class!(NSString), stringWithUTF8String: font_key_c.as_ptr()];
+
+                    let attrs: id = msg_send![
+                        class!(NSDictionary),
+                        dictionaryWithObject: font
+                        forKey: font_key
+                    ];
+
+                    let attr_str: id = msg_send![class!(NSAttributedString), alloc];
+                    let attr_str: id = msg_send![
+                        attr_str,
+                        initWithString: ns_string
+                        attributes: attrs
+                    ];
+
+                    let _: () = msg_send![button, setAttributedTitle: attr_str];
+                    let _: () = msg_send![attr_str, release];
+                }
+                _ => {
+                    let empty: id = msg_send![class!(NSString), string];
+                    let _: () = msg_send![button, setTitle: empty];
+                }
+            }
+
+            // 타이틀 변경 후 button frame이 확장/축소되므로,
+            // tray-icon 내부의 TaoTrayTarget subview frame을 동기화하여
+            // 확장된 영역에서도 클릭 이벤트가 정상 전달되도록 한다.
+            let button_frame: NSRect = msg_send![button, frame];
+            let subviews: id = msg_send![button, subviews];
+            let count: usize = msg_send![subviews, count];
+            for i in 0..count {
+                let subview: id = msg_send![subviews, objectAtIndex: i];
+                let _: () = msg_send![subview, setFrame: button_frame];
+            }
+        }
+        Ok(())
+    })
+    .map_err(|e| format!("트레이 타이틀 설정 실패: {e}"))?
+}
+
 /// 트레이 타이틀 설정 (macOS 전용 - 메뉴바에 텍스트 표시)
 #[tauri::command]
 #[specta::specta]
@@ -450,8 +526,7 @@ pub fn set_tray_title(app: AppHandle, title: Option<String>) -> Result<(), Strin
             .tray_by_id("tray")
             .ok_or("트레이 아이콘을 찾을 수 없습니다")?;
 
-        tray.set_title(title.as_deref())
-            .map_err(|e| format!("타이틀 설정 실패: {e}"))?;
+        set_tray_attributed_title(&tray, title.as_deref())?;
 
         log::debug!("트레이 타이틀 변경: {:?}", title);
     }
