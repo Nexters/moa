@@ -449,18 +449,16 @@ pub fn set_tray_attributed_title(tray: &TrayIcon, title: Option<&str>) -> Result
     use tauri_nspanel::objc::{class, msg_send, sel, sel_impl};
 
     let title_owned = title.map(|s| s.to_string());
-    tray.with_inner_tray_icon(move |inner| {
+    tray.with_inner_tray_icon(move |inner| -> Result<(), String> {
         let Some(ns_status_item) = inner.ns_status_item() else {
-            log::warn!("NSStatusItem을 찾을 수 없습니다");
-            return;
+            return Err("NSStatusItem을 찾을 수 없습니다".into());
         };
         let item: id = &*ns_status_item as *const _ as *mut _;
 
         unsafe {
             let button: id = msg_send![item, button];
             if button == nil {
-                log::warn!("NSStatusBarButton을 찾을 수 없습니다");
-                return;
+                return Err("NSStatusBarButton을 찾을 수 없습니다".into());
             }
 
             match &title_owned {
@@ -501,8 +499,9 @@ pub fn set_tray_attributed_title(tray: &TrayIcon, title: Option<&str>) -> Result
                 }
             }
         }
+        Ok(())
     })
-    .map_err(|e| format!("트레이 타이틀 설정 실패: {e}"))
+    .map_err(|e| format!("트레이 타이틀 설정 실패: {e}"))?
 }
 
 /// 트레이 타이틀 설정 (macOS 전용 - 메뉴바에 텍스트 표시)
