@@ -86,6 +86,7 @@ apps/app/
 └── src/
     ├── features/            # Feature-based components
     │   ├── home/
+    │   ├── confetti/        # 월급날 축하 (오버레이 + confetti 윈도우)
     │   ├── settings/
     │   ├── onboarding/
     │   └── app.tsx          # Root component
