@@ -35,7 +35,7 @@ function frame() {
     requestAnimationFrame(frame);
   } else {
     setTimeout(() => {
-      void getCurrentWindow().close();
+      void getCurrentWindow().destroy();
     }, 1500);
   }
 }

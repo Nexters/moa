@@ -19,6 +19,7 @@ async restartApp() : Promise<void> {
 /**
  * Creates a full-screen transparent overlay window for the confetti animation.
  * The window is click-through so the user can interact with other apps.
+ * Each invocation creates a new window with a unique label, allowing overlapping confetti.
  */
 async showConfettiWindow() : Promise<Result<null, string>> {
     try {
@@ -29,7 +30,7 @@ async showConfettiWindow() : Promise<Result<null, string>> {
 }
 },
 /**
- * Closes the confetti overlay window.
+ * Closes all confetti overlay windows.
  */
 async closeConfettiWindow() : Promise<void> {
     await TAURI_INVOKE("close_confetti_window");
