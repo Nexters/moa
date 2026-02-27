@@ -442,15 +442,16 @@ pub fn set_tray_icon_state(app: AppHandle, is_working: bool) -> Result<(), Strin
 
 /// Monospaced digit 폰트로 트레이 타이틀 설정 (메뉴바 너비 고정용)
 #[cfg(target_os = "macos")]
-pub fn set_tray_attributed_title(tray: &TrayIcon, title: Option<&str>) {
+pub fn set_tray_attributed_title(tray: &TrayIcon, title: Option<&str>) -> Result<(), String> {
     #![allow(deprecated)]
     use std::ffi::CString;
     use tauri_nspanel::cocoa::base::{id, nil};
     use tauri_nspanel::objc::{class, msg_send, sel, sel_impl};
 
     let title_owned = title.map(|s| s.to_string());
-    let _ = tray.with_inner_tray_icon(move |inner| {
+    tray.with_inner_tray_icon(move |inner| {
         let Some(ns_status_item) = inner.ns_status_item() else {
+            log::warn!("NSStatusItem을 찾을 수 없습니다");
             return;
         };
         let item: id = &*ns_status_item as *const _ as *mut _;
@@ -458,6 +459,7 @@ pub fn set_tray_attributed_title(tray: &TrayIcon, title: Option<&str>) {
         unsafe {
             let button: id = msg_send![item, button];
             if button == nil {
+                log::warn!("NSStatusBarButton을 찾을 수 없습니다");
                 return;
             }
 
@@ -499,7 +501,8 @@ pub fn set_tray_attributed_title(tray: &TrayIcon, title: Option<&str>) {
                 }
             }
         }
-    });
+    })
+    .map_err(|e| format!("트레이 타이틀 설정 실패: {e}"))
 }
 
 /// 트레이 타이틀 설정 (macOS 전용 - 메뉴바에 텍스트 표시)
@@ -512,7 +515,7 @@ pub fn set_tray_title(app: AppHandle, title: Option<String>) -> Result<(), Strin
             .tray_by_id("tray")
             .ok_or("트레이 아이콘을 찾을 수 없습니다")?;
 
-        set_tray_attributed_title(&tray, title.as_deref());
+        set_tray_attributed_title(&tray, title.as_deref())?;
 
         log::debug!("트레이 타이틀 변경: {:?}", title);
     }

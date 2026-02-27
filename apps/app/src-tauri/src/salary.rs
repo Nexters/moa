@@ -152,7 +152,11 @@ pub fn start_salary_ticker(app_handle: AppHandle) {
             if new_title != prev_title {
                 #[cfg(target_os = "macos")]
                 if let Some(tray_icon) = app_handle.tray_by_id("tray") {
-                    tray::set_tray_attributed_title(&tray_icon, new_title.as_deref());
+                    if let Err(e) =
+                        tray::set_tray_attributed_title(&tray_icon, new_title.as_deref())
+                    {
+                        log::warn!("트레이 타이틀 설정 실패: {e}");
+                    }
                 }
                 prev_title = new_title;
             }
