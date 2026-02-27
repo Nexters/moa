@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { useUserSettings } from '~/hooks/use-user-settings';
 import { posthog } from '~/lib/analytics';
 import { useCheckForUpdates } from '~/lib/check-for-updates';
-import { openContactEmail } from '~/lib/contact';
+import { openContactForm } from '~/lib/contact';
 import type {
   MenubarDisplayMode,
   MenubarIconTheme,
@@ -115,7 +115,7 @@ export function SettingsScreen() {
 
   const handleContactUs = async () => {
     try {
-      await openContactEmail(__APP_VERSION__);
+      await openContactForm();
     } catch (error) {
       posthog.captureException(error);
     }
