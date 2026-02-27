@@ -1,5 +1,9 @@
 import { useNavigate } from '@tanstack/react-router';
+import { toast } from 'sonner';
 
+import { useIsPayday } from '~/hooks/use-is-payday';
+import { useUserSettings } from '~/hooks/use-user-settings';
+import { commands } from '~/lib/tauri-bindings';
 import { AppBar } from '~/ui/app-bar';
 
 import { useHomeScreen } from './hooks/use-home-screen';
@@ -13,11 +17,24 @@ import { WorkingScreen } from './screens/working-screen';
 export function Home() {
   const navigate = useNavigate();
   const { isLoading, mainScreen } = useHomeScreen();
+  const { data: settings } = useUserSettings();
+  const isPayday = useIsPayday(settings?.payDay ?? 25);
+
   if (isLoading || !mainScreen) return null;
+
+  const handleCelebrate = () => {
+    void commands.showConfettiWindow();
+    toast('월급날 축하해요! 🎉', { duration: 3000 });
+  };
 
   return (
     <main className="flex flex-1 flex-col">
-      <AppBar type="main" onSettings={() => navigate({ to: '/settings' })} />
+      <AppBar
+        type="main"
+        onSettings={() => navigate({ to: '/settings' })}
+        onCelebrate={handleCelebrate}
+        isPayday={isPayday}
+      />
       <div className="flex flex-1 flex-col px-5 pt-3">
         {mainScreen.screen === 'vacation' && <VacationScreen {...mainScreen} />}
         {mainScreen.screen === 'day-off' && <DayOffScreen {...mainScreen} />}

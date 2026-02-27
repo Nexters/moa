@@ -180,6 +180,23 @@ async setTrayTitle(title: string | null) : Promise<Result<null, string>> {
 },
 async notifySettingsChanged() : Promise<void> {
     await TAURI_INVOKE("notify_settings_changed");
+},
+/**
+ * Creates a full-screen transparent overlay window for the confetti animation.
+ */
+async showConfettiWindow() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("show_confetti_window") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * Closes the confetti overlay window.
+ */
+async closeConfettiWindow() : Promise<void> {
+    await TAURI_INVOKE("close_confetti_window");
 }
 }
 

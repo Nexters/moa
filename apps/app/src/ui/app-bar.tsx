@@ -2,7 +2,12 @@ import { openUrl } from '@tauri-apps/plugin-opener';
 import { cn } from 'tailwind-variants';
 
 import { IconButton } from './icon-button';
-import { ArrowLeftIcon, MoaLogoIcon, SettingsIcon } from './icons';
+import {
+  ArrowLeftIcon,
+  CelebrationIcon,
+  MoaLogoIcon,
+  SettingsIcon,
+} from './icons';
 
 type AppBarType = 'main' | 'detail';
 
@@ -11,6 +16,8 @@ interface AppBarProps {
   title?: string;
   onBack?: () => void;
   onSettings?: () => void;
+  onCelebrate?: () => void;
+  isPayday?: boolean;
   className?: string;
 }
 
@@ -19,6 +26,8 @@ export function AppBar({
   title,
   onBack,
   onSettings,
+  onCelebrate,
+  isPayday,
   className,
 }: AppBarProps) {
   return (
@@ -29,7 +38,11 @@ export function AppBar({
       )}
     >
       {type === 'main' ? (
-        <MainAppBar onSettings={onSettings} />
+        <MainAppBar
+          onSettings={onSettings}
+          onCelebrate={onCelebrate}
+          isPayday={isPayday}
+        />
       ) : (
         <DetailAppBar title={title} onBack={onBack} />
       )}
@@ -39,9 +52,11 @@ export function AppBar({
 
 interface MainAppBarProps {
   onSettings?: () => void;
+  onCelebrate?: () => void;
+  isPayday?: boolean;
 }
 
-function MainAppBar({ onSettings }: MainAppBarProps) {
+function MainAppBar({ onSettings, onCelebrate, isPayday }: MainAppBarProps) {
   return (
     <>
       <button
@@ -52,6 +67,15 @@ function MainAppBar({ onSettings }: MainAppBarProps) {
         <MoaLogoIcon aria-hidden="true" />
       </button>
       <div className="flex-1" />
+      {isPayday && onCelebrate && (
+        <IconButton
+          data-attr="월급날_축하_클릭"
+          onClick={onCelebrate}
+          aria-label="월급날 축하"
+        >
+          <CelebrationIcon />
+        </IconButton>
+      )}
       {onSettings && (
         <IconButton
           data-attr="설정_아이콘_클릭"
