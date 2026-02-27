@@ -3,9 +3,8 @@ import { toast } from 'sonner';
 import { useIsPayday } from '~/hooks/use-is-payday';
 import { useUserSettings } from '~/hooks/use-user-settings';
 import { commands } from '~/lib/tauri-bindings';
-
-import { IconButton } from './icon-button';
-import { CelebrationIcon } from './icons';
+import { IconButton } from '~/ui/icon-button';
+import { CelebrationIcon } from '~/ui/icons';
 
 export function CelebrateButton() {
   const { data: settings } = useUserSettings();

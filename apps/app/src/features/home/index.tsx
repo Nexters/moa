@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 
+import { CelebrateButton } from '~/features/confetti/celebrate-button';
 import { AppBar } from '~/ui/app-bar';
 
 import { useHomeScreen } from './hooks/use-home-screen';
@@ -17,7 +18,11 @@ export function Home() {
 
   return (
     <main className="flex flex-1 flex-col">
-      <AppBar type="main" onSettings={() => navigate({ to: '/settings' })} />
+      <AppBar
+        type="main"
+        onSettings={() => navigate({ to: '/settings' })}
+        actions={<CelebrateButton />}
+      />
       <div className="flex flex-1 flex-col px-5 pt-3">
         {mainScreen.screen === 'vacation' && <VacationScreen {...mainScreen} />}
         {mainScreen.screen === 'day-off' && <DayOffScreen {...mainScreen} />}

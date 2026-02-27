@@ -1,7 +1,7 @@
 import { openUrl } from '@tauri-apps/plugin-opener';
+import type { ReactNode } from 'react';
 import { cn } from 'tailwind-variants';
 
-import { CelebrateButton } from './celebrate-button';
 import { IconButton } from './icon-button';
 import { ArrowLeftIcon, MoaLogoIcon, SettingsIcon } from './icons';
 
@@ -12,6 +12,7 @@ interface AppBarProps {
   title?: string;
   onBack?: () => void;
   onSettings?: () => void;
+  actions?: ReactNode;
   className?: string;
 }
 
@@ -20,6 +21,7 @@ export function AppBar({
   title,
   onBack,
   onSettings,
+  actions,
   className,
 }: AppBarProps) {
   return (
@@ -30,7 +32,7 @@ export function AppBar({
       )}
     >
       {type === 'main' ? (
-        <MainAppBar onSettings={onSettings} />
+        <MainAppBar onSettings={onSettings} actions={actions} />
       ) : (
         <DetailAppBar title={title} onBack={onBack} />
       )}
@@ -40,9 +42,10 @@ export function AppBar({
 
 interface MainAppBarProps {
   onSettings?: () => void;
+  actions?: ReactNode;
 }
 
-function MainAppBar({ onSettings }: MainAppBarProps) {
+function MainAppBar({ onSettings, actions }: MainAppBarProps) {
   return (
     <>
       <button
@@ -53,7 +56,7 @@ function MainAppBar({ onSettings }: MainAppBarProps) {
         <MoaLogoIcon aria-hidden="true" />
       </button>
       <div className="flex-1" />
-      <CelebrateButton />
+      {actions}
       {onSettings && (
         <IconButton
           data-attr="설정_아이콘_클릭"
