@@ -9,7 +9,7 @@ type Platform = 'mac-aarch64' | 'mac-x64' | 'windows-x64';
 const FILENAMES: Record<Platform, string> = {
   'mac-aarch64': `moa_${APP_VERSION}_aarch64.dmg`,
   'mac-x64': `moa_${APP_VERSION}_x64.dmg`,
-  'windows-x64': `moa_${APP_VERSION}_x64-setup.msi`,
+  'windows-x64': `moa_${APP_VERSION}_x64-setup.exe`,
 };
 
 export function getDownloadUrl(platform: Platform) {
