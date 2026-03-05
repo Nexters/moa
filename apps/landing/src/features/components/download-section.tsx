@@ -143,6 +143,7 @@ export function DownloadSection() {
                 <DownloadRow
                   icon={<PlayStoreIcon className="size-6" />}
                   label="Android"
+                  href="https://play.google.com/store/apps/details?id=com.moa.salary.app"
                   rightIcon={
                     <ArrowRightIcon className="text-text-low size-4" />
                   }
