@@ -4,6 +4,7 @@ import { enable, disable } from '@tauri-apps/plugin-autostart';
 import { exit } from '@tauri-apps/plugin-process';
 import { toast } from 'sonner';
 
+import { useAuthStatus, useLogout, useSocialLogin } from '~/hooks/use-auth';
 import { useUserSettings } from '~/hooks/use-user-settings';
 import { posthog } from '~/lib/analytics';
 import { useCheckForUpdates } from '~/lib/check-for-updates';
@@ -33,6 +34,9 @@ export function SettingsScreen() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: settings } = useUserSettings();
+  const { data: authStatus } = useAuthStatus();
+  const socialLogin = useSocialLogin();
+  const logoutMutation = useLogout();
 
   const { update, installing, install } = useCheckForUpdates({ delay: 0 });
 
@@ -130,6 +134,34 @@ export function SettingsScreen() {
       />
 
       <div className="scrollbar-overlay flex min-h-0 flex-1 flex-col gap-5 p-5">
+        <SettingsSection title="계정">
+          {authStatus?.isLoggedIn ? (
+            <InfoRow label="로그인 상태">
+              <Button
+                variant="link"
+                size="flat"
+                disabled={logoutMutation.isPending}
+                onClick={() => logoutMutation.mutate()}
+              >
+                로그아웃
+              </Button>
+            </InfoRow>
+          ) : (
+            <>
+              <InfoRow
+                as="button"
+                label="카카오로 로그인"
+                onClick={() => socialLogin.mutate('kakao')}
+              />
+              <InfoRow
+                as="button"
+                label="Apple로 로그인"
+                onClick={() => socialLogin.mutate('apple')}
+              />
+            </>
+          )}
+        </SettingsSection>
+
         <SettingsSection title="내 정보">
           <InfoRow
             as="button"

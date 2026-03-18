@@ -241,6 +241,7 @@ fn toggle_main_window(app_handle: &AppHandle) {
             // Position window below menu bar before showing
             position_menubar_panel(app_handle, 5.0);
             panel.show();
+            let _ = app_handle.emit("panel-shown", ());
         }
         return;
     }
@@ -253,6 +254,7 @@ fn toggle_main_window(app_handle: &AppHandle) {
             position_menubar_panel(app_handle, 5.0);
             let _ = window.show();
             let _ = window.set_focus();
+            let _ = app_handle.emit("panel-shown", ());
         }
     }
 }

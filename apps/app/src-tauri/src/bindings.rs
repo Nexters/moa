@@ -2,13 +2,19 @@ use tauri_specta::{collect_commands, Builder};
 
 pub fn generate_bindings() -> Builder<tauri::Wry> {
     use crate::commands::{
-        app, confetti, menubar, notifications, preferences, recovery, user_settings,
+        app, auth, confetti, menubar, notifications, preferences, recovery, user_settings,
     };
     use crate::{salary, tray};
 
     Builder::<tauri::Wry>::new().commands(collect_commands![
         // App lifecycle
         app::restart_app,
+        // Auth
+        auth::social_login,
+        auth::logout,
+        auth::get_auth_status,
+        auth::sync_settings_to_server,
+        auth::sync_from_server,
         // Confetti overlay
         confetti::show_confetti_window,
         confetti::close_confetti_window,

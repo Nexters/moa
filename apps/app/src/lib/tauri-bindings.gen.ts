@@ -17,6 +17,61 @@ async restartApp() : Promise<void> {
     await TAURI_INVOKE("restart_app");
 },
 /**
+ * 소셜 로그인 (카카오/애플)
+ */
+async socialLogin(provider: AuthProvider) : Promise<Result<LoginResult, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("social_login", { provider }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * 로그아웃
+ */
+async logout() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("logout") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * 인증 상태 확인
+ */
+async getAuthStatus() : Promise<Result<AuthStatus, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_auth_status") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * 로컬 설정 → 서버 push (fire-and-forget 용)
+ */
+async syncSettingsToServer() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("sync_settings_to_server") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * 서버 데이터 → 로컬 pull
+ */
+async syncFromServer() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("sync_from_server") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * Creates a full-screen transparent overlay window for the confetti animation.
  * The window is click-through so the user can interact with other apps.
  * Each invocation creates a new window with a unique label, allowing overlapping confetti.
@@ -222,7 +277,10 @@ export type AppPreferences = { theme: string;
  * If None, uses system locale detection
  */
 language: string | null }
+export type AuthProvider = "kakao" | "apple"
+export type AuthStatus = { isLoggedIn: boolean }
 export type JsonValue = null | boolean | number | string | JsonValue[] | Partial<{ [key in string]: JsonValue }>
+export type LoginResult = { isLoggedIn: boolean; needsOnboarding: boolean }
 /**
  * Menubar display mode for salary
  */
