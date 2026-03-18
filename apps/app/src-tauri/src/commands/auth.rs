@@ -169,16 +169,15 @@ async fn exchange_apple_code(code: &str, redirect_uri: &str) -> Result<String, S
 // Localhost OAuth callback server
 // ============================================================================
 
+/// OAuth callback용 고정 포트 (카카오/애플 콘솔에 등록 필요)
+const OAUTH_CALLBACK_PORT: u16 = 17171;
+
 /// localhost에서 OAuth callback을 수신하는 임시 서버
-fn start_oauth_callback_server() -> Result<(TcpListener, u16, String), String> {
-    let listener =
-        TcpListener::bind("127.0.0.1:0").map_err(|e| format!("로컬 서버 바인드 실패: {e}"))?;
-    let port = listener
-        .local_addr()
-        .map_err(|e| format!("포트 확인 실패: {e}"))?
-        .port();
-    let redirect_uri = format!("http://127.0.0.1:{port}/callback");
-    Ok((listener, port, redirect_uri))
+fn start_oauth_callback_server() -> Result<(TcpListener, String), String> {
+    let listener = TcpListener::bind(format!("127.0.0.1:{OAUTH_CALLBACK_PORT}"))
+        .map_err(|e| format!("로컬 서버 바인드 실패 (포트 {OAUTH_CALLBACK_PORT}): {e}"))?;
+    let redirect_uri = format!("http://127.0.0.1:{OAUTH_CALLBACK_PORT}/callback");
+    Ok((listener, redirect_uri))
 }
 
 /// callback에서 auth code 추출
@@ -239,7 +238,7 @@ fn extract_query_param(request: &str, key: &str) -> Option<String> {
 #[tauri::command]
 #[specta::specta]
 pub async fn social_login(app: AppHandle, provider: AuthProvider) -> Result<LoginResult, String> {
-    let (listener, _port, redirect_uri) = start_oauth_callback_server()?;
+    let (listener, redirect_uri) = start_oauth_callback_server()?;
 
     // provider별 authorize URL 생성
     let authorize_url = match &provider {
