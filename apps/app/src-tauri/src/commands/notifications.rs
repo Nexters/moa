@@ -26,10 +26,7 @@ pub async fn send_native_notification(
         }
 
         match notification.show() {
-            Ok(_) => {
-                log::info!("Native notification sent successfully");
-                Ok(())
-            }
+            Ok(_) => Ok(()),
             Err(e) => {
                 log::error!("Failed to send native notification: {e}");
                 Err(format!("Failed to send notification: {e}"))

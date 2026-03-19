@@ -85,6 +85,9 @@ pub fn run() {
                 } else {
                     log::LevelFilter::Info
                 })
+                // Suppress noisy external crate logs
+                .level_for("reqwest", log::LevelFilter::Info)
+                .level_for("tauri_plugin_updater", log::LevelFilter::Info)
                 .targets([
                     // Always log to stdout for development
                     tauri_plugin_log::Target::new(tauri_plugin_log::TargetKind::Stdout),

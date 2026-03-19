@@ -35,7 +35,7 @@ pub async fn save_emergency_data(
     filename: String,
     data: Value,
 ) -> Result<(), RecoveryError> {
-    log::info!("Saving emergency data to file: {filename}");
+    log::debug!("Saving emergency data to file: {filename}");
 
     // Validate filename with proper security checks
     validate_filename(&filename).map_err(|e| RecoveryError::ValidationError { message: e })?;
@@ -79,7 +79,6 @@ pub async fn save_emergency_data(
         });
     }
 
-    log::info!("Successfully saved emergency data to {file_path:?}");
     Ok(())
 }
 
@@ -88,7 +87,7 @@ pub async fn save_emergency_data(
 #[tauri::command]
 #[specta::specta]
 pub async fn load_emergency_data(app: AppHandle, filename: String) -> Result<Value, RecoveryError> {
-    log::info!("Loading emergency data from file: {filename}");
+    log::debug!("Loading emergency data from file: {filename}");
 
     // Validate filename with proper security checks
     validate_filename(&filename).map_err(|e| RecoveryError::ValidationError { message: e })?;
@@ -97,7 +96,7 @@ pub async fn load_emergency_data(app: AppHandle, filename: String) -> Result<Val
     let file_path = recovery_dir.join(format!("{filename}.json"));
 
     if !file_path.exists() {
-        log::info!("Recovery file not found: {file_path:?}");
+        log::debug!("Recovery file not found: {}", file_path.display());
         return Err(RecoveryError::FileNotFound);
     }
 
@@ -115,7 +114,6 @@ pub async fn load_emergency_data(app: AppHandle, filename: String) -> Result<Val
         }
     })?;
 
-    log::info!("Successfully loaded emergency data");
     Ok(data)
 }
 
@@ -124,7 +122,7 @@ pub async fn load_emergency_data(app: AppHandle, filename: String) -> Result<Val
 #[tauri::command]
 #[specta::specta]
 pub async fn cleanup_old_recovery_files(app: AppHandle) -> Result<u32, RecoveryError> {
-    log::info!("Cleaning up old recovery files");
+    log::debug!("Cleaning up old recovery files");
 
     let recovery_dir = get_recovery_dir(&app).map_err(|e| RecoveryError::IoError { message: e })?;
     let mut removed_count = 0;
@@ -191,7 +189,7 @@ pub async fn cleanup_old_recovery_files(app: AppHandle) -> Result<u32, RecoveryE
         if modified_secs < seven_days_ago {
             match std::fs::remove_file(&path) {
                 Ok(_) => {
-                    log::info!("Removed old recovery file: {path:?}");
+                    log::debug!("Removed old recovery file: {}", path.display());
                     removed_count += 1;
                 }
                 Err(e) => {
@@ -201,6 +199,6 @@ pub async fn cleanup_old_recovery_files(app: AppHandle) -> Result<u32, RecoveryE
         }
     }
 
-    log::info!("Cleanup complete. Removed {removed_count} old recovery files");
+    log::debug!("Cleanup complete. Removed {removed_count} old recovery files");
     Ok(removed_count)
 }

@@ -31,7 +31,7 @@ pub fn greet(name: &str) -> Result<String, String> {
         e
     })?;
 
-    log::info!("Greeting user: {name}");
+    log::debug!("Greeting user: {name}");
     Ok(format!("Hello, {name}! You've been greeted from Rust!"))
 }
 
@@ -58,7 +58,6 @@ pub async fn load_preferences(app: AppHandle) -> Result<AppPreferences, String> 
         format!("Failed to parse preferences: {e}")
     })?;
 
-    log::info!("Successfully loaded preferences");
     Ok(preferences)
 }
 
@@ -70,7 +69,7 @@ pub async fn save_preferences(app: AppHandle, preferences: AppPreferences) -> Re
     // Validate theme value
     validate_theme(&preferences.theme)?;
 
-    log::debug!("Saving preferences to disk: {preferences:?}");
+    log::debug!("Saving preferences to disk");
     let prefs_path = get_preferences_path(&app)?;
 
     let json_content = serde_json::to_string_pretty(&preferences).map_err(|e| {
@@ -95,6 +94,6 @@ pub async fn save_preferences(app: AppHandle, preferences: AppPreferences) -> Re
         return Err(format!("Failed to finalize preferences file: {rename_err}"));
     }
 
-    log::info!("Successfully saved preferences to {prefs_path:?}");
+    log::debug!("Successfully saved preferences to {}", prefs_path.display());
     Ok(())
 }
