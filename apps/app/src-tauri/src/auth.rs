@@ -10,6 +10,7 @@ use tauri::{AppHandle, Manager};
 #[derive(Debug, Clone)]
 pub struct AuthState {
     pub access_token: String,
+    pub provider: String,
 }
 
 /// 앱 전역 인증 저장소 — `app.manage()`로 등록
@@ -20,6 +21,8 @@ pub struct AuthStore(pub Mutex<Option<AuthState>>);
 #[serde(rename_all = "camelCase")]
 struct AuthFile {
     access_token: String,
+    #[serde(default)]
+    provider: Option<String>,
 }
 
 fn auth_file_path(app: &AppHandle) -> Result<PathBuf, String> {
@@ -32,6 +35,8 @@ fn auth_file_path(app: &AppHandle) -> Result<PathBuf, String> {
 }
 
 /// 디스크에서 토큰 로드
+///
+/// provider가 없는 기존 auth.json은 강제 로그아웃 처리 (재로그인 유도)
 pub fn load_auth_token(app: &AppHandle) -> Option<AuthState> {
     let path = auth_file_path(app).ok()?;
     let contents = std::fs::read_to_string(&path).ok()?;
@@ -39,16 +44,26 @@ pub fn load_auth_token(app: &AppHandle) -> Option<AuthState> {
     if file.access_token.is_empty() {
         return None;
     }
+    let provider = match file.provider {
+        Some(p) if !p.is_empty() => p,
+        _ => {
+            log::info!("provider 없는 기존 토큰 — 강제 로그아웃");
+            let _ = std::fs::remove_file(&path);
+            return None;
+        }
+    };
     Some(AuthState {
         access_token: file.access_token,
+        provider,
     })
 }
 
 /// 토큰을 디스크에 저장 + AuthStore 업데이트
-pub fn save_auth_token(app: &AppHandle, access_token: &str) -> Result<(), String> {
+pub fn save_auth_token(app: &AppHandle, access_token: &str, provider: &str) -> Result<(), String> {
     let path = auth_file_path(app)?;
     let file = AuthFile {
         access_token: access_token.to_string(),
+        provider: Some(provider.to_string()),
     };
     let json = serde_json::to_string_pretty(&file).map_err(|e| format!("직렬화 실패: {e}"))?;
 
@@ -59,9 +74,10 @@ pub fn save_auth_token(app: &AppHandle, access_token: &str) -> Result<(), String
     let store = app.state::<AuthStore>();
     *store.0.lock().unwrap() = Some(AuthState {
         access_token: access_token.to_string(),
+        provider: provider.to_string(),
     });
 
-    log::info!("인증 토큰 저장 완료");
+    log::info!("인증 토큰 저장 완료 (provider: {})", provider);
     Ok(())
 }
 

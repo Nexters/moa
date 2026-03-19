@@ -6,7 +6,7 @@ use std::net::TcpListener;
 
 use serde::{Deserialize, Serialize};
 use specta::Type;
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 use crate::api_client::{
     ApiClient, ApiError, PaydayPatchRequest, PayrollPatchRequest, SalaryInputType, Weekday,
@@ -25,6 +25,7 @@ use crate::types::{SalaryType, UserSettings};
 #[serde(rename_all = "camelCase")]
 pub struct AuthStatus {
     pub is_logged_in: bool,
+    pub provider: Option<AuthProvider>,
 }
 
 #[derive(Debug, Clone, Serialize, Type)]
@@ -297,7 +298,7 @@ pub async fn social_login(app: AppHandle, provider: AuthProvider) -> Result<Logi
         .map_err(|e| format!("서버 로그인 실패: {e}"))?;
 
     // 토큰 저장
-    auth::save_auth_token(&app, &access_token)?;
+    auth::save_auth_token(&app, &access_token, provider.as_str())?;
     log::info!("{} 로그인 성공", provider.as_str());
 
     // 서버 데이터 sync
@@ -322,8 +323,25 @@ pub async fn logout(app: AppHandle) -> Result<(), String> {
 #[tauri::command]
 #[specta::specta]
 pub async fn get_auth_status(app: AppHandle) -> Result<AuthStatus, String> {
-    let is_logged_in = auth::get_access_token(&app).is_some();
-    Ok(AuthStatus { is_logged_in })
+    let store = app.state::<auth::AuthStore>();
+    let guard = store.0.lock().unwrap();
+    match guard.as_ref() {
+        Some(state) => {
+            let provider = match state.provider.as_str() {
+                "kakao" => Some(AuthProvider::Kakao),
+                "apple" => Some(AuthProvider::Apple),
+                _ => None,
+            };
+            Ok(AuthStatus {
+                is_logged_in: true,
+                provider,
+            })
+        }
+        None => Ok(AuthStatus {
+            is_logged_in: false,
+            provider: None,
+        }),
+    }
 }
 
 /// 로컬 설정 → 서버 push (fire-and-forget 용)

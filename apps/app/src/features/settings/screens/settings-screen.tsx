@@ -17,6 +17,7 @@ import { commands } from '~/lib/tauri-bindings';
 import { appQuery, appQueryOptions, userSettingsQuery } from '~/queries';
 import { AppBar, Button, InfoRow, SelectInput, SwitchInput } from '~/ui';
 
+import { AuthRow } from '../components/auth-row';
 import { SettingsSection } from '../components/settings-section';
 
 const MENUBAR_DISPLAY_OPTIONS = [
@@ -134,35 +135,14 @@ export function SettingsScreen() {
       />
 
       <div className="scrollbar-overlay flex min-h-0 flex-1 flex-col gap-5 p-5">
-        <SettingsSection title="계정">
-          {authStatus?.isLoggedIn ? (
-            <InfoRow label="로그인 상태">
-              <Button
-                variant="link"
-                size="flat"
-                disabled={logoutMutation.isPending}
-                onClick={() => logoutMutation.mutate()}
-              >
-                로그아웃
-              </Button>
-            </InfoRow>
-          ) : (
-            <>
-              <InfoRow
-                as="button"
-                label="카카오로 로그인"
-                onClick={() => socialLogin.mutate('kakao')}
-              />
-              <InfoRow
-                as="button"
-                label="Apple로 로그인"
-                onClick={() => socialLogin.mutate('apple')}
-              />
-            </>
-          )}
-        </SettingsSection>
-
         <SettingsSection title="내 정보">
+          <AuthRow
+            authStatus={authStatus}
+            onLogin={(provider) => socialLogin.mutate(provider)}
+            onLogout={() => logoutMutation.mutate()}
+            isLoginPending={socialLogin.isPending}
+            isLogoutPending={logoutMutation.isPending}
+          />
           <InfoRow
             as="button"
             label="월급 · 근무 정보"

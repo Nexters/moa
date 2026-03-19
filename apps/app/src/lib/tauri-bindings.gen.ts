@@ -278,7 +278,7 @@ export type AppPreferences = { theme: string;
  */
 language: string | null }
 export type AuthProvider = "kakao" | "apple"
-export type AuthStatus = { isLoggedIn: boolean }
+export type AuthStatus = { isLoggedIn: boolean; provider: AuthProvider | null }
 export type JsonValue = null | boolean | number | string | JsonValue[] | Partial<{ [key in string]: JsonValue }>
 export type LoginResult = { isLoggedIn: boolean; needsOnboarding: boolean }
 /**
