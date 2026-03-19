@@ -181,17 +181,25 @@ fn start_oauth_callback_server() -> Result<(TcpListener, String), String> {
     Ok((listener, redirect_uri))
 }
 
-/// callback에서 auth code 추출
+/// callback에서 auth code 추출 (2분 타임아웃)
 fn wait_for_auth_code(listener: &TcpListener) -> Result<String, String> {
-    // 타임아웃 설정 (2분)
     listener
-        .set_nonblocking(false)
+        .set_nonblocking(true)
         .map_err(|e| format!("소켓 설정 실패: {e}"))?;
-    let _ = listener.set_ttl(120);
 
-    let (mut stream, _) = listener
-        .accept()
-        .map_err(|e| format!("연결 수신 실패: {e}"))?;
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(120);
+    let (mut stream, _) = loop {
+        match listener.accept() {
+            Ok(conn) => break conn,
+            Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+                if std::time::Instant::now() >= deadline {
+                    return Err("OAuth 콜백 타임아웃 (2분 초과)".to_string());
+                }
+                std::thread::sleep(std::time::Duration::from_millis(100));
+            }
+            Err(e) => return Err(format!("연결 수신 실패: {e}")),
+        }
+    };
 
     let mut buf = [0u8; 4096];
     let n = stream
@@ -279,19 +287,22 @@ pub async fn social_login(app: AppHandle, provider: AuthProvider) -> Result<Logi
         .await
         .map_err(|e| format!("콜백 대기 실패: {e}"))??;
 
-    log::info!("OAuth code 수신 완료");
+    log::info!("OAuth code 수신 완료 (code 길이: {})", code.len());
 
     // code → id_token 교환
+    log::info!("{} 토큰 교환 시작...", provider.as_str());
     let id_token = match &provider {
         AuthProvider::Kakao => exchange_kakao_code(&code, &redirect_uri).await?,
         AuthProvider::Apple => exchange_apple_code(&code, &redirect_uri).await?,
     };
+    log::info!("{} id_token 획득 완료", provider.as_str());
 
     // MOA 서버에 id_token 전송 → accessToken 발급
     let base_url = std::env::var("MOA_API_BASE_URL")
         .unwrap_or_else(|_| "https://www.moa-official.kr".to_string());
     let api = ApiClient::new(&base_url);
 
+    log::info!("MOA 서버 로그인 시작 ({})", base_url);
     let access_token = api
         .auth_login(provider.as_str(), &id_token)
         .await
@@ -491,8 +502,13 @@ fn merge_server_to_local(
     profile: &crate::api_client::ProfileResponse,
 ) -> bool {
     let new_salary_type = from_server_salary_type(&payroll.salary_input_type);
-    let new_amount = payroll.salary_amount as u32;
-    let new_pay_day = profile.payday_day as u8;
+    let new_amount = u32::try_from(payroll.salary_amount.max(0))
+        .unwrap_or(settings.salary_amount);
+    let new_pay_day = if (1..=31).contains(&profile.payday_day) {
+        profile.payday_day as u8
+    } else {
+        settings.pay_day
+    };
     let new_work_days: Vec<u8> = work_policy
         .workdays
         .iter()

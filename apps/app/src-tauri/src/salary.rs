@@ -79,6 +79,8 @@ pub fn notify_settings_changed() {
 /// 서버 sync polling 간격 (5분)
 const SYNC_INTERVAL_SECS: u64 = 300;
 
+static SYNC_IN_FLIGHT: AtomicBool = AtomicBool::new(false);
+
 pub fn start_salary_ticker(app_handle: AppHandle) {
     // 주기적 서버 sync 스레드
     {
@@ -87,11 +89,16 @@ pub fn start_salary_ticker(app_handle: AppHandle) {
             // 앱 시작 후 10초 대기 (초기화 완료 대기)
             std::thread::sleep(Duration::from_secs(10));
             loop {
-                // fire-and-forget: Rust에서 직접 sync 호출
-                let app_clone = app.clone();
-                tauri::async_runtime::spawn(async move {
-                    let _ = crate::commands::auth::sync_from_server(app_clone).await;
-                });
+                if SYNC_IN_FLIGHT
+                    .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+                    .is_ok()
+                {
+                    let app_clone = app.clone();
+                    tauri::async_runtime::spawn(async move {
+                        let _ = crate::commands::auth::sync_from_server(app_clone).await;
+                        SYNC_IN_FLIGHT.store(false, Ordering::SeqCst);
+                    });
+                }
                 std::thread::sleep(Duration::from_secs(SYNC_INTERVAL_SECS));
             }
         });

@@ -25,6 +25,9 @@ export function WelcomeScreen() {
           void navigate({ to: '/home' });
         }
       },
+      onError: (error) => {
+        console.error('소셜 로그인 실패:', error);
+      },
     });
   };
 
@@ -49,6 +52,12 @@ export function WelcomeScreen() {
           </div>
         </div>
       </div>
+
+      {socialLogin.isError && (
+        <p className="b2-400 mt-4 px-5 text-center text-red-40">
+          로그인 실패: {socialLogin.error.message}
+        </p>
+      )}
 
       <div className="mt-10 flex flex-col items-center gap-3">
         <Button
