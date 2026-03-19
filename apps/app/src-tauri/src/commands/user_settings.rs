@@ -24,7 +24,7 @@ pub async fn load_user_settings(app: AppHandle) -> Result<UserSettings, String> 
     let path = get_user_settings_path(&app)?;
 
     if !path.exists() {
-        log::info!("사용자 설정 파일 없음, 기본값 반환");
+        log::debug!("사용자 설정 파일 없음, 기본값 반환");
         return Ok(UserSettings::default());
     }
 
@@ -34,7 +34,6 @@ pub async fn load_user_settings(app: AppHandle) -> Result<UserSettings, String> 
     let settings: UserSettings =
         serde_json::from_str(&contents).map_err(|e| format!("설정 파싱 실패: {e}"))?;
 
-    log::info!("사용자 설정 로드 완료");
     Ok(settings)
 }
 
@@ -54,7 +53,7 @@ pub(crate) fn save_user_settings_sync(
     std::fs::write(&temp_path, &json).map_err(|e| format!("임시 파일 쓰기 실패: {e}"))?;
     std::fs::rename(&temp_path, &path).map_err(|e| format!("파일 저장 실패: {e}"))?;
 
-    log::info!("사용자 설정 저장 완료");
+    log::debug!("사용자 설정 저장 완료");
     Ok(())
 }
 
