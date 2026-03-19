@@ -1,5 +1,5 @@
-import { useNavigate } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
 
 import { useSocialLogin } from '~/hooks/use-auth';
 import { userSettingsQuery } from '~/queries';
@@ -54,8 +54,14 @@ export function WelcomeScreen() {
       </div>
 
       {socialLogin.isError && (
-        <p className="b2-400 mt-4 px-5 text-center text-red-40">
+        <p className="b2-400 text-red-40 mt-4 px-5 text-center">
           로그인 실패: {socialLogin.error.message}
+        </p>
+      )}
+
+      {socialLogin.isPending && (
+        <p className="b2-400 text-text-low mt-4 animate-pulse text-center">
+          브라우저에서 로그인을 완료해 주세요
         </p>
       )}
 

@@ -212,7 +212,7 @@ fn wait_for_auth_code(listener: &TcpListener) -> Result<String, String> {
         .ok_or_else(|| "callback에서 auth code를 찾을 수 없습니다".to_string())?;
 
     // HTML 응답
-    let body = r#"<!DOCTYPE html><html><body style="font-family:sans-serif;text-align:center;padding:40px"><h2>로그인 완료!</h2><p>이 창을 닫아주세요.</p><script>window.close()</script></body></html>"#;
+    let body = r#"<!DOCTYPE html><html><body style="margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f8f9fa;font-family:-apple-system,BlinkMacSystemFont,sans-serif"><div style="text-align:center;padding:40px;background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,0.08)"><div style="font-size:48px;margin-bottom:16px">&#10003;</div><h2 style="margin:0 0 8px;font-size:20px;color:#1a1a1a">로그인 완료</h2><p style="margin:0;color:#666;font-size:14px">Moa 앱으로 돌아가세요</p></div></body></html>"#;
     let response = format!(
         "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
         body.len(),
@@ -314,6 +314,9 @@ pub async fn social_login(app: AppHandle, provider: AuthProvider) -> Result<Logi
 
     // 서버 데이터 sync
     let needs_onboarding = sync_after_login(&app, &api, &access_token).await?;
+
+    // OAuth 완료 후 앱 패널 자동 표시
+    crate::tray::show_main_window(&app);
 
     Ok(LoginResult {
         is_logged_in: true,
@@ -502,8 +505,7 @@ fn merge_server_to_local(
     profile: &crate::api_client::ProfileResponse,
 ) -> bool {
     let new_salary_type = from_server_salary_type(&payroll.salary_input_type);
-    let new_amount = u32::try_from(payroll.salary_amount.max(0))
-        .unwrap_or(settings.salary_amount);
+    let new_amount = u32::try_from(payroll.salary_amount.max(0)).unwrap_or(settings.salary_amount);
     let new_pay_day = if (1..=31).contains(&profile.payday_day) {
         profile.payday_day as u8
     } else {
