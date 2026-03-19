@@ -179,6 +179,7 @@ pub fn create(app_handle: &AppHandle) -> tauri::Result<TrayIcon> {
     )?;
 
     let separator = PredefinedMenuItem::separator(app_handle)?;
+    let restart_item = MenuItem::with_id(app_handle, "restart", "앱 재시작", true, None::<&str>)?;
     let quit_item = MenuItem::with_id(app_handle, "quit", "앱 종료", true, None::<&str>)?;
     let menu = Menu::with_items(
         app_handle,
@@ -187,6 +188,7 @@ pub fn create(app_handle: &AppHandle) -> tauri::Result<TrayIcon> {
             &icon_submenu,
             &salary_work_settings_item,
             &separator,
+            &restart_item,
             &quit_item,
         ],
     )?;
@@ -212,6 +214,10 @@ pub fn create(app_handle: &AppHandle) -> tauri::Result<TrayIcon> {
             }
         })
         .on_menu_event(|app, event| match event.id().as_ref() {
+            "restart" => {
+                tauri_plugin_single_instance::destroy(app);
+                app.restart();
+            }
             "quit" => app.exit(0),
             "salary_work_settings" => {
                 let _ = app.emit("open-salary-settings", ());
