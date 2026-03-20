@@ -1,9 +1,35 @@
+import { useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
+
+import { useSocialLogin } from '~/hooks/use-auth';
+import { userSettingsQuery } from '~/queries';
 import { AppBar, Button, HeroIcon, TooltipBubble } from '~/ui';
 
 import { useOnboardingContext } from '..';
 
 export function WelcomeScreen() {
   const { goToNext } = useOnboardingContext();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const socialLogin = useSocialLogin();
+
+  const handleSocialLogin = (provider: 'kakao' | 'apple') => {
+    socialLogin.mutate(provider, {
+      onSuccess: (result) => {
+        if (result.needsOnboarding) {
+          goToNext();
+        } else {
+          void queryClient.invalidateQueries({
+            queryKey: userSettingsQuery.all(),
+          });
+          void navigate({ to: '/home' });
+        }
+      },
+      onError: (error) => {
+        console.error('소셜 로그인 실패:', error);
+      },
+    });
+  };
 
   return (
     <main className="flex flex-1 flex-col">
@@ -27,9 +53,44 @@ export function WelcomeScreen() {
         </div>
       </div>
 
-      <div className="mt-15 flex justify-center">
-        <Button rounded="full" size="md" className="w-60" onClick={goToNext}>
-          월급 정보 등록하기
+      {socialLogin.isError && (
+        <p className="b2-400 text-red-40 mt-4 px-5 text-center">
+          로그인 실패: {socialLogin.error.message}
+        </p>
+      )}
+
+      {socialLogin.isPending && (
+        <p className="b2-400 text-text-low mt-4 animate-pulse text-center">
+          브라우저에서 로그인을 완료해 주세요
+        </p>
+      )}
+
+      <div className="mt-10 flex flex-col items-center gap-3">
+        <Button
+          rounded="full"
+          size="md"
+          className="w-60"
+          disabled={socialLogin.isPending}
+          onClick={() => handleSocialLogin('kakao')}
+        >
+          {socialLogin.isPending ? '로그인 중...' : '카카오로 시작하기'}
+        </Button>
+        <Button
+          rounded="full"
+          size="md"
+          variant="secondary"
+          className="w-60"
+          disabled={socialLogin.isPending}
+          onClick={() => handleSocialLogin('apple')}
+        >
+          Apple로 시작하기
+        </Button>
+        <Button
+          variant="link"
+          disabled={socialLogin.isPending}
+          onClick={goToNext}
+        >
+          로그인 없이 시작
         </Button>
       </div>
     </main>

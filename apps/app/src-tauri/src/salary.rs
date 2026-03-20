@@ -76,7 +76,34 @@ pub fn notify_settings_changed() {
 // Ticker
 // ============================================================================
 
+/// 서버 sync polling 간격 (5분)
+const SYNC_INTERVAL_SECS: u64 = 300;
+
+static SYNC_IN_FLIGHT: AtomicBool = AtomicBool::new(false);
+
 pub fn start_salary_ticker(app_handle: AppHandle) {
+    // 주기적 서버 sync 스레드
+    {
+        let app = app_handle.clone();
+        std::thread::spawn(move || {
+            // 앱 시작 후 10초 대기 (초기화 완료 대기)
+            std::thread::sleep(Duration::from_secs(10));
+            loop {
+                if SYNC_IN_FLIGHT
+                    .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+                    .is_ok()
+                {
+                    let app_clone = app.clone();
+                    tauri::async_runtime::spawn(async move {
+                        let _ = crate::commands::auth::sync_from_server(app_clone).await;
+                        SYNC_IN_FLIGHT.store(false, Ordering::SeqCst);
+                    });
+                }
+                std::thread::sleep(Duration::from_secs(SYNC_INTERVAL_SECS));
+            }
+        });
+    }
+
     std::thread::spawn(move || {
         let mut settings: Option<UserSettings> = load_settings(&app_handle);
         let mut prev_title: Option<String> = None;
@@ -459,6 +486,7 @@ mod tests {
             work_end_time: "18:00".to_string(),
             onboarding_completed: true,
             menubar_display_mode: MenubarDisplayMode::Daily,
+            menubar_icon_theme: crate::types::MenubarIconTheme::default(),
         }
     }
 
@@ -570,6 +598,7 @@ mod tests {
             work_end_time: "00:00".to_string(),
             onboarding_completed: true,
             menubar_display_mode: MenubarDisplayMode::Daily,
+            menubar_icon_theme: crate::types::MenubarIconTheme::default(),
         }
     }
 

@@ -3,7 +3,7 @@ import { tv } from 'tailwind-variants';
 
 import { ChevronRightIcon } from './icons';
 
-const infoRowVariants = tv({
+export const infoRowVariants = tv({
   base: 'b1-500 bg-container-primary flex items-center justify-between rounded-md px-4 py-3.5',
   variants: {
     interactive: {

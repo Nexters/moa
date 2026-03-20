@@ -4,6 +4,7 @@ import { enable, disable } from '@tauri-apps/plugin-autostart';
 import { exit } from '@tauri-apps/plugin-process';
 import { toast } from 'sonner';
 
+import { useAuthStatus, useLogout, useSocialLogin } from '~/hooks/use-auth';
 import { useUserSettings } from '~/hooks/use-user-settings';
 import { posthog } from '~/lib/analytics';
 import { useCheckForUpdates } from '~/lib/check-for-updates';
@@ -16,6 +17,7 @@ import { commands } from '~/lib/tauri-bindings';
 import { appQuery, appQueryOptions, userSettingsQuery } from '~/queries';
 import { AppBar, Button, InfoRow, SelectInput, SwitchInput } from '~/ui';
 
+import { AuthRow } from '../components/auth-row';
 import { SettingsSection } from '../components/settings-section';
 
 const MENUBAR_DISPLAY_OPTIONS = [
@@ -33,6 +35,9 @@ export function SettingsScreen() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: settings } = useUserSettings();
+  const { data: authStatus } = useAuthStatus();
+  const socialLogin = useSocialLogin();
+  const logoutMutation = useLogout();
 
   const { update, installing, install } = useCheckForUpdates({ delay: 0 });
 
@@ -131,6 +136,13 @@ export function SettingsScreen() {
 
       <div className="scrollbar-overlay flex min-h-0 flex-1 flex-col gap-5 p-5">
         <SettingsSection title="내 정보">
+          <AuthRow
+            authStatus={authStatus}
+            onLogin={(provider) => socialLogin.mutate(provider)}
+            onLogout={() => logoutMutation.mutate()}
+            isLoginPending={socialLogin.isPending}
+            isLogoutPending={logoutMutation.isPending}
+          />
           <InfoRow
             as="button"
             label="월급 · 근무 정보"

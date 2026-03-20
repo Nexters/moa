@@ -50,6 +50,7 @@ export function useOnboardingForm({ onSuccess }: UseOnboardingFormOptions) {
         queryKey: userSettingsQuery.all(),
       });
       void commands.notifySettingsChanged();
+      void commands.syncSettingsToServer(); // fire-and-forget
       onSuccess();
     },
   });

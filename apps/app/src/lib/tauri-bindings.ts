@@ -24,7 +24,10 @@
 export { commands, type Result } from './tauri-bindings.gen';
 export type {
   AppPreferences,
+  AuthProvider,
+  AuthStatus,
   JsonValue,
+  LoginResult,
   MenubarDisplayMode,
   MenubarIconTheme,
   RecoveryError,
