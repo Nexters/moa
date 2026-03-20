@@ -64,6 +64,8 @@ struct KakaoTokenResponse {
 async fn exchange_kakao_code(code: &str, redirect_uri: &str) -> Result<String, String> {
     let client_id =
         std::env::var("KAKAO_REST_API_KEY").map_err(|_| "KAKAO_REST_API_KEY 환경변수 미설정")?;
+    let client_secret = std::env::var("KAKAO_CLIENT_SECRET")
+        .map_err(|_| "KAKAO_CLIENT_SECRET 환경변수 미설정")?;
 
     let client = reqwest::Client::new();
     let resp = client
@@ -71,6 +73,7 @@ async fn exchange_kakao_code(code: &str, redirect_uri: &str) -> Result<String, S
         .form(&[
             ("grant_type", "authorization_code"),
             ("client_id", &client_id),
+            ("client_secret", &client_secret),
             ("redirect_uri", redirect_uri),
             ("code", code),
         ])
