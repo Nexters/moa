@@ -393,11 +393,20 @@ pub fn update_menu_check_states(settings: &UserSettings) {
 }
 
 /// 설정 변경 시 아이콘 테마 동기화 (salary ticker에서 호출)
-pub fn refresh_icon_theme(settings: &UserSettings) {
+pub fn refresh_icon_theme(app: &AppHandle, settings: &UserSettings) {
     IS_LIGHT_ICON.store(
         settings.menubar_icon_theme == MenubarIconTheme::Light,
         Ordering::Relaxed,
     );
+
+    // 비애니메이션 상태일 때 즉시 아이콘 교체
+    if !ANIMATING.load(Ordering::Relaxed) {
+        if let Some(tray) = app.tray_by_id("tray") {
+            if let Ok(icon) = Image::from_bytes(idle_icon()) {
+                let _ = tray.set_icon(Some(icon));
+            }
+        }
+    }
 }
 
 /// 트레이 아이콘 상태 변경 로직 (커맨드와 내부 모두에서 사용)
