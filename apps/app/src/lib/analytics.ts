@@ -21,12 +21,12 @@ if (import.meta.env.PROD) {
 
   // 메뉴바 패널 숨김 시 이벤트 flush
   void listen('menubar_panel_did_resign_key', () => {
-    posthog.flush();
+    (posthog as unknown as { flush?: () => void }).flush?.();
   });
 
   // 앱 종료 시 이벤트 flush
   window.addEventListener('beforeunload', () => {
-    posthog.flush();
+    (posthog as unknown as { flush?: () => void }).flush?.();
   });
 }
 
