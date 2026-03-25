@@ -1,35 +1,101 @@
-import { AppBar, Button, HeroIcon, TooltipBubble } from '~/ui';
+import { useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
+
+import moneyBg from '~/assets/money-bg.png';
+import { useSocialLogin } from '~/hooks/use-auth';
+import { userSettingsQuery } from '~/queries';
+import { AppBar, Button } from '~/ui';
+import { AppleLogoIcon, KakaoLogoIcon, MoaLogoIcon } from '~/ui/icons';
 
 import { useOnboardingContext } from '..';
 
 export function WelcomeScreen() {
   const { goToNext } = useOnboardingContext();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const socialLogin = useSocialLogin();
+
+  const handleSocialLogin = (provider: 'kakao' | 'apple') => {
+    socialLogin.mutate(provider, {
+      onSuccess: (result) => {
+        if (result.needsOnboarding) {
+          goToNext();
+        } else {
+          void queryClient.invalidateQueries({
+            queryKey: userSettingsQuery.all(),
+          });
+          void navigate({ to: '/home' });
+        }
+      },
+      onError: (error) => {
+        console.error('소셜 로그인 실패:', error);
+      },
+    });
+  };
 
   return (
     <main className="flex flex-1 flex-col">
       <AppBar type="main" />
 
-      <div className="flex flex-col items-center gap-5 px-5 pt-9">
-        <TooltipBubble>
-          월급 정보를 추가하고 실시간으로
-          <br />
-          쌓이는 월급을 확인하세요!
-        </TooltipBubble>
+      <div className="flex flex-1 flex-col items-center px-6 pt-3">
+        <img src={moneyBg} alt="" className="w-[340px] object-contain" />
 
-        <HeroIcon variant="empty" />
-
-        <div className="flex flex-col items-center gap-[2px]">
-          <span className="b1-400 text-text-medium">나는 얼마나 벌까?</span>
-          <div className="flex items-end gap-1">
-            <span className="h1-700 text-green-40">0,00</span>
-            <span className="t2-400 text-text-medium pb-2">원</span>
-          </div>
+        <div className="-mt-16 flex flex-col items-center gap-2">
+          <MoaLogoIcon className="h-[60px] w-[160px]" />
+          <p className="b2-500 text-text-medium">
+            실시간으로 월급이 쌓이는 경험!
+          </p>
         </div>
       </div>
 
-      <div className="mt-15 flex justify-center">
-        <Button rounded="full" size="md" className="w-60" onClick={goToNext}>
-          월급 정보 등록하기
+      {socialLogin.isError && (
+        <p className="b2-400 text-red-40 px-8 text-center">
+          로그인 실패: {socialLogin.error.message}
+        </p>
+      )}
+
+      {socialLogin.isPending && (
+        <p className="b2-400 text-text-low animate-pulse text-center">
+          브라우저에서 로그인을 완료해 주세요
+        </p>
+      )}
+
+      <div className="flex flex-col items-center gap-3 px-8 pb-8">
+        <Button
+          variant="tertiary"
+          rounded="full"
+          size="lg"
+          fullWidth
+          className="bg-[#fee500] active:bg-[#e6cf00]"
+          disabled={socialLogin.isPending}
+          onClick={() => handleSocialLogin('kakao')}
+        >
+          <span className="flex items-center justify-center gap-2">
+            <KakaoLogoIcon />
+            {socialLogin.isPending ? '로그인 중...' : '카카오로 계속하기'}
+          </span>
+        </Button>
+
+        <Button
+          variant="tertiary"
+          rounded="full"
+          size="lg"
+          fullWidth
+          disabled={socialLogin.isPending}
+          onClick={() => handleSocialLogin('apple')}
+        >
+          <span className="flex items-center justify-center gap-2">
+            <AppleLogoIcon />
+            Apple로 계속하기
+          </span>
+        </Button>
+
+        <Button
+          variant="link"
+          disabled={socialLogin.isPending}
+          onClick={goToNext}
+        >
+          게스트로 시작하기
         </Button>
       </div>
     </main>

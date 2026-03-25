@@ -20,6 +20,10 @@
     height: 100%;
   }
 
+  #root > main {
+    height: 100%;
+  }
+
   svg {
     color: inherit;
   }
