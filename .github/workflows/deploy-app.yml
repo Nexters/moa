@@ -14,6 +14,30 @@ jobs:
   notify-release:
     runs-on: ubuntu-latest
     steps:
+      - name: Extract changelog
+        id: changelog
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RELEASE_BODY: ${{ github.event.release.body }}
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            TAG="${INPUT_VERSION}"
+            [[ "$TAG" != v* ]] && TAG="v${TAG}"
+            BODY=$(gh release view "$TAG" --repo "$REPO" --json body --jq '.body' 2>/dev/null || true)
+          else
+            BODY="$RELEASE_BODY"
+          fi
+
+          # "What's Changed" 섹션에서 PR 목록 추출
+          CHANGES=$(echo "$BODY" | grep '^\* ' | head -20 | sed 's/^\* /• /' | sed 's| by @.* in .*||')
+
+          echo "changes<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$CHANGES" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
       - name: Discord Notification
         continue-on-error: true
         env:
@@ -21,6 +45,7 @@ jobs:
           VERSION: ${{ github.event.release.tag_name || inputs.version }}
           ACTOR: ${{ github.actor }}
           REPO: ${{ github.repository }}
+          CHANGES: ${{ steps.changelog.outputs.changes }}
         run: |
           RELEASE_URL="https://github.com/${REPO}/releases/tag/${VERSION}"
           TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
@@ -32,10 +57,12 @@ jobs:
             --arg actor "$ACTOR" \
             --arg release_url "$RELEASE_URL" \
             --arg timestamp "$TIMESTAMP" \
+            --arg changes "$CHANGES" \
             '{
               embeds: [{
                 title: $title,
                 color: $color,
+                description: (if $changes != "" then $changes else null end),
                 fields: [
                   {name: "버전", value: $version, inline: true},
                   {name: "배포자", value: $actor, inline: true},
