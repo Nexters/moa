@@ -1,6 +1,8 @@
 import NumberFlow, { continuous } from '@number-flow/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { RevealItem, RevealSection } from './reveal';
+
 // 가정: 월급 400만, 월급일 25일, 오늘 12일, 근무 09:00-18:00, 주5일
 // salary.rs calculate_salary 로직 기반
 const MONTHLY_SALARY = 4_500_000;
@@ -63,23 +65,23 @@ export function SalarySection() {
   }, [startCounting]);
 
   return (
-    <section
+    <RevealSection
       ref={sectionRef}
       className="bg-bg-secondary px-6 pt-[60px] pb-20 md:px-[68px] md:pt-[100px] md:pb-[160px] lg:px-[120px]"
     >
       <div className="mx-auto flex flex-col items-center gap-[60px]">
         {/* Title */}
-        <div className="flex flex-col items-center gap-2.5 text-center md:gap-4">
+        <RevealItem className="flex flex-col items-center gap-2.5 text-center md:gap-4">
           <h2 className="t2-700 md:h2-700 text-text-high">
             지금 이 시간, 나 얼마 벌고 있을까?
           </h2>
           <p className="b2-400 md:t3-400 text-text-medium">
             출근부터 퇴근까지, 내 업무의 보상을 숫자로 바로 느껴보세요.
           </p>
-        </div>
+        </RevealItem>
 
         {/* Popover */}
-        <div className="flex w-full flex-col items-center">
+        <RevealItem className="flex w-full flex-col items-center">
           {/* Tooltip pill + arrow */}
           <div className="z-10 flex flex-col items-center">
             <div className="bg-gray-70 flex items-center rounded-full px-5 py-[11px]">
@@ -149,9 +151,9 @@ export function SalarySection() {
               </div>
             </div>
           </div>
-        </div>
+        </RevealItem>
       </div>
-    </section>
+    </RevealSection>
   );
 }
 
