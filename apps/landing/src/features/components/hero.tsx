@@ -1,13 +1,20 @@
+import { RevealItem, RevealSection } from './reveal';
+
 export function Hero() {
   return (
-    <section className="bg-bg-primary px-6 pt-20 pb-20 md:px-[68px] md:pt-[100px] md:pb-[160px] lg:px-[120px]">
+    <RevealSection
+      immediate
+      className="bg-bg-primary px-6 pt-20 pb-20 md:px-[68px] md:pt-[100px] md:pb-[160px] lg:px-[120px]"
+    >
       <div className="mx-auto flex flex-col items-center gap-10 text-center">
-        <img
-          src="/moa/images/hero-parachute.avif"
-          alt="낙하산 일러스트"
-          className="size-[180px] object-contain"
-        />
-        <div className="flex flex-col gap-2.5 md:gap-4">
+        <RevealItem>
+          <img
+            src="/moa/images/hero-parachute.avif"
+            alt="낙하산 일러스트"
+            className="size-[180px] object-contain"
+          />
+        </RevealItem>
+        <RevealItem className="flex flex-col gap-2.5 md:gap-4">
           <div style={titleStyle}>
             <p className="text-text-high">
               일하는 동안 실시간으로 쌓이는 내 월급
@@ -17,15 +24,17 @@ export function Hero() {
           <p className="b2-400 md:t3-400 text-text-medium">
             고르기 힘들까 봐 모바일, 데스크톱 앱 둘다 준비했어요!
           </p>
-        </div>
-        <a
-          href="#download"
-          className="bg-green-40 text-gray-90 b1-600 flex h-[56px] w-[240px] items-center justify-center rounded-[32px] transition-opacity hover:opacity-90"
-        >
-          앱 다운로드
-        </a>
+        </RevealItem>
+        <RevealItem>
+          <a
+            href="#download"
+            className="bg-green-40 text-gray-90 b1-600 flex h-[56px] w-[240px] items-center justify-center rounded-[32px] transition-opacity hover:opacity-90"
+          >
+            앱 다운로드
+          </a>
+        </RevealItem>
       </div>
-    </section>
+    </RevealSection>
   );
 }
 

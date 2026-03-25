@@ -12,6 +12,7 @@
     "@astrojs/react": "^4.4.2",
     "@moa/shared": "workspace:*",
     "@number-flow/react": "^0.5.11",
+    "motion": "^12.38.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   },

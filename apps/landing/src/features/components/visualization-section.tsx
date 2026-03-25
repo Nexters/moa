@@ -1,8 +1,10 @@
+import { RevealItem, RevealSection } from './reveal';
+
 export function VisualizationSection() {
   return (
-    <section className="bg-bg-secondary px-6 pt-[60px] pb-20 md:px-[68px] md:pt-[100px] md:pb-[160px] lg:px-[120px]">
+    <RevealSection className="bg-bg-secondary px-6 pt-[60px] pb-20 md:px-[68px] md:pt-[100px] md:pb-[160px] lg:px-[120px]">
       <div className="mx-auto flex flex-col items-center gap-10 md:gap-20">
-        <div className="text-center">
+        <RevealItem className="text-center">
           <p className="c1-400 md:t1-400 text-text-medium">
             Salary Visualization
           </p>
@@ -11,9 +13,9 @@ export function VisualizationSection() {
             <br />
             <span>바로 확인할 수 있어요</span>
           </h2>
-        </div>
+        </RevealItem>
 
-        <div className="flex w-full flex-col items-center gap-20 md:flex-row md:justify-center md:gap-10">
+        <RevealItem className="flex w-full flex-col items-center gap-20 md:flex-row md:justify-center md:gap-10">
           <div className="flex flex-col items-center gap-3 md:gap-6">
             <span className="bg-green-40 c1-600 md:t2-700 text-text-high-reverse rounded-full px-4 py-1 md:px-6 md:py-2">
               Mobile
@@ -39,8 +41,8 @@ export function VisualizationSection() {
               className="w-full max-w-[580px]"
             />
           </div>
-        </div>
+        </RevealItem>
       </div>
-    </section>
+    </RevealSection>
   );
 }

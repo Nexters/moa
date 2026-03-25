@@ -12,6 +12,7 @@ import {
 } from '~/assets/icons';
 
 import { APP_VERSION, getDownloadUrl } from '../app-version';
+import { RevealItem, RevealSection } from './reveal';
 
 const BREW_COMMAND = 'brew install --cask nexters/moa/moa';
 
@@ -97,13 +98,13 @@ function DownloadRow({ icon, label, arch, href, rightIcon }: DownloadRowProps) {
 
 export function DownloadSection() {
   return (
-    <section
+    <RevealSection
       id="download"
       className="bg-bg-primary px-6 pt-[60px] pb-20 md:px-[68px] md:pt-[100px] md:pb-[160px] lg:px-[120px]"
     >
       <div className="mx-auto flex flex-col items-center gap-10 md:gap-[60px]">
         {/* Header */}
-        <div className="flex flex-col items-center gap-6 md:gap-8">
+        <RevealItem className="flex flex-col items-center gap-6 md:gap-8">
           <img
             src="/moa/images/coin-rotate.gif"
             alt="코인 아이콘"
@@ -122,10 +123,10 @@ export function DownloadSection() {
               근무 중에도, 모바일로도 언제든 함께할 수 있어요.
             </p>
           </div>
-        </div>
+        </RevealItem>
 
         {/* Download area */}
-        <div className="flex w-full flex-col gap-10 md:gap-[60px] lg:max-w-[806px]">
+        <RevealItem className="flex w-full flex-col gap-10 md:gap-[60px] lg:max-w-[806px]">
           {/* Mobile + Desktop */}
           <div className="flex w-full flex-col gap-8 lg:flex-row lg:gap-[60px]">
             {/* Mobile */}
@@ -183,8 +184,8 @@ export function DownloadSection() {
               </div>
             </div>
           </div>
-        </div>
+        </RevealItem>
       </div>
-    </section>
+    </RevealSection>
   );
 }

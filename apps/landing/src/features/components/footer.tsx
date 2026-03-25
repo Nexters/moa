@@ -1,10 +1,12 @@
 import { GitHubIcon, InstagramIcon } from '~/assets/icons';
 
+import { RevealItem, RevealSection } from './reveal';
+
 export function Footer() {
   return (
-    <footer className="bg-bg-primary flex flex-col-reverse gap-4 px-6 pb-10 md:flex-row md:items-start md:px-[68px] md:pb-10 lg:px-[120px] lg:pb-10">
+    <RevealSection className="bg-bg-primary flex flex-col-reverse gap-4 px-6 pb-10 md:flex-row md:items-start md:px-[68px] md:pb-10 lg:px-[120px] lg:pb-10">
       {/* Left */}
-      <div className="flex flex-1 flex-col gap-4">
+      <RevealItem className="flex flex-1 flex-col gap-4">
         <div className="b1-400 text-text-medium flex items-center gap-2">
           <span className="whitespace-nowrap">
             <span className="text-text-high">📩</span> 문의:
@@ -39,10 +41,10 @@ export function Footer() {
             Copyright &copy; 2026 Team Moa. All rights reserved.
           </p>
         </div>
-      </div>
+      </RevealItem>
 
       {/* Right: social icons */}
-      <div className="flex items-center gap-2">
+      <RevealItem className="flex items-center gap-2">
         <a
           href="https://www.instagram.com/moa.salary"
           target="_blank"
@@ -61,7 +63,7 @@ export function Footer() {
         >
           <GitHubIcon className="h-5 w-5" />
         </a>
-      </div>
-    </footer>
+      </RevealItem>
+    </RevealSection>
   );
 }
