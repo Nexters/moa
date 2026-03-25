@@ -1,3 +1,4 @@
+import { listen } from '@tauri-apps/api/event';
 import posthog from 'posthog-js';
 
 import type { router } from '~/router';
@@ -12,6 +13,22 @@ if (import.meta.env.PROD) {
     persistence: 'localStorage',
   });
   posthog.register({ app_version: __APP_VERSION__ });
+
+  // 초기 페이지뷰 — 라우터 구독 전 첫 로드를 커버
+  const screen = window.location.pathname || '/';
+  posthog.register({ screen });
+  posthog.capture('$pageview', { screen });
+
+  // 메뉴바 패널 숨김 시 이벤트 flush
+  void listen('menubar_panel_did_resign_key', () => {
+    posthog.capture('$pageleave', { screen: window.location.pathname });
+    posthog.flush();
+  });
+
+  // 앱 종료 시 이벤트 flush
+  window.addEventListener('beforeunload', () => {
+    posthog.flush();
+  });
 }
 
 export { posthog };
