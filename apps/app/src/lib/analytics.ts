@@ -21,7 +21,6 @@ if (import.meta.env.PROD) {
 
   // 메뉴바 패널 숨김 시 이벤트 flush
   void listen('menubar_panel_did_resign_key', () => {
-    posthog.capture('$pageleave', { screen: window.location.pathname });
     posthog.flush();
   });
 
@@ -35,9 +34,14 @@ export { posthog };
 
 export function subscribeAnalytics(r: Router): () => void {
   if (!import.meta.env.PROD) return () => {};
+  let isInitialNavigation = true;
   return r.subscribe(
     'onResolved',
     ({ fromLocation, toLocation, pathChanged }) => {
+      if (isInitialNavigation) {
+        isInitialNavigation = false;
+        return;
+      }
       if (!pathChanged) return;
 
       if (fromLocation) {
