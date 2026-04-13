@@ -28,7 +28,7 @@ function AlertDialogOverlay({
     <AlertDialogPrimitive.Backdrop
       data-slot="alert-dialog-overlay"
       className={cn(
-        'data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 fixed inset-0 isolate z-50 bg-black/80 duration-100',
+        'data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 fixed inset-0 isolate z-50 bg-black/60 duration-100',
         className,
       )}
       {...props}
@@ -46,7 +46,7 @@ function AlertDialogContent({
       <AlertDialogPrimitive.Popup
         data-slot="alert-dialog-content"
         className={cn(
-          'data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 bg-bg-primary ring-gray-70 fixed top-1/2 left-1/2 z-50 grid w-full max-w-xs -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl p-4 ring-1 duration-100 outline-none',
+          'data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 bg-container-secondary fixed top-1/2 left-1/2 z-50 flex w-full max-w-[298px] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-5 rounded-2xl px-4 pt-6 pb-[18px] duration-100 outline-none',
           className,
         )}
         {...props}
@@ -63,7 +63,7 @@ function AlertDialogHeader({
     <div
       data-slot="alert-dialog-header"
       className={cn(
-        'grid grid-rows-[auto_1fr] place-items-center gap-1.5 text-center has-data-[slot=alert-dialog-media]:grid-rows-[auto_auto_1fr] has-data-[slot=alert-dialog-media]:gap-x-4',
+        'flex flex-col items-center gap-1.5 text-center',
         className,
       )}
       {...props}
@@ -78,7 +78,7 @@ function AlertDialogFooter({
   return (
     <div
       data-slot="alert-dialog-footer"
-      className={cn('grid grid-cols-2 gap-2', className)}
+      className={cn('grid w-full grid-cols-2 gap-2', className)}
       {...props}
     />
   );
@@ -107,7 +107,7 @@ function AlertDialogTitle({
   return (
     <AlertDialogPrimitive.Title
       data-slot="alert-dialog-title"
-      className={cn('t2-600 text-text-high', className)}
+      className={cn('t3-700 text-text-high', className)}
       {...props}
     />
   );
