@@ -199,9 +199,9 @@ fn calculate_salary(
     let work_start_minutes = time_to_minutes(work_start_time);
     let raw_end_minutes = time_to_minutes(work_end_time);
 
-    // Overnight shift: treat end as next day when end < start (e.g. 18:00–00:00)
-    // When end == start, it means zero-duration work (early leave), not overnight
-    let work_end_minutes = if raw_end_minutes < work_start_minutes {
+    // Overnight shift: treat end as next day when end <= start (e.g. 22:00–06:00)
+    // When end == start, it means 24-hour work
+    let work_end_minutes = if raw_end_minutes <= work_start_minutes {
         raw_end_minutes + 24 * 60
     } else {
         raw_end_minutes
@@ -447,7 +447,7 @@ fn load_today_schedule(recovery_dir: &Path) -> Option<(String, String, String)> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::MenubarDisplayMode;
+    use crate::types::{MenubarDisplayMode, MenubarIconTheme};
 
     fn make_settings(salary_amount: u32, pay_day: u8) -> UserSettings {
         UserSettings {
@@ -459,6 +459,7 @@ mod tests {
             work_end_time: "18:00".to_string(),
             onboarding_completed: true,
             menubar_display_mode: MenubarDisplayMode::Daily,
+            menubar_icon_theme: MenubarIconTheme::default(),
         }
     }
 
@@ -570,6 +571,7 @@ mod tests {
             work_end_time: "00:00".to_string(),
             onboarding_completed: true,
             menubar_display_mode: MenubarDisplayMode::Daily,
+            menubar_icon_theme: MenubarIconTheme::default(),
         }
     }
 
