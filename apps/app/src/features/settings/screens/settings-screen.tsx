@@ -191,6 +191,11 @@ export function SettingsScreen() {
               )}
             </span>
           </InfoRow>
+          <InfoRow
+            as="button"
+            label="약관 및 정책"
+            onClick={() => navigate({ to: '/settings/terms-policy' })}
+          />
           <InfoRow as="button" label="문의하기" onClick={handleContactUs} />
         </SettingsSection>
 

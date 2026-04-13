@@ -13,6 +13,7 @@ import { Route as HomeRouteImport } from './routes/home'
 import { Route as OnboardingRouteRouteImport } from './routes/onboarding/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SettingsIndexRouteImport } from './routes/settings/index'
+import { Route as SettingsTermsPolicyRouteImport } from './routes/settings/terms-policy'
 import { Route as SettingsSalaryInfoRouteImport } from './routes/settings/salary-info'
 import { Route as SettingsEditScheduleRouteImport } from './routes/settings/edit-schedule'
 import { Route as SettingsEditSalaryRouteImport } from './routes/settings/edit-salary'
@@ -39,6 +40,11 @@ const IndexRoute = IndexRouteImport.update({
 const SettingsIndexRoute = SettingsIndexRouteImport.update({
   id: '/settings/',
   path: '/settings/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsTermsPolicyRoute = SettingsTermsPolicyRouteImport.update({
+  id: '/settings/terms-policy',
+  path: '/settings/terms-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsSalaryInfoRoute = SettingsSalaryInfoRouteImport.update({
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/settings/edit-salary': typeof SettingsEditSalaryRoute
   '/settings/edit-schedule': typeof SettingsEditScheduleRoute
   '/settings/salary-info': typeof SettingsSalaryInfoRoute
+  '/settings/terms-policy': typeof SettingsTermsPolicyRoute
   '/settings/': typeof SettingsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/settings/edit-salary': typeof SettingsEditSalaryRoute
   '/settings/edit-schedule': typeof SettingsEditScheduleRoute
   '/settings/salary-info': typeof SettingsSalaryInfoRoute
+  '/settings/terms-policy': typeof SettingsTermsPolicyRoute
   '/settings': typeof SettingsIndexRoute
 }
 export interface FileRoutesById {
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   '/settings/edit-salary': typeof SettingsEditSalaryRoute
   '/settings/edit-schedule': typeof SettingsEditScheduleRoute
   '/settings/salary-info': typeof SettingsSalaryInfoRoute
+  '/settings/terms-policy': typeof SettingsTermsPolicyRoute
   '/settings/': typeof SettingsIndexRoute
 }
 export interface FileRouteTypes {
@@ -130,6 +139,7 @@ export interface FileRouteTypes {
     | '/settings/edit-salary'
     | '/settings/edit-schedule'
     | '/settings/salary-info'
+    | '/settings/terms-policy'
     | '/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -143,6 +153,7 @@ export interface FileRouteTypes {
     | '/settings/edit-salary'
     | '/settings/edit-schedule'
     | '/settings/salary-info'
+    | '/settings/terms-policy'
     | '/settings'
   id:
     | '__root__'
@@ -156,6 +167,7 @@ export interface FileRouteTypes {
     | '/settings/edit-salary'
     | '/settings/edit-schedule'
     | '/settings/salary-info'
+    | '/settings/terms-policy'
     | '/settings/'
   fileRoutesById: FileRoutesById
 }
@@ -166,6 +178,7 @@ export interface RootRouteChildren {
   SettingsEditSalaryRoute: typeof SettingsEditSalaryRoute
   SettingsEditScheduleRoute: typeof SettingsEditScheduleRoute
   SettingsSalaryInfoRoute: typeof SettingsSalaryInfoRoute
+  SettingsTermsPolicyRoute: typeof SettingsTermsPolicyRoute
   SettingsIndexRoute: typeof SettingsIndexRoute
 }
 
@@ -197,6 +210,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings/'
       preLoaderRoute: typeof SettingsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/terms-policy': {
+      id: '/settings/terms-policy'
+      path: '/settings/terms-policy'
+      fullPath: '/settings/terms-policy'
+      preLoaderRoute: typeof SettingsTermsPolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings/salary-info': {
@@ -276,6 +296,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsEditSalaryRoute: SettingsEditSalaryRoute,
   SettingsEditScheduleRoute: SettingsEditScheduleRoute,
   SettingsSalaryInfoRoute: SettingsSalaryInfoRoute,
+  SettingsTermsPolicyRoute: SettingsTermsPolicyRoute,
   SettingsIndexRoute: SettingsIndexRoute,
 }
 export const routeTree = rootRouteImport

@@ -189,9 +189,9 @@ fn calculate_salary(
     let work_start_minutes = time_to_minutes(work_start_time);
     let raw_end_minutes = time_to_minutes(work_end_time);
 
-    // Overnight shift: treat end as next day when end < start (e.g. 18:00–00:00)
-    // When end == start, it means zero-duration work (early leave), not overnight
-    let work_end_minutes = if raw_end_minutes < work_start_minutes {
+    // Overnight shift: treat end as next day when end <= start (e.g. 22:00–06:00)
+    // When end == start, it means 24-hour work
+    let work_end_minutes = if raw_end_minutes <= work_start_minutes {
         raw_end_minutes + 24 * 60
     } else {
         raw_end_minutes

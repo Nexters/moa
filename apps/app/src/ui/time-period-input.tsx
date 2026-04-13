@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { cn } from 'tailwind-variants';
 
-import { ArrowRightIcon } from './icons';
+import { ArrowRightIcon, ClockIcon } from './icons';
 import { TimeInput } from './time-input';
 
 // ============================================================================
@@ -17,8 +17,25 @@ export interface TimePeriodValue {
 // Utilities
 // ============================================================================
 
-export function isTimePeriodValid(value: TimePeriodValue): boolean {
-  return value.startTime < value.endTime;
+function parseTimeToMinutes(time: string): number {
+  const [hours, minutes] = time.split(':').map(Number);
+  return hours * 60 + minutes;
+}
+
+function getTimeDiffInMinutes(value: TimePeriodValue): number {
+  const start = parseTimeToMinutes(value.startTime);
+  const end = parseTimeToMinutes(value.endTime);
+  if (end > start) return end - start;
+  return 24 * 60 - start + end;
+}
+
+function formatDuration(totalMinutes: number): string | null {
+  if (totalMinutes === 0) return null;
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours > 0 && minutes > 0) return `총 ${hours}시간 ${minutes}분 근무해요.`;
+  if (hours > 0) return `총 ${hours}시간 근무해요.`;
+  return `총 ${minutes}분 근무해요.`;
 }
 
 // ============================================================================
@@ -71,22 +88,32 @@ export function TimePeriodInput({
     onChangeProp?.(newValue);
   };
 
+  const duration = formatDuration(getTimeDiffInMinutes(value));
+
   return (
-    <div className={cn('flex items-center gap-5', className)}>
-      <TimeInput
-        value={value.startTime}
-        onChange={(startTime) => handleChange({ ...value, startTime })}
-        hourRef={startHourRef}
-        minuteRef={startMinuteRef}
-        onRightFocus={() => endHourRef.current?.focus()}
-      />
-      <ArrowRightIcon className="text-text-low" />
-      <TimeInput
-        value={value.endTime}
-        onChange={(endTime) => handleChange({ ...value, endTime })}
-        hourRef={endHourRef}
-        onLeftFocus={() => startMinuteRef.current?.focus()}
-      />
+    <div className={cn('flex flex-col gap-2', className)}>
+      <div className="flex items-center gap-3">
+        <TimeInput
+          value={value.startTime}
+          onChange={(startTime) => handleChange({ ...value, startTime })}
+          hourRef={startHourRef}
+          minuteRef={startMinuteRef}
+          onRightFocus={() => endHourRef.current?.focus()}
+        />
+        <ArrowRightIcon className="text-text-low" />
+        <TimeInput
+          value={value.endTime}
+          onChange={(endTime) => handleChange({ ...value, endTime })}
+          hourRef={endHourRef}
+          onLeftFocus={() => startMinuteRef.current?.focus()}
+        />
+      </div>
+      {duration && (
+        <div className="flex items-center gap-1">
+          <ClockIcon className="text-green-40" />
+          <span className="b2-500 text-green-40">{duration}</span>
+        </div>
+      )}
     </div>
   );
 }

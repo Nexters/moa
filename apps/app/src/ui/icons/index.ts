@@ -2,6 +2,7 @@ export { ArrowLeftIcon } from './arrow-left';
 export { CelebrationIcon } from './celebration';
 export { ArrowRightIcon } from './arrow-right';
 export { CheckIcon } from './check';
+export { ClockIcon } from './clock';
 export * from './chevron';
 export { HeroIcon, type HeroIconVariant } from './hero-icon';
 export { HolidayIcon } from './holiday';
