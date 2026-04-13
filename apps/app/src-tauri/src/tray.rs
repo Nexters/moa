@@ -1,7 +1,7 @@
 //! System tray/menu bar icon functionality.
 
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{LazyLock, Mutex};
+use std::sync::Mutex;
 use std::time::Duration;
 
 use tauri::{
@@ -40,6 +40,10 @@ static TRAY_FRAMES: [&[u8]; 14] = [
 
 /// Embedded tray icons — dark theme (black icons for light menubar)
 static TRAY_ICON_IDLE_DARK: &[u8] = include_bytes!("../icons/tray-idle-light.png");
+
+/// Embedded tray icons — green (근무 완료 상태)
+static TRAY_ICON_IDLE_GREEN: &[u8] = include_bytes!("../icons/tray-idle-green.png");
+static TRAY_ICON_IDLE_DARK_GREEN: &[u8] = include_bytes!("../icons/tray-idle-light-green.png");
 static TRAY_FRAMES_DARK: [&[u8]; 14] = [
     include_bytes!("../icons/tray-frame-light-0.png"),
     include_bytes!("../icons/tray-frame-light-1.png"),
@@ -69,52 +73,6 @@ static IS_COMPLETED: AtomicBool = AtomicBool::new(false);
 /// Animation frame interval (85ms × 14 frames ≈ 1.2s per rotation)
 const FRAME_INTERVAL: Duration = Duration::from_millis(85);
 
-/// 초록색 틴팅된 아이콘 캐시 (런타임 1회 생성)
-static TRAY_ICON_IDLE_GREEN: LazyLock<Vec<u8>> = LazyLock::new(|| tint_icon_green(TRAY_ICON_IDLE));
-static TRAY_ICON_IDLE_DARK_GREEN: LazyLock<Vec<u8>> =
-    LazyLock::new(|| tint_icon_green(TRAY_ICON_IDLE_DARK));
-
-/// PNG 아이콘을 초록색으로 틴팅 (불투명 픽셀의 색상을 초록으로 교체)
-fn tint_icon_green(png_bytes: &[u8]) -> Vec<u8> {
-    use image::{ImageFormat, ImageReader};
-    use std::io::Cursor;
-
-    let img = ImageReader::with_format(Cursor::new(png_bytes), ImageFormat::Png)
-        .decode()
-        .expect("Failed to decode tray icon PNG");
-    let mut rgba = img.into_rgba8();
-
-    // 초록색 (Tailwind green-500: #22c55e)
-    let (gr, gg, gb) = (34u8, 197u8, 94u8);
-
-    for pixel in rgba.pixels_mut() {
-        let [r, g, b, a] = pixel.0;
-        if a == 0 {
-            continue;
-        }
-        // 원본 휘도를 기준으로 초록색 강도 조절
-        let luminance = (r as f32 * 0.299 + g as f32 * 0.587 + b as f32 * 0.114) / 255.0;
-        pixel.0 = [
-            (gr as f32 * luminance) as u8,
-            (gg as f32 * luminance) as u8,
-            (gb as f32 * luminance) as u8,
-            a,
-        ];
-    }
-
-    let mut buf = Vec::new();
-    let encoder = image::codecs::png::PngEncoder::new(Cursor::new(&mut buf));
-    image::ImageEncoder::write_image(
-        encoder,
-        rgba.as_raw(),
-        rgba.width(),
-        rgba.height(),
-        image::ExtendedColorType::Rgba8,
-    )
-    .expect("Failed to encode green-tinted icon");
-    buf
-}
-
 fn idle_icon() -> &'static [u8] {
     if IS_LIGHT_ICON.load(Ordering::Relaxed) {
         TRAY_ICON_IDLE
@@ -125,9 +83,9 @@ fn idle_icon() -> &'static [u8] {
 
 fn idle_icon_green() -> &'static [u8] {
     if IS_LIGHT_ICON.load(Ordering::Relaxed) {
-        &TRAY_ICON_IDLE_GREEN
+        TRAY_ICON_IDLE_GREEN
     } else {
-        &TRAY_ICON_IDLE_DARK_GREEN
+        TRAY_ICON_IDLE_DARK_GREEN
     }
 }
 

@@ -29,7 +29,6 @@ log = "0.4"
 regex = "1"
 chrono = { version = "0.4", features = ["serde"] }
 rand = "0.9"
-image = { version = "0.25", default-features = false, features = ["png"] }
 
 tauri-plugin-clipboard-manager = "2"
 tauri-plugin-dialog = "2"
