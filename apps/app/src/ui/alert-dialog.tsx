@@ -152,7 +152,7 @@ function AlertDialogAction({
 
 function AlertDialogCancel({
   className,
-  variant = 'secondary',
+  variant = 'tertiary',
   size = 'md',
   fullWidth = true,
   rounded = 'full',
