@@ -28,7 +28,7 @@ function AlertDialogOverlay({
     <AlertDialogPrimitive.Backdrop
       data-slot="alert-dialog-overlay"
       className={cn(
-        'data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 fixed inset-0 isolate z-50 bg-black/80 duration-100',
+        'data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 fixed inset-0 isolate z-50 bg-black/60 duration-100',
         className,
       )}
       {...props}
@@ -38,19 +38,15 @@ function AlertDialogOverlay({
 
 function AlertDialogContent({
   className,
-  size = 'default',
   ...props
-}: AlertDialogPrimitive.Popup.Props & {
-  size?: 'default' | 'sm';
-}) {
+}: AlertDialogPrimitive.Popup.Props) {
   return (
     <AlertDialogPortal>
       <AlertDialogOverlay />
       <AlertDialogPrimitive.Popup
         data-slot="alert-dialog-content"
-        data-size={size}
         className={cn(
-          'data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 bg-bg-primary ring-gray-70 group/alert-dialog-content fixed top-1/2 left-1/2 z-50 grid w-full -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl p-4 ring-1 duration-100 outline-none data-[size=default]:max-w-xs data-[size=sm]:max-w-xs data-[size=default]:sm:max-w-sm',
+          'data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 bg-container-secondary fixed top-1/2 left-1/2 z-50 flex w-full max-w-[298px] -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-5 rounded-2xl px-4 pt-6 pb-[18px] duration-100 outline-none',
           className,
         )}
         {...props}
@@ -67,7 +63,7 @@ function AlertDialogHeader({
     <div
       data-slot="alert-dialog-header"
       className={cn(
-        'grid grid-rows-[auto_1fr] place-items-center gap-1.5 text-center has-data-[slot=alert-dialog-media]:grid-rows-[auto_auto_1fr] has-data-[slot=alert-dialog-media]:gap-x-4 sm:group-data-[size=default]/alert-dialog-content:place-items-start sm:group-data-[size=default]/alert-dialog-content:text-left sm:group-data-[size=default]/alert-dialog-content:has-data-[slot=alert-dialog-media]:grid-rows-[auto_1fr]',
+        'flex flex-col items-center gap-1.5 text-center',
         className,
       )}
       {...props}
@@ -82,10 +78,7 @@ function AlertDialogFooter({
   return (
     <div
       data-slot="alert-dialog-footer"
-      className={cn(
-        'border-gray-70 bg-bg-secondary/50 -mx-4 -mb-4 flex flex-col gap-2 rounded-b-xl border-t p-4 group-data-[size=sm]/alert-dialog-content:grid group-data-[size=sm]/alert-dialog-content:grid-cols-2 sm:flex-row sm:justify-end',
-        className,
-      )}
+      className={cn('grid w-full grid-cols-2 gap-2', className)}
       {...props}
     />
   );
@@ -99,7 +92,7 @@ function AlertDialogMedia({
     <div
       data-slot="alert-dialog-media"
       className={cn(
-        "bg-container-secondary mb-2 inline-flex size-10 items-center justify-center rounded-md sm:group-data-[size=default]/alert-dialog-content:row-span-2 *:[svg:not([class*='size-'])]:size-6",
+        "bg-container-secondary mb-2 inline-flex size-10 items-center justify-center rounded-md *:[svg:not([class*='size-'])]:size-6",
         className,
       )}
       {...props}
@@ -114,10 +107,7 @@ function AlertDialogTitle({
   return (
     <AlertDialogPrimitive.Title
       data-slot="alert-dialog-title"
-      className={cn(
-        't2-600 text-text-high sm:group-data-[size=default]/alert-dialog-content:group-has-data-[slot=alert-dialog-media]/alert-dialog-content:col-start-2',
-        className,
-      )}
+      className={cn('t3-700 text-text-high', className)}
       {...props}
     />
   );
@@ -144,6 +134,7 @@ function AlertDialogAction({
   variant = 'primary',
   size = 'md',
   fullWidth = true,
+  rounded = 'full',
   ...props
 }: React.ComponentProps<typeof Button>) {
   return (
@@ -152,6 +143,7 @@ function AlertDialogAction({
       variant={variant}
       size={size}
       fullWidth={fullWidth}
+      rounded={rounded}
       className={cn(className)}
       {...props}
     />
@@ -160,17 +152,28 @@ function AlertDialogAction({
 
 function AlertDialogCancel({
   className,
-  variant = 'secondary',
+  variant = 'tertiary',
   size = 'md',
   fullWidth = true,
+  rounded = 'full',
   ...props
 }: AlertDialogPrimitive.Close.Props &
-  Pick<React.ComponentProps<typeof Button>, 'variant' | 'size' | 'fullWidth'>) {
+  Pick<
+    React.ComponentProps<typeof Button>,
+    'variant' | 'size' | 'fullWidth' | 'rounded'
+  >) {
   return (
     <AlertDialogPrimitive.Close
       data-slot="alert-dialog-cancel"
       className={cn(className)}
-      render={<Button variant={variant} size={size} fullWidth={fullWidth} />}
+      render={
+        <Button
+          variant={variant}
+          size={size}
+          fullWidth={fullWidth}
+          rounded={rounded}
+        />
+      }
       {...props}
     />
   );
