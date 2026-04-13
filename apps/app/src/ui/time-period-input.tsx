@@ -17,10 +17,6 @@ export interface TimePeriodValue {
 // Utilities
 // ============================================================================
 
-export function isTimePeriodValid(value: TimePeriodValue): boolean {
-  return value.startTime < value.endTime;
-}
-
 function parseTimeToMinutes(time: string): number {
   const [hours, minutes] = time.split(':').map(Number);
   return hours * 60 + minutes;
