@@ -16,20 +16,7 @@ use specta::Type;
 use tauri::{AppHandle, Emitter, Manager};
 
 use crate::tray;
-use crate::types::{MenubarDisplayMode, SalaryType, UserSettings};
-
-// ============================================================================
-// Types
-// ============================================================================
-
-#[derive(Debug, Clone, Serialize, Type, PartialEq)]
-#[serde(rename_all = "kebab-case")]
-pub enum WorkStatus {
-    BeforeWork,
-    Working,
-    Completed,
-    DayOff,
-}
+use crate::types::{MenubarDisplayMode, SalaryType, UserSettings, WorkStatus};
 
 #[derive(Debug, Clone, Serialize, Type)]
 #[serde(rename_all = "camelCase")]
@@ -80,7 +67,7 @@ pub fn start_salary_ticker(app_handle: AppHandle) {
     std::thread::spawn(move || {
         let mut settings: Option<UserSettings> = load_settings(&app_handle);
         let mut prev_title: Option<String> = None;
-        let mut prev_is_working: Option<bool> = None;
+        let mut prev_work_status: Option<WorkStatus> = None;
 
         loop {
             // Re-read settings on change
@@ -149,12 +136,16 @@ pub fn start_salary_ticker(app_handle: AppHandle) {
                 }
             };
 
+            let is_completed = payload.work_status == WorkStatus::Completed;
+
             if new_title != prev_title {
                 #[cfg(target_os = "macos")]
                 if let Some(tray_icon) = app_handle.tray_by_id("tray") {
-                    if let Err(e) =
-                        tray::set_tray_attributed_title(&tray_icon, new_title.as_deref())
-                    {
+                    if let Err(e) = tray::set_tray_attributed_title(
+                        &tray_icon,
+                        new_title.as_deref(),
+                        is_completed,
+                    ) {
                         log::warn!("트레이 타이틀 설정 실패: {e}");
                     }
                 }
@@ -162,10 +153,9 @@ pub fn start_salary_ticker(app_handle: AppHandle) {
             }
 
             // Update tray icon state
-            let is_working = payload.work_status == WorkStatus::Working;
-            if prev_is_working != Some(is_working) {
-                tray::update_icon_state(&app_handle, is_working);
-                prev_is_working = Some(is_working);
+            if prev_work_status.as_ref() != Some(&payload.work_status) {
+                tray::update_icon_state(&app_handle, &payload.work_status);
+                prev_work_status = Some(payload.work_status.clone());
             }
 
             // Emit event to frontend
@@ -459,6 +449,7 @@ mod tests {
             work_end_time: "18:00".to_string(),
             onboarding_completed: true,
             menubar_display_mode: MenubarDisplayMode::Daily,
+            ..Default::default()
         }
     }
 
@@ -570,6 +561,7 @@ mod tests {
             work_end_time: "00:00".to_string(),
             onboarding_completed: true,
             menubar_display_mode: MenubarDisplayMode::Daily,
+            ..Default::default()
         }
     }
 

@@ -1,7 +1,7 @@
 //! System tray/menu bar icon functionality.
 
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Mutex;
+use std::sync::{LazyLock, Mutex};
 use std::time::Duration;
 
 use tauri::{
@@ -11,7 +11,7 @@ use tauri::{
     AppHandle, Emitter, Manager,
 };
 
-use crate::types::{MenubarDisplayMode, MenubarIconTheme, UserSettings};
+use crate::types::{MenubarDisplayMode, MenubarIconTheme, UserSettings, WorkStatus};
 
 #[cfg(target_os = "macos")]
 use tauri_nspanel::ManagerExt;
@@ -63,14 +63,80 @@ static ANIMATING: AtomicBool = AtomicBool::new(false);
 /// true = 밝은 아이콘 (Light), false = 어두운 아이콘 (Dark)
 static IS_LIGHT_ICON: AtomicBool = AtomicBool::new(true);
 
+/// 근무 완료 상태 플래그 (초록색 아이콘/텍스트 표시용)
+static IS_COMPLETED: AtomicBool = AtomicBool::new(false);
+
 /// Animation frame interval (85ms × 14 frames ≈ 1.2s per rotation)
 const FRAME_INTERVAL: Duration = Duration::from_millis(85);
+
+/// 초록색 틴팅된 아이콘 캐시 (런타임 1회 생성)
+static TRAY_ICON_IDLE_GREEN: LazyLock<Vec<u8>> = LazyLock::new(|| tint_icon_green(TRAY_ICON_IDLE));
+static TRAY_ICON_IDLE_DARK_GREEN: LazyLock<Vec<u8>> =
+    LazyLock::new(|| tint_icon_green(TRAY_ICON_IDLE_DARK));
+
+/// PNG 아이콘을 초록색으로 틴팅 (불투명 픽셀의 색상을 초록으로 교체)
+fn tint_icon_green(png_bytes: &[u8]) -> Vec<u8> {
+    use image::{ImageFormat, ImageReader};
+    use std::io::Cursor;
+
+    let img = ImageReader::with_format(Cursor::new(png_bytes), ImageFormat::Png)
+        .decode()
+        .expect("Failed to decode tray icon PNG");
+    let mut rgba = img.into_rgba8();
+
+    // 초록색 (Tailwind green-500: #22c55e)
+    let (gr, gg, gb) = (34u8, 197u8, 94u8);
+
+    for pixel in rgba.pixels_mut() {
+        let [r, g, b, a] = pixel.0;
+        if a == 0 {
+            continue;
+        }
+        // 원본 휘도를 기준으로 초록색 강도 조절
+        let luminance = (r as f32 * 0.299 + g as f32 * 0.587 + b as f32 * 0.114) / 255.0;
+        pixel.0 = [
+            (gr as f32 * luminance) as u8,
+            (gg as f32 * luminance) as u8,
+            (gb as f32 * luminance) as u8,
+            a,
+        ];
+    }
+
+    let mut buf = Vec::new();
+    let encoder = image::codecs::png::PngEncoder::new(Cursor::new(&mut buf));
+    image::ImageEncoder::write_image(
+        encoder,
+        rgba.as_raw(),
+        rgba.width(),
+        rgba.height(),
+        image::ExtendedColorType::Rgba8,
+    )
+    .expect("Failed to encode green-tinted icon");
+    buf
+}
 
 fn idle_icon() -> &'static [u8] {
     if IS_LIGHT_ICON.load(Ordering::Relaxed) {
         TRAY_ICON_IDLE
     } else {
         TRAY_ICON_IDLE_DARK
+    }
+}
+
+fn idle_icon_green() -> &'static [u8] {
+    if IS_LIGHT_ICON.load(Ordering::Relaxed) {
+        &TRAY_ICON_IDLE_GREEN
+    } else {
+        &TRAY_ICON_IDLE_DARK_GREEN
+    }
+}
+
+/// IS_COMPLETED 상태에 따라 적절한 idle 아이콘 반환
+fn current_idle_icon() -> &'static [u8] {
+    if IS_COMPLETED.load(Ordering::Relaxed) {
+        idle_icon_green()
+    } else {
+        idle_icon()
     }
 }
 
@@ -346,7 +412,7 @@ fn handle_icon_theme_change(app: &AppHandle, menu_id: &str) {
     // 비애니메이션 상태일 때 즉시 아이콘 교체
     if !ANIMATING.load(Ordering::Relaxed) {
         if let Some(tray) = app.tray_by_id("tray") {
-            if let Ok(icon) = Image::from_bytes(idle_icon()) {
+            if let Ok(icon) = Image::from_bytes(current_idle_icon()) {
                 let _ = tray.set_icon(Some(icon));
             }
         }
@@ -402,7 +468,7 @@ pub fn refresh_icon_theme(app: &AppHandle, settings: &UserSettings) {
     // 비애니메이션 상태일 때 즉시 아이콘 교체
     if !ANIMATING.load(Ordering::Relaxed) {
         if let Some(tray) = app.tray_by_id("tray") {
-            if let Ok(icon) = Image::from_bytes(idle_icon()) {
+            if let Ok(icon) = Image::from_bytes(current_idle_icon()) {
                 let _ = tray.set_icon(Some(icon));
             }
         }
@@ -410,40 +476,59 @@ pub fn refresh_icon_theme(app: &AppHandle, settings: &UserSettings) {
 }
 
 /// 트레이 아이콘 상태 변경 로직 (커맨드와 내부 모두에서 사용)
-pub fn update_icon_state(app: &AppHandle, is_working: bool) {
-    if is_working {
-        // 이미 애니메이션 중이면 중복 spawn 방지
-        if ANIMATING.swap(true, Ordering::SeqCst) {
-            return;
-        }
+pub fn update_icon_state(app: &AppHandle, work_status: &WorkStatus) {
+    match work_status {
+        WorkStatus::Working => {
+            IS_COMPLETED.store(false, Ordering::Relaxed);
 
-        let app_clone = app.clone();
-        std::thread::spawn(move || {
-            let mut frame_idx: usize = 0;
+            // 이미 애니메이션 중이면 중복 spawn 방지
+            if ANIMATING.swap(true, Ordering::SeqCst) {
+                return;
+            }
 
-            while ANIMATING.load(Ordering::Relaxed) {
+            let app_clone = app.clone();
+            std::thread::spawn(move || {
+                let mut frame_idx: usize = 0;
+
+                while ANIMATING.load(Ordering::Relaxed) {
+                    if let Some(tray) = app_clone.tray_by_id("tray") {
+                        if let Ok(icon) = Image::from_bytes(frames()[frame_idx]) {
+                            let _ = tray.set_icon(Some(icon));
+                        }
+                    }
+
+                    frame_idx = (frame_idx + 1) % TRAY_FRAMES.len();
+                    std::thread::sleep(FRAME_INTERVAL);
+                }
+
+                // 애니메이션 종료 후 현재 상태에 맞는 idle 아이콘 복원
                 if let Some(tray) = app_clone.tray_by_id("tray") {
-                    if let Ok(icon) = Image::from_bytes(frames()[frame_idx]) {
+                    if let Ok(icon) = Image::from_bytes(current_idle_icon()) {
                         let _ = tray.set_icon(Some(icon));
                     }
                 }
+            });
 
-                frame_idx = (frame_idx + 1) % TRAY_FRAMES.len();
-                std::thread::sleep(FRAME_INTERVAL);
-            }
+            log::debug!("트레이 아이콘 애니메이션 시작");
+        }
+        WorkStatus::Completed => {
+            ANIMATING.store(false, Ordering::SeqCst);
+            IS_COMPLETED.store(true, Ordering::Relaxed);
 
-            // 애니메이션 종료 후 idle 아이콘 복원
-            if let Some(tray) = app_clone.tray_by_id("tray") {
-                if let Ok(icon) = Image::from_bytes(idle_icon()) {
+            // 즉시 초록색 아이콘 설정
+            if let Some(tray) = app.tray_by_id("tray") {
+                if let Ok(icon) = Image::from_bytes(idle_icon_green()) {
                     let _ = tray.set_icon(Some(icon));
                 }
             }
-        });
 
-        log::debug!("트레이 아이콘 애니메이션 시작");
-    } else {
-        ANIMATING.store(false, Ordering::SeqCst);
-        log::debug!("트레이 아이콘 애니메이션 중지");
+            log::debug!("트레이 아이콘: 근무 완료 (초록)");
+        }
+        WorkStatus::BeforeWork | WorkStatus::DayOff => {
+            ANIMATING.store(false, Ordering::SeqCst);
+            IS_COMPLETED.store(false, Ordering::Relaxed);
+            log::debug!("트레이 아이콘 애니메이션 중지");
+        }
     }
 }
 
@@ -451,13 +536,23 @@ pub fn update_icon_state(app: &AppHandle, is_working: bool) {
 #[tauri::command]
 #[specta::specta]
 pub fn set_tray_icon_state(app: AppHandle, is_working: bool) -> Result<(), String> {
-    update_icon_state(&app, is_working);
+    let status = if is_working {
+        WorkStatus::Working
+    } else {
+        WorkStatus::BeforeWork
+    };
+    update_icon_state(&app, &status);
     Ok(())
 }
 
 /// Monospaced digit 폰트로 트레이 타이틀 설정 (메뉴바 너비 고정용)
+/// green=true이면 텍스트를 초록색으로 표시 (근무 완료 상태)
 #[cfg(target_os = "macos")]
-pub fn set_tray_attributed_title(tray: &TrayIcon, title: Option<&str>) -> Result<(), String> {
+pub fn set_tray_attributed_title(
+    tray: &TrayIcon,
+    title: Option<&str>,
+    green: bool,
+) -> Result<(), String> {
     #![allow(deprecated)]
     use std::ffi::CString;
     use tauri_nspanel::cocoa::base::{id, nil};
@@ -489,15 +584,34 @@ pub fn set_tray_attributed_title(tray: &TrayIcon, title: Option<&str>) -> Result
                         weight: 0.0_f64
                     ];
 
-                    let font_key_c = CString::new("NSFont").unwrap();
-                    let font_key: id =
-                        msg_send![class!(NSString), stringWithUTF8String: font_key_c.as_ptr()];
+                    let attrs: id = if green {
+                        let color: id = msg_send![class!(NSColor), systemGreenColor];
 
-                    let attrs: id = msg_send![
-                        class!(NSDictionary),
-                        dictionaryWithObject: font
-                        forKey: font_key
-                    ];
+                        let font_key_c = CString::new("NSFont").unwrap();
+                        let font_key: id =
+                            msg_send![class!(NSString), stringWithUTF8String: font_key_c.as_ptr()];
+                        let color_key_c = CString::new("NSColor").unwrap();
+                        let color_key: id =
+                            msg_send![class!(NSString), stringWithUTF8String: color_key_c.as_ptr()];
+
+                        let keys: [id; 2] = [font_key, color_key];
+                        let objects: [id; 2] = [font, color];
+                        msg_send![
+                            class!(NSDictionary),
+                            dictionaryWithObjects: objects.as_ptr()
+                            forKeys: keys.as_ptr()
+                            count: 2usize
+                        ]
+                    } else {
+                        let font_key_c = CString::new("NSFont").unwrap();
+                        let font_key: id =
+                            msg_send![class!(NSString), stringWithUTF8String: font_key_c.as_ptr()];
+                        msg_send![
+                            class!(NSDictionary),
+                            dictionaryWithObject: font
+                            forKey: font_key
+                        ]
+                    };
 
                     let attr_str: id = msg_send![class!(NSAttributedString), alloc];
                     let attr_str: id = msg_send![
@@ -541,7 +655,7 @@ pub fn set_tray_title(app: AppHandle, title: Option<String>) -> Result<(), Strin
             .tray_by_id("tray")
             .ok_or("트레이 아이콘을 찾을 수 없습니다")?;
 
-        set_tray_attributed_title(&tray, title.as_deref())?;
+        set_tray_attributed_title(&tray, title.as_deref(), false)?;
 
         log::debug!("트레이 타이틀 변경: {:?}", title);
     }

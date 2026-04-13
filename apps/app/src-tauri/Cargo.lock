@@ -2413,6 +2413,7 @@ name = "moa"
 version = "1.0.2"
 dependencies = [
  "chrono",
+ "image",
  "log",
  "monitor",
  "rand 0.9.2",
