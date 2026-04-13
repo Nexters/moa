@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
+import { getRouteApi, useNavigate } from '@tanstack/react-router';
 
 import moneyBg from '~/assets/money-bg.png';
 import { useSocialLogin } from '~/hooks/use-auth';
@@ -8,10 +8,10 @@ import { userSettingsQuery } from '~/queries';
 import { AppBar, Button } from '~/ui';
 import { AppleLogoIcon, KakaoLogoIcon, MoaLogoIcon } from '~/ui/icons';
 
-import { useOnboardingContext } from '..';
+const route = getRouteApi('/login');
 
-export function WelcomeScreen() {
-  const { goToNext } = useOnboardingContext();
+export function LoginScreen() {
+  const { returnTo } = route.useSearch();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const socialLogin = useSocialLogin();
@@ -23,23 +23,32 @@ export function WelcomeScreen() {
     socialLogin.mutate(provider, {
       onSuccess: (result) => {
         if (result.needsOnboarding) {
-          goToNext();
+          void navigate({ to: '/onboarding/salary' });
         } else {
           void queryClient.invalidateQueries({
             queryKey: userSettingsQuery.all(),
           });
-          void navigate({ to: '/home' });
+          void navigate({ to: returnTo ?? '/home' });
         }
-      },
-      onError: (error) => {
-        console.error('소셜 로그인 실패:', error);
       },
     });
   };
 
+  const handleGuestStart = () => {
+    void navigate({ to: '/onboarding/salary' });
+  };
+
   return (
     <main className="flex flex-1 flex-col">
-      <AppBar type="main" />
+      {returnTo ? (
+        <AppBar
+          type="detail"
+          title="로그인"
+          onBack={() => navigate({ to: returnTo })}
+        />
+      ) : (
+        <AppBar type="main" />
+      )}
 
       <div className="flex flex-1 flex-col items-center px-6 pt-3">
         <img src={moneyBg} alt="" className="w-[340px] object-contain" />
@@ -92,9 +101,11 @@ export function WelcomeScreen() {
           </span>
         </Button>
 
-        <Button variant="link" onClick={goToNext}>
-          게스트로 시작하기
-        </Button>
+        {!returnTo && (
+          <Button variant="link" onClick={handleGuestStart}>
+            게스트로 시작하기
+          </Button>
+        )}
       </div>
     </main>
   );

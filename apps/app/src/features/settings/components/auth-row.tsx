@@ -1,3 +1,5 @@
+import { Link } from '@tanstack/react-router';
+
 import type { AuthProvider, AuthStatus } from '~/lib/tauri-bindings';
 import { Button } from '~/ui';
 import { ChevronRightIcon } from '~/ui/icons';
@@ -10,17 +12,11 @@ const PROVIDER_LABELS: Record<AuthProvider, string> = {
 
 interface Props {
   authStatus: AuthStatus | undefined;
-  onLogin: (provider: AuthProvider) => void;
   onLogout: () => void;
   isLogoutPending: boolean;
 }
 
-export function AuthRow({
-  authStatus,
-  onLogin,
-  onLogout,
-  isLogoutPending,
-}: Props) {
+export function AuthRow({ authStatus, onLogout, isLogoutPending }: Props) {
   if (authStatus?.isLoggedIn) {
     const label = authStatus.provider
       ? `${PROVIDER_LABELS[authStatus.provider]} 연동됨`
@@ -42,31 +38,13 @@ export function AuthRow({
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex gap-2.5">
-        <button
-          type="button"
-          className={infoRowVariants({
-            interactive: true,
-            className: 'flex flex-1 items-center justify-between',
-          })}
-          onClick={() => onLogin('kakao')}
-        >
-          카카오로 로그인
-          <ChevronRightIcon className="text-text-low size-6" />
-        </button>
-        <button
-          type="button"
-          className={infoRowVariants({
-            interactive: true,
-            className: 'flex flex-1 items-center justify-between',
-          })}
-          onClick={() => onLogin('apple')}
-        >
-          Apple로 로그인
-          <ChevronRightIcon className="text-text-low size-6" />
-        </button>
-      </div>
-    </div>
+    <Link
+      to="/login"
+      search={{ returnTo: '/settings' }}
+      className="flex w-full items-center gap-1"
+    >
+      <span className="t1-700 text-green-40">로그인 · 회원가입하기</span>
+      <ChevronRightIcon className="text-green-40 size-6" />
+    </Link>
   );
 }

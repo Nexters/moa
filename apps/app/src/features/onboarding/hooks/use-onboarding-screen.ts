@@ -1,7 +1,6 @@
 import { useNavigate, useRouterState } from '@tanstack/react-router';
 
 const SCREEN_ORDER = [
-  '/onboarding/welcome',
   '/onboarding/salary',
   '/onboarding/schedule',
   '/onboarding/completion',

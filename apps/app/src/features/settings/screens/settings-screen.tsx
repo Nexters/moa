@@ -4,7 +4,7 @@ import { enable, disable } from '@tauri-apps/plugin-autostart';
 import { exit } from '@tauri-apps/plugin-process';
 import { toast } from 'sonner';
 
-import { useAuthStatus, useLogout, useSocialLogin } from '~/hooks/use-auth';
+import { useAuthStatus, useLogout } from '~/hooks/use-auth';
 import { useUserSettings } from '~/hooks/use-user-settings';
 import { posthog } from '~/lib/analytics';
 import { useCheckForUpdates } from '~/lib/check-for-updates';
@@ -36,7 +36,6 @@ export function SettingsScreen() {
   const queryClient = useQueryClient();
   const { data: settings } = useUserSettings();
   const { data: authStatus } = useAuthStatus();
-  const socialLogin = useSocialLogin();
   const logoutMutation = useLogout();
 
   const { update, installing, install } = useCheckForUpdates({ delay: 0 });
@@ -114,7 +113,7 @@ export function SettingsScreen() {
     onSuccess: () => {
       void commands.notifySettingsChanged();
       queryClient.clear();
-      void navigate({ to: '/onboarding/welcome' });
+      void navigate({ to: '/login' });
     },
   });
 
@@ -135,15 +134,9 @@ export function SettingsScreen() {
       />
 
       <div className="scrollbar-overlay flex min-h-0 flex-1 flex-col gap-5 p-5">
-        <SettingsSection title="내 정보">
+        <SettingsSection title="내 계정">
           <AuthRow
             authStatus={authStatus}
-            onLogin={async (provider) => {
-              if (socialLogin.isPending) {
-                await commands.cancelSocialLogin();
-              }
-              socialLogin.mutate(provider);
-            }}
             onLogout={() => logoutMutation.mutate()}
             isLogoutPending={logoutMutation.isPending}
           />
