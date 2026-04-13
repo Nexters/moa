@@ -44,7 +44,7 @@ export function AuthRow({ authStatus, onLogout, isLogoutPending }: Props) {
       className="flex w-full items-center gap-1"
     >
       <span className="t1-700 text-green-40">로그인 · 회원가입하기</span>
-      <ChevronRightIcon className="text-green-40 size-6" />
+      <ChevronRightIcon className="text-text-high size-6" />
     </Link>
   );
 }

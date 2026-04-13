@@ -133,13 +133,17 @@ export function SettingsScreen() {
         onBack={() => navigate({ to: '/home' })}
       />
 
-      <div className="scrollbar-overlay flex min-h-0 flex-1 flex-col gap-5 p-5">
-        <SettingsSection title="내 계정">
+      <div className="scrollbar-overlay flex min-h-0 flex-1 flex-col gap-6 p-5">
+        <section className="flex flex-col gap-1">
+          <h2 className="b2-400 text-text-medium">내 계정</h2>
           <AuthRow
             authStatus={authStatus}
             onLogout={() => logoutMutation.mutate()}
             isLogoutPending={logoutMutation.isPending}
           />
+        </section>
+
+        <SettingsSection title="내 정보">
           <InfoRow
             as="button"
             label="월급 · 근무 정보"
