@@ -28,6 +28,17 @@ async socialLogin(provider: AuthProvider) : Promise<Result<LoginResult, string>>
 }
 },
 /**
+ * 진행 중인 소셜 로그인 취소
+ */
+async cancelSocialLogin() : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("cancel_social_login") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * 로그아웃
  */
 async logout() : Promise<Result<null, string>> {

@@ -11,7 +11,7 @@ export function useAuthStatus() {
 export function useSocialLogin() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: async (provider: AuthProvider) => {
       const result = await commands.socialLogin(provider);
       if (result.status === 'error') throw new Error(result.error);
@@ -24,7 +24,14 @@ export function useSocialLogin() {
       });
       void commands.notifySettingsChanged();
     },
+    onError: (error) => {
+      if (error.message.includes('취소')) {
+        mutation.reset();
+      }
+    },
   });
+
+  return mutation;
 }
 
 export function useLogout() {

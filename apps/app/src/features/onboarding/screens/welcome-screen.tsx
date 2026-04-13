@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 
 import moneyBg from '~/assets/money-bg.png';
 import { useSocialLogin } from '~/hooks/use-auth';
+import { commands } from '~/lib/tauri-bindings';
 import { userSettingsQuery } from '~/queries';
 import { AppBar, Button } from '~/ui';
 import { AppleLogoIcon, KakaoLogoIcon, MoaLogoIcon } from '~/ui/icons';
@@ -15,7 +16,10 @@ export function WelcomeScreen() {
   const queryClient = useQueryClient();
   const socialLogin = useSocialLogin();
 
-  const handleSocialLogin = (provider: 'kakao' | 'apple') => {
+  const handleSocialLogin = async (provider: 'kakao' | 'apple') => {
+    if (socialLogin.isPending) {
+      await commands.cancelSocialLogin();
+    }
     socialLogin.mutate(provider, {
       onSuccess: (result) => {
         if (result.needsOnboarding) {
@@ -40,8 +44,8 @@ export function WelcomeScreen() {
       <div className="flex flex-1 flex-col items-center px-6 pt-3">
         <img src={moneyBg} alt="" className="w-[340px] object-contain" />
 
-        <div className="-mt-16 flex flex-col items-center gap-2">
-          <MoaLogoIcon className="h-[60px] w-[160px]" />
+        <div className="-mt-16 flex flex-col items-center gap-3">
+          <MoaLogoIcon className="h-[44px] w-[144px]" />
           <p className="b2-500 text-text-medium">
             실시간으로 월급이 쌓이는 경험!
           </p>
@@ -55,7 +59,7 @@ export function WelcomeScreen() {
       )}
 
       {socialLogin.isPending && (
-        <p className="b2-400 text-text-low animate-pulse text-center">
+        <p className="b2-400 text-text-low animate-pulse pb-2 text-center">
           브라우저에서 로그인을 완료해 주세요
         </p>
       )}
@@ -67,12 +71,11 @@ export function WelcomeScreen() {
           size="lg"
           fullWidth
           className="bg-[#fee500] active:bg-[#e6cf00]"
-          disabled={socialLogin.isPending}
           onClick={() => handleSocialLogin('kakao')}
         >
           <span className="flex items-center justify-center gap-2">
             <KakaoLogoIcon />
-            {socialLogin.isPending ? '로그인 중...' : '카카오로 계속하기'}
+            카카오로 계속하기
           </span>
         </Button>
 
@@ -81,7 +84,6 @@ export function WelcomeScreen() {
           rounded="full"
           size="lg"
           fullWidth
-          disabled={socialLogin.isPending}
           onClick={() => handleSocialLogin('apple')}
         >
           <span className="flex items-center justify-center gap-2">
@@ -90,11 +92,7 @@ export function WelcomeScreen() {
           </span>
         </Button>
 
-        <Button
-          variant="link"
-          disabled={socialLogin.isPending}
-          onClick={goToNext}
-        >
+        <Button variant="link" onClick={goToNext}>
           게스트로 시작하기
         </Button>
       </div>

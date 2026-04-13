@@ -3,6 +3,7 @@
 use std::collections::HashMap;
 use std::io::{Read, Write};
 use std::net::TcpListener;
+use std::sync::atomic::{AtomicBool, Ordering};
 
 use serde::{Deserialize, Serialize};
 use specta::Type;
@@ -64,8 +65,8 @@ struct KakaoTokenResponse {
 async fn exchange_kakao_code(code: &str, redirect_uri: &str) -> Result<String, String> {
     let client_id =
         std::env::var("KAKAO_REST_API_KEY").map_err(|_| "KAKAO_REST_API_KEY 환경변수 미설정")?;
-    let client_secret = std::env::var("KAKAO_CLIENT_SECRET")
-        .map_err(|_| "KAKAO_CLIENT_SECRET 환경변수 미설정")?;
+    let client_secret =
+        std::env::var("KAKAO_CLIENT_SECRET").map_err(|_| "KAKAO_CLIENT_SECRET 환경변수 미설정")?;
 
     let client = reqwest::Client::new();
     let resp = client
@@ -173,6 +174,9 @@ async fn exchange_apple_code(code: &str, redirect_uri: &str) -> Result<String, S
 // Localhost OAuth callback server
 // ============================================================================
 
+/// 진행 중인 소셜 로그인 취소 플래그
+static SOCIAL_LOGIN_CANCELLED: AtomicBool = AtomicBool::new(false);
+
 /// OAuth callback용 고정 포트 (카카오/애플 콘솔에 등록 필요)
 const OAUTH_CALLBACK_PORT: u16 = 17171;
 
@@ -195,6 +199,9 @@ fn wait_for_auth_code(listener: &TcpListener) -> Result<String, String> {
         match listener.accept() {
             Ok(conn) => break conn,
             Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+                if SOCIAL_LOGIN_CANCELLED.load(Ordering::Relaxed) {
+                    return Err("소셜 로그인이 취소되었습니다".to_string());
+                }
                 if std::time::Instant::now() >= deadline {
                     return Err("OAuth 콜백 타임아웃 (2분 초과)".to_string());
                 }
@@ -250,6 +257,7 @@ fn extract_query_param(request: &str, key: &str) -> Option<String> {
 #[tauri::command]
 #[specta::specta]
 pub async fn social_login(app: AppHandle, provider: AuthProvider) -> Result<LoginResult, String> {
+    SOCIAL_LOGIN_CANCELLED.store(false, Ordering::Relaxed);
     let (listener, redirect_uri) = start_oauth_callback_server()?;
 
     // provider별 authorize URL 생성
@@ -325,6 +333,15 @@ pub async fn social_login(app: AppHandle, provider: AuthProvider) -> Result<Logi
         is_logged_in: true,
         needs_onboarding,
     })
+}
+
+/// 진행 중인 소셜 로그인 취소
+#[tauri::command]
+#[specta::specta]
+pub async fn cancel_social_login() -> Result<(), String> {
+    SOCIAL_LOGIN_CANCELLED.store(true, Ordering::Relaxed);
+    log::info!("소셜 로그인 취소 요청됨");
+    Ok(())
 }
 
 /// 로그아웃

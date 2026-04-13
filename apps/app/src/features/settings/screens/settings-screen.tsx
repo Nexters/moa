@@ -138,9 +138,13 @@ export function SettingsScreen() {
         <SettingsSection title="내 정보">
           <AuthRow
             authStatus={authStatus}
-            onLogin={(provider) => socialLogin.mutate(provider)}
+            onLogin={async (provider) => {
+              if (socialLogin.isPending) {
+                await commands.cancelSocialLogin();
+              }
+              socialLogin.mutate(provider);
+            }}
             onLogout={() => logoutMutation.mutate()}
-            isLoginPending={socialLogin.isPending}
             isLogoutPending={logoutMutation.isPending}
           />
           <InfoRow

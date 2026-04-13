@@ -12,7 +12,6 @@ interface Props {
   authStatus: AuthStatus | undefined;
   onLogin: (provider: AuthProvider) => void;
   onLogout: () => void;
-  isLoginPending: boolean;
   isLogoutPending: boolean;
 }
 
@@ -20,7 +19,6 @@ export function AuthRow({
   authStatus,
   onLogin,
   onLogout,
-  isLoginPending,
   isLogoutPending,
 }: Props) {
   if (authStatus?.isLoggedIn) {
@@ -52,7 +50,6 @@ export function AuthRow({
             interactive: true,
             className: 'flex flex-1 items-center justify-between',
           })}
-          disabled={isLoginPending}
           onClick={() => onLogin('kakao')}
         >
           카카오로 로그인
@@ -64,18 +61,12 @@ export function AuthRow({
             interactive: true,
             className: 'flex flex-1 items-center justify-between',
           })}
-          disabled={isLoginPending}
           onClick={() => onLogin('apple')}
         >
           Apple로 로그인
           <ChevronRightIcon className="text-text-low size-6" />
         </button>
       </div>
-      {isLoginPending && (
-        <p className="b2-400 text-text-low animate-pulse text-center">
-          브라우저에서 로그인을 완료해 주세요
-        </p>
-      )}
     </div>
   );
 }

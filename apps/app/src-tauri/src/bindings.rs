@@ -11,6 +11,7 @@ pub fn generate_bindings() -> Builder<tauri::Wry> {
         app::restart_app,
         // Auth
         auth::social_login,
+        auth::cancel_social_login,
         auth::logout,
         auth::get_auth_status,
         auth::sync_settings_to_server,
