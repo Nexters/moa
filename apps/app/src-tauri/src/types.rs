@@ -115,6 +115,19 @@ pub fn validate_theme(theme: &str) -> Result<(), String> {
 }
 
 // ============================================================================
+// Work Status
+// ============================================================================
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type, PartialEq)]
+#[serde(rename_all = "kebab-case")]
+pub enum WorkStatus {
+    BeforeWork,
+    Working,
+    Completed,
+    DayOff,
+}
+
+// ============================================================================
 // User Settings (MVP)
 // ============================================================================
 
