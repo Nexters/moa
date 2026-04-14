@@ -214,41 +214,59 @@ export function SettingsScreen() {
         </SettingsSection>
 
         <div className="flex items-center justify-center gap-3">
-          {authStatus?.isLoggedIn && (
-            <Button
-              variant="link"
-              disabled={logoutMutation.isPending}
-              onClick={() => logoutMutation.mutate()}
-            >
-              로그아웃
-            </Button>
+          {authStatus?.isLoggedIn ? (
+            <>
+              <Button
+                variant="link"
+                disabled={logoutMutation.isPending}
+                onClick={() => logoutMutation.mutate()}
+              >
+                로그아웃
+              </Button>
+              <Button
+                variant="link"
+                onClick={() => {
+                  // TODO: 회원탈퇴 API 연동
+                }}
+              >
+                회원탈퇴
+              </Button>
+            </>
+          ) : (
+            <>
+              <AlertDialog>
+                <AlertDialogTrigger
+                  render={
+                    <Button
+                      variant="link"
+                      disabled={resetDataMutation.isPending}
+                    />
+                  }
+                >
+                  데이터 초기화
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>데이터를 초기화할까요?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      모든 기록이 삭제되며, 복구할 수 없어요.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>취소</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => resetDataMutation.mutate()}
+                    >
+                      확인
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+              <Button variant="link" onClick={() => exit(0)}>
+                앱 종료하기
+              </Button>
+            </>
           )}
-          <AlertDialog>
-            <AlertDialogTrigger
-              render={
-                <Button variant="link" disabled={resetDataMutation.isPending} />
-              }
-            >
-              데이터 초기화
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>데이터를 초기화할까요?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  모든 기록이 삭제되며, 복구할 수 없어요.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>취소</AlertDialogCancel>
-                <AlertDialogAction onClick={() => resetDataMutation.mutate()}>
-                  확인
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          <Button variant="link" onClick={() => exit(0)}>
-            앱 종료하기
-          </Button>
         </div>
       </div>
     </div>
