@@ -3,6 +3,7 @@ export { ArrowLeftIcon } from './arrow-left';
 export { ArrowRightIcon } from './arrow-right';
 export { CelebrationIcon } from './celebration';
 export { CheckIcon } from './check';
+export { EditIcon } from './edit';
 export * from './chevron';
 export { HeroIcon, type HeroIconVariant } from './hero-icon';
 export { HolidayIcon } from './holiday';

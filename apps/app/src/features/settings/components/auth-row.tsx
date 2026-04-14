@@ -1,38 +1,19 @@
 import { Link } from '@tanstack/react-router';
 
-import type { AuthProvider, AuthStatus } from '~/lib/tauri-bindings';
-import { Button } from '~/ui';
-import { ChevronRightIcon } from '~/ui/icons';
-import { infoRowVariants } from '~/ui/info-row';
-
-const PROVIDER_LABELS: Record<AuthProvider, string> = {
-  kakao: '카카오',
-  apple: 'Apple',
-};
+import type { AuthStatus } from '~/lib/tauri-bindings';
+import { ChevronRightIcon, EditIcon } from '~/ui/icons';
 
 interface Props {
   authStatus: AuthStatus | undefined;
-  onLogout: () => void;
-  isLogoutPending: boolean;
+  nickname: string | null | undefined;
 }
 
-export function AuthRow({ authStatus, onLogout, isLogoutPending }: Props) {
+export function AuthRow({ authStatus, nickname }: Props) {
   if (authStatus?.isLoggedIn) {
-    const label = authStatus.provider
-      ? `${PROVIDER_LABELS[authStatus.provider]} 연동됨`
-      : '연동됨';
-
     return (
-      <div className={infoRowVariants()}>
-        <span className="text-text-high">{label}</span>
-        <Button
-          variant="link"
-          size="flat"
-          disabled={isLogoutPending}
-          onClick={onLogout}
-        >
-          로그아웃
-        </Button>
+      <div className="flex items-center gap-2">
+        <span className="t1-700 text-green-40">{nickname ?? '\u00A0'}</span>
+        <EditIcon className="text-text-low size-5" />
       </div>
     );
   }

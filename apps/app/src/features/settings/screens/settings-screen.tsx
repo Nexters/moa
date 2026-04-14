@@ -4,7 +4,7 @@ import { enable, disable } from '@tauri-apps/plugin-autostart';
 import { exit } from '@tauri-apps/plugin-process';
 import { toast } from 'sonner';
 
-import { useAuthStatus, useLogout } from '~/hooks/use-auth';
+import { useAuthStatus, useLogout, useProfileNickname } from '~/hooks/use-auth';
 import { useUserSettings } from '~/hooks/use-user-settings';
 import { posthog } from '~/lib/analytics';
 import { useCheckForUpdates } from '~/lib/check-for-updates';
@@ -36,6 +36,7 @@ export function SettingsScreen() {
   const queryClient = useQueryClient();
   const { data: settings } = useUserSettings();
   const { data: authStatus } = useAuthStatus();
+  const { data: nickname } = useProfileNickname();
   const logoutMutation = useLogout();
 
   const { update, installing, install } = useCheckForUpdates({ delay: 0 });
@@ -135,12 +136,12 @@ export function SettingsScreen() {
 
       <div className="scrollbar-overlay flex min-h-0 flex-1 flex-col gap-6 p-5">
         <section className="flex flex-col gap-1">
-          <h2 className="b2-400 text-text-medium">내 계정</h2>
-          <AuthRow
-            authStatus={authStatus}
-            onLogout={() => logoutMutation.mutate()}
-            isLogoutPending={logoutMutation.isPending}
-          />
+          <h2 className="b2-400 text-text-medium">
+            {authStatus?.isLoggedIn && authStatus.provider
+              ? `${authStatus.provider === 'kakao' ? '카카오' : 'Apple'} 계정 회원`
+              : '내 계정'}
+          </h2>
+          <AuthRow authStatus={authStatus} nickname={nickname} />
         </section>
 
         <SettingsSection title="내 정보">
@@ -197,6 +198,15 @@ export function SettingsScreen() {
         </SettingsSection>
 
         <div className="flex items-center justify-center gap-3">
+          {authStatus?.isLoggedIn && (
+            <Button
+              variant="link"
+              disabled={logoutMutation.isPending}
+              onClick={() => logoutMutation.mutate()}
+            >
+              로그아웃
+            </Button>
+          )}
           <Button
             variant="link"
             disabled={resetDataMutation.isPending}

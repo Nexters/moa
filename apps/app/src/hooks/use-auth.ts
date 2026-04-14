@@ -8,6 +8,14 @@ export function useAuthStatus() {
   return useQuery(authQueryOptions.status());
 }
 
+export function useProfileNickname() {
+  const { data: authStatus } = useAuthStatus();
+  return useQuery({
+    ...authQueryOptions.nickname(),
+    enabled: authStatus?.isLoggedIn === true,
+  });
+}
+
 export function useSocialLogin() {
   const queryClient = useQueryClient();
 

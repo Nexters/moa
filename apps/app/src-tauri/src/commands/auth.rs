@@ -378,6 +378,29 @@ pub async fn get_auth_status(app: AppHandle) -> Result<AuthStatus, String> {
     }
 }
 
+/// 서버에서 프로필 닉네임 조회
+#[tauri::command]
+#[specta::specta]
+pub async fn get_profile_nickname(app: AppHandle) -> Result<Option<String>, String> {
+    let token = match auth::get_access_token(&app) {
+        Some(t) => t,
+        None => return Ok(None),
+    };
+
+    let base_url = std::env::var("MOA_API_BASE_URL")
+        .unwrap_or_else(|_| "https://www.moa-official.kr".to_string());
+    let api = ApiClient::new(&base_url);
+
+    match api.get_profile(&token).await {
+        Ok(profile) => Ok(Some(profile.nickname)),
+        Err(ApiError::Unauthorized) => {
+            auth::clear_auth_token(&app);
+            Ok(None)
+        }
+        Err(e) => Err(format!("프로필 조회 실패: {e}")),
+    }
+}
+
 /// 로컬 설정 → 서버 push (fire-and-forget 용)
 #[tauri::command]
 #[specta::specta]

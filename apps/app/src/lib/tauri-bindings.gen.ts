@@ -61,6 +61,17 @@ async getAuthStatus() : Promise<Result<AuthStatus, string>> {
 }
 },
 /**
+ * 서버에서 프로필 닉네임 조회
+ */
+async getProfileNickname() : Promise<Result<string | null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_profile_nickname") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * 로컬 설정 → 서버 push (fire-and-forget 용)
  */
 async syncSettingsToServer() : Promise<Result<null, string>> {
