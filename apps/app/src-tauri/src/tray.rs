@@ -271,6 +271,7 @@ fn toggle_main_window(app_handle: &AppHandle) {
             // Position window below menu bar before showing
             position_menubar_panel(app_handle, 5.0);
             panel.show();
+            let _ = app_handle.emit("panel-shown", ());
         }
         return;
     }
@@ -283,6 +284,7 @@ fn toggle_main_window(app_handle: &AppHandle) {
             position_menubar_panel(app_handle, 5.0);
             let _ = window.show();
             let _ = window.set_focus();
+            let _ = app_handle.emit("panel-shown", ());
         }
     }
 }
@@ -302,7 +304,7 @@ fn toggle_main_window(app_handle: &AppHandle) {
 
 /// Show main window (without toggling).
 #[cfg(target_os = "macos")]
-fn show_main_window(app_handle: &AppHandle) {
+pub(crate) fn show_main_window(app_handle: &AppHandle) {
     use crate::utils::macos::position_menubar_panel;
 
     if let Ok(panel) = app_handle.get_webview_panel("main") {
@@ -323,7 +325,7 @@ fn show_main_window(app_handle: &AppHandle) {
 }
 
 #[cfg(not(target_os = "macos"))]
-fn show_main_window(app_handle: &AppHandle) {
+pub(crate) fn show_main_window(app_handle: &AppHandle) {
     if let Some(window) = app_handle.get_webview_window("main") {
         if !window.is_visible().unwrap_or(false) {
             let _ = window.move_window(Position::TrayBottomCenter);

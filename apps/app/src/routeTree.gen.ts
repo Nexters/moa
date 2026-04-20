@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as HomeRouteImport } from './routes/home'
 import { Route as OnboardingRouteRouteImport } from './routes/onboarding/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -17,11 +18,15 @@ import { Route as SettingsTermsPolicyRouteImport } from './routes/settings/terms
 import { Route as SettingsSalaryInfoRouteImport } from './routes/settings/salary-info'
 import { Route as SettingsEditScheduleRouteImport } from './routes/settings/edit-schedule'
 import { Route as SettingsEditSalaryRouteImport } from './routes/settings/edit-salary'
-import { Route as OnboardingWelcomeRouteImport } from './routes/onboarding/welcome'
 import { Route as OnboardingScheduleRouteImport } from './routes/onboarding/schedule'
 import { Route as OnboardingSalaryRouteImport } from './routes/onboarding/salary'
 import { Route as OnboardingCompletionRouteImport } from './routes/onboarding/completion'
 
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HomeRoute = HomeRouteImport.update({
   id: '/home',
   path: '/home',
@@ -62,11 +67,6 @@ const SettingsEditSalaryRoute = SettingsEditSalaryRouteImport.update({
   path: '/settings/edit-salary',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OnboardingWelcomeRoute = OnboardingWelcomeRouteImport.update({
-  id: '/welcome',
-  path: '/welcome',
-  getParentRoute: () => OnboardingRouteRoute,
-} as any)
 const OnboardingScheduleRoute = OnboardingScheduleRouteImport.update({
   id: '/schedule',
   path: '/schedule',
@@ -87,10 +87,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/onboarding': typeof OnboardingRouteRouteWithChildren
   '/home': typeof HomeRoute
+  '/login': typeof LoginRoute
   '/onboarding/completion': typeof OnboardingCompletionRoute
   '/onboarding/salary': typeof OnboardingSalaryRoute
   '/onboarding/schedule': typeof OnboardingScheduleRoute
-  '/onboarding/welcome': typeof OnboardingWelcomeRoute
   '/settings/edit-salary': typeof SettingsEditSalaryRoute
   '/settings/edit-schedule': typeof SettingsEditScheduleRoute
   '/settings/salary-info': typeof SettingsSalaryInfoRoute
@@ -101,10 +101,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/onboarding': typeof OnboardingRouteRouteWithChildren
   '/home': typeof HomeRoute
+  '/login': typeof LoginRoute
   '/onboarding/completion': typeof OnboardingCompletionRoute
   '/onboarding/salary': typeof OnboardingSalaryRoute
   '/onboarding/schedule': typeof OnboardingScheduleRoute
-  '/onboarding/welcome': typeof OnboardingWelcomeRoute
   '/settings/edit-salary': typeof SettingsEditSalaryRoute
   '/settings/edit-schedule': typeof SettingsEditScheduleRoute
   '/settings/salary-info': typeof SettingsSalaryInfoRoute
@@ -116,10 +116,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/onboarding': typeof OnboardingRouteRouteWithChildren
   '/home': typeof HomeRoute
+  '/login': typeof LoginRoute
   '/onboarding/completion': typeof OnboardingCompletionRoute
   '/onboarding/salary': typeof OnboardingSalaryRoute
   '/onboarding/schedule': typeof OnboardingScheduleRoute
-  '/onboarding/welcome': typeof OnboardingWelcomeRoute
   '/settings/edit-salary': typeof SettingsEditSalaryRoute
   '/settings/edit-schedule': typeof SettingsEditScheduleRoute
   '/settings/salary-info': typeof SettingsSalaryInfoRoute
@@ -132,10 +132,10 @@ export interface FileRouteTypes {
     | '/'
     | '/onboarding'
     | '/home'
+    | '/login'
     | '/onboarding/completion'
     | '/onboarding/salary'
     | '/onboarding/schedule'
-    | '/onboarding/welcome'
     | '/settings/edit-salary'
     | '/settings/edit-schedule'
     | '/settings/salary-info'
@@ -146,10 +146,10 @@ export interface FileRouteTypes {
     | '/'
     | '/onboarding'
     | '/home'
+    | '/login'
     | '/onboarding/completion'
     | '/onboarding/salary'
     | '/onboarding/schedule'
-    | '/onboarding/welcome'
     | '/settings/edit-salary'
     | '/settings/edit-schedule'
     | '/settings/salary-info'
@@ -160,10 +160,10 @@ export interface FileRouteTypes {
     | '/'
     | '/onboarding'
     | '/home'
+    | '/login'
     | '/onboarding/completion'
     | '/onboarding/salary'
     | '/onboarding/schedule'
-    | '/onboarding/welcome'
     | '/settings/edit-salary'
     | '/settings/edit-schedule'
     | '/settings/salary-info'
@@ -175,6 +175,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   OnboardingRouteRoute: typeof OnboardingRouteRouteWithChildren
   HomeRoute: typeof HomeRoute
+  LoginRoute: typeof LoginRoute
   SettingsEditSalaryRoute: typeof SettingsEditSalaryRoute
   SettingsEditScheduleRoute: typeof SettingsEditScheduleRoute
   SettingsSalaryInfoRoute: typeof SettingsSalaryInfoRoute
@@ -184,6 +185,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/home': {
       id: '/home'
       path: '/home'
@@ -240,13 +248,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsEditSalaryRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/onboarding/welcome': {
-      id: '/onboarding/welcome'
-      path: '/welcome'
-      fullPath: '/onboarding/welcome'
-      preLoaderRoute: typeof OnboardingWelcomeRouteImport
-      parentRoute: typeof OnboardingRouteRoute
-    }
     '/onboarding/schedule': {
       id: '/onboarding/schedule'
       path: '/schedule'
@@ -275,14 +276,12 @@ interface OnboardingRouteRouteChildren {
   OnboardingCompletionRoute: typeof OnboardingCompletionRoute
   OnboardingSalaryRoute: typeof OnboardingSalaryRoute
   OnboardingScheduleRoute: typeof OnboardingScheduleRoute
-  OnboardingWelcomeRoute: typeof OnboardingWelcomeRoute
 }
 
 const OnboardingRouteRouteChildren: OnboardingRouteRouteChildren = {
   OnboardingCompletionRoute: OnboardingCompletionRoute,
   OnboardingSalaryRoute: OnboardingSalaryRoute,
   OnboardingScheduleRoute: OnboardingScheduleRoute,
-  OnboardingWelcomeRoute: OnboardingWelcomeRoute,
 }
 
 const OnboardingRouteRouteWithChildren = OnboardingRouteRoute._addFileChildren(
@@ -293,6 +292,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   OnboardingRouteRoute: OnboardingRouteRouteWithChildren,
   HomeRoute: HomeRoute,
+  LoginRoute: LoginRoute,
   SettingsEditSalaryRoute: SettingsEditSalaryRoute,
   SettingsEditScheduleRoute: SettingsEditScheduleRoute,
   SettingsSalaryInfoRoute: SettingsSalaryInfoRoute,
