@@ -4,7 +4,11 @@ import { LoginScreen } from '~/features/auth/screens/login-screen';
 
 export const Route = createFileRoute('/login')({
   component: LoginScreen,
-  validateSearch: (search: Record<string, unknown>) => ({
-    returnTo: (search.returnTo as string) || undefined,
-  }),
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { returnTo?: string } => {
+    return typeof search.returnTo === 'string'
+      ? { returnTo: search.returnTo }
+      : {};
+  },
 });
