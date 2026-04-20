@@ -242,8 +242,8 @@ fn wait_for_auth_code(listener: &TcpListener, expected_state: &str) -> Result<St
         return Err("state 검증 실패 — CSRF 의심".to_string());
     }
 
-    // HTML 응답
-    let body = r#"<!DOCTYPE html><html><body style="margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f8f9fa;font-family:-apple-system,BlinkMacSystemFont,sans-serif"><div style="text-align:center;padding:40px;background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,0.08)"><div style="font-size:48px;margin-bottom:16px">&#10003;</div><h2 style="margin:0 0 8px;font-size:20px;color:#1a1a1a">로그인 완료</h2><p style="margin:0;color:#666;font-size:14px">Moa 앱으로 돌아가세요</p></div></body></html>"#;
+    // HTML 응답 — theme.css 디자인 시스템(bg-primary, container-primary, green-40, text-high/medium) 반영
+    let body = r#"<!DOCTYPE html><html lang="ko"><body style="margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#141414;font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif"><div style="text-align:center;padding:40px;background:#212224;border-radius:16px"><div style="font-size:48px;line-height:1;margin-bottom:16px;color:#1fd683">&#10003;</div><h2 style="margin:0 0 8px;font-size:20px;line-height:28px;letter-spacing:-0.2px;font-weight:700;color:#ffffff">로그인 완료</h2><p style="margin:0;font-size:14px;line-height:21px;letter-spacing:-0.2px;font-weight:400;color:rgba(255,255,255,0.6)">Moa 앱으로 돌아가세요</p></div></body></html>"#;
     let response = format!(
         "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
         body.len(),
