@@ -5,6 +5,8 @@ use std::io::{Read, Write};
 use std::net::TcpListener;
 use std::sync::atomic::{AtomicBool, Ordering};
 
+use rand::distr::Alphanumeric;
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 use specta::Type;
 use tauri::{AppHandle, Manager};
@@ -107,6 +109,11 @@ struct AppleTokenResponse {
 }
 
 /// Apple client_secret JWT 생성 (ES256)
+///
+/// SECURITY(TODO #issue-TBD): 현재 데스크톱 클라이언트에서 Apple private key를
+/// 직접 읽어 서명하고 있어 RFC 8252 §8.5(퍼블릭 클라이언트 secret 보관 금지)에
+/// 위배됩니다. 중기적으로 MOA 서버에 `auth code → id_token 교환` 엔드포인트를
+/// 추가하고, 클라이언트는 `auth code`만 전달하는 구조로 이전해야 합니다.
 fn generate_apple_client_secret() -> Result<String, String> {
     let team_id = std::env::var("APPLE_TEAM_ID").map_err(|_| "APPLE_TEAM_ID 미설정")?;
     let client_id = std::env::var("APPLE_CLIENT_ID").map_err(|_| "APPLE_CLIENT_ID 미설정")?;
@@ -188,8 +195,17 @@ fn start_oauth_callback_server() -> Result<(TcpListener, String), String> {
     Ok((listener, redirect_uri))
 }
 
-/// callback에서 auth code 추출 (2분 타임아웃)
-fn wait_for_auth_code(listener: &TcpListener) -> Result<String, String> {
+/// OAuth state 파라미터용 난수 생성 (RFC 6749 §10.12 CSRF 방어)
+fn generate_oauth_state() -> String {
+    rand::rng()
+        .sample_iter(&Alphanumeric)
+        .take(32)
+        .map(char::from)
+        .collect()
+}
+
+/// callback에서 auth code 추출 + state 검증 (2분 타임아웃)
+fn wait_for_auth_code(listener: &TcpListener, expected_state: &str) -> Result<String, String> {
     listener
         .set_nonblocking(true)
         .map_err(|e| format!("소켓 설정 실패: {e}"))?;
@@ -217,9 +233,14 @@ fn wait_for_auth_code(listener: &TcpListener) -> Result<String, String> {
         .map_err(|e| format!("요청 읽기 실패: {e}"))?;
     let request = String::from_utf8_lossy(&buf[..n]);
 
-    // GET /callback?code=xxx HTTP/1.1
+    // GET /callback?code=xxx&state=yyy HTTP/1.1
     let code = extract_query_param(&request, "code")
         .ok_or_else(|| "callback에서 auth code를 찾을 수 없습니다".to_string())?;
+    let state = extract_query_param(&request, "state")
+        .ok_or_else(|| "callback에 state 파라미터 없음 — CSRF 의심".to_string())?;
+    if state != expected_state {
+        return Err("state 검증 실패 — CSRF 의심".to_string());
+    }
 
     // HTML 응답
     let body = r#"<!DOCTYPE html><html><body style="margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f8f9fa;font-family:-apple-system,BlinkMacSystemFont,sans-serif"><div style="text-align:center;padding:40px;background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,0.08)"><div style="font-size:48px;margin-bottom:16px">&#10003;</div><h2 style="margin:0 0 8px;font-size:20px;color:#1a1a1a">로그인 완료</h2><p style="margin:0;color:#666;font-size:14px">Moa 앱으로 돌아가세요</p></div></body></html>"#;
@@ -259,6 +280,7 @@ fn extract_query_param(request: &str, key: &str) -> Option<String> {
 pub async fn social_login(app: AppHandle, provider: AuthProvider) -> Result<LoginResult, String> {
     SOCIAL_LOGIN_CANCELLED.store(false, Ordering::Relaxed);
     let (listener, redirect_uri) = start_oauth_callback_server()?;
+    let state = generate_oauth_state();
 
     // provider별 authorize URL 생성
     let authorize_url = match &provider {
@@ -266,18 +288,20 @@ pub async fn social_login(app: AppHandle, provider: AuthProvider) -> Result<Logi
             let client_id = std::env::var("KAKAO_REST_API_KEY")
                 .map_err(|_| "KAKAO_REST_API_KEY 환경변수 미설정")?;
             format!(
-                "https://kauth.kakao.com/oauth/authorize?client_id={}&redirect_uri={}&response_type=code&scope=openid",
+                "https://kauth.kakao.com/oauth/authorize?client_id={}&redirect_uri={}&response_type=code&scope=openid&state={}",
                 client_id,
                 urlencoded(&redirect_uri),
+                state,
             )
         }
         AuthProvider::Apple => {
             let client_id =
                 std::env::var("APPLE_CLIENT_ID").map_err(|_| "APPLE_CLIENT_ID 환경변수 미설정")?;
             format!(
-                "https://appleid.apple.com/auth/authorize?client_id={}&redirect_uri={}&response_type=code&scope=openid&response_mode=query",
+                "https://appleid.apple.com/auth/authorize?client_id={}&redirect_uri={}&response_type=code&scope=openid&response_mode=query&state={}",
                 client_id,
                 urlencoded(&redirect_uri),
+                state,
             )
         }
     };
@@ -293,8 +317,8 @@ pub async fn social_login(app: AppHandle, provider: AuthProvider) -> Result<Logi
     .await
     .map_err(|e| format!("브라우저 열기 실패: {e}"))?;
 
-    // callback 대기 (blocking)
-    let code = tauri::async_runtime::spawn_blocking(move || wait_for_auth_code(&listener))
+    // callback 대기 (blocking) — state 검증 포함
+    let code = tauri::async_runtime::spawn_blocking(move || wait_for_auth_code(&listener, &state))
         .await
         .map_err(|e| format!("콜백 대기 실패: {e}"))??;
 
@@ -421,7 +445,9 @@ pub async fn sync_settings_to_server(app: AppHandle) -> Result<(), String> {
         salary_amount: settings.salary_amount as i64,
     };
     if let Err(e) = api.patch_payroll(&token, &payroll_req).await {
-        handle_api_error(&app, &e, "payroll push");
+        if handle_api_error(&app, &e, "payroll push") {
+            return Ok(()); // 토큰 만료 — 이후 PATCH 중단
+        }
     }
 
     // work-policy
@@ -435,7 +461,9 @@ pub async fn sync_settings_to_server(app: AppHandle) -> Result<(), String> {
         clock_out_time: settings.work_end_time.clone(),
     };
     if let Err(e) = api.patch_work_policy(&token, &work_policy_req).await {
-        handle_api_error(&app, &e, "work-policy push");
+        if handle_api_error(&app, &e, "work-policy push") {
+            return Ok(());
+        }
     }
 
     // payday
@@ -450,10 +478,35 @@ pub async fn sync_settings_to_server(app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
-/// 서버 데이터 → 로컬 pull
+// ============================================================================
+// Server sync (RAII guard로 모든 진입점 직렬화)
+// ============================================================================
+
+static SYNC_IN_FLIGHT: AtomicBool = AtomicBool::new(false);
+
+/// `SYNC_IN_FLIGHT` 플래그를 Drop 시 항상 false로 되돌리는 RAII 가드.
+/// panic 시에도 unwind 중 drop이 실행되어 플래그가 영구 true로 고정되는 걸 방지.
+struct SyncGuard;
+
+impl Drop for SyncGuard {
+    fn drop(&mut self) {
+        SYNC_IN_FLIGHT.store(false, Ordering::SeqCst);
+    }
+}
+
+/// 서버 데이터 → 로컬 pull. 동시 호출은 스킵됨 (폴링/panel-shown/수동 invoke 모두 직렬화).
 #[tauri::command]
 #[specta::specta]
 pub async fn sync_from_server(app: AppHandle) -> Result<(), String> {
+    if SYNC_IN_FLIGHT
+        .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+        .is_err()
+    {
+        log::debug!("sync_from_server 이미 실행 중 — 스킵");
+        return Ok(());
+    }
+    let _guard = SyncGuard;
+
     let token = match auth::get_access_token(&app) {
         Some(t) => t,
         None => return Ok(()), // 비로그인 시 skip
@@ -531,7 +584,7 @@ async fn sync_after_login(app: &AppHandle, api: &ApiClient, token: &str) -> Resu
         let settings = load_local_settings(app);
         if let Ok(ref s) = settings {
             if s.onboarding_completed {
-                push_local_to_server(api, token, s).await;
+                push_local_to_server(app, api, token, s).await;
                 log::info!("로컬 데이터 → 서버 push 완료");
                 return Ok(false);
             }
@@ -581,8 +634,13 @@ fn merge_server_to_local(
     changed
 }
 
-/// 로컬 설정을 서버에 push (best-effort)
-async fn push_local_to_server(api: &ApiClient, token: &str, settings: &UserSettings) {
+/// 로컬 설정을 서버에 push (best-effort, 401 감지 시 조기 중단)
+async fn push_local_to_server(
+    app: &AppHandle,
+    api: &ApiClient,
+    token: &str,
+    settings: &UserSettings,
+) {
     let payroll_req = PayrollPatchRequest {
         salary_input_type: to_server_salary_type(&settings.salary_type),
         salary_amount: settings.salary_amount as i64,
@@ -600,9 +658,19 @@ async fn push_local_to_server(api: &ApiClient, token: &str, settings: &UserSetti
         payday_day: settings.pay_day as i32,
     };
 
-    let _ = api.patch_payroll(token, &payroll_req).await;
-    let _ = api.patch_work_policy(token, &work_policy_req).await;
-    let _ = api.patch_profile_payday(token, &payday_req).await;
+    if let Err(e) = api.patch_payroll(token, &payroll_req).await {
+        if handle_api_error(app, &e, "payroll push (login)") {
+            return;
+        }
+    }
+    if let Err(e) = api.patch_work_policy(token, &work_policy_req).await {
+        if handle_api_error(app, &e, "work-policy push (login)") {
+            return;
+        }
+    }
+    if let Err(e) = api.patch_profile_payday(token, &payday_req).await {
+        handle_api_error(app, &e, "payday push (login)");
+    }
 }
 
 fn load_local_settings(app: &AppHandle) -> Result<UserSettings, String> {
@@ -628,14 +696,17 @@ fn from_server_salary_type(t: &SalaryInputType) -> SalaryType {
     }
 }
 
-fn handle_api_error(app: &AppHandle, error: &ApiError, context: &str) {
+/// API 에러 처리 공통 훅. 401이었으면 true (caller 조기 중단 신호).
+fn handle_api_error(app: &AppHandle, error: &ApiError, context: &str) -> bool {
     match error {
         ApiError::Unauthorized => {
             auth::clear_auth_token(app);
             log::info!("토큰 만료 ({context}) — 자동 로그아웃");
+            true
         }
         _ => {
             log::warn!("{context} 실패: {error}");
+            false
         }
     }
 }

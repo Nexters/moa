@@ -66,26 +66,18 @@ pub fn notify_settings_changed() {
 /// 서버 sync polling 간격 (5분)
 const SYNC_INTERVAL_SECS: u64 = 300;
 
-static SYNC_IN_FLIGHT: AtomicBool = AtomicBool::new(false);
-
 pub fn start_salary_ticker(app_handle: AppHandle) {
-    // 주기적 서버 sync 스레드
+    // 주기적 서버 sync 스레드. 동시성은 sync_from_server 내부 RAII guard가 담당.
     {
         let app = app_handle.clone();
         std::thread::spawn(move || {
             // 앱 시작 후 10초 대기 (초기화 완료 대기)
             std::thread::sleep(Duration::from_secs(10));
             loop {
-                if SYNC_IN_FLIGHT
-                    .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
-                    .is_ok()
-                {
-                    let app_clone = app.clone();
-                    tauri::async_runtime::spawn(async move {
-                        let _ = crate::commands::auth::sync_from_server(app_clone).await;
-                        SYNC_IN_FLIGHT.store(false, Ordering::SeqCst);
-                    });
-                }
+                let app_clone = app.clone();
+                tauri::async_runtime::spawn(async move {
+                    let _ = crate::commands::auth::sync_from_server(app_clone).await;
+                });
                 std::thread::sleep(Duration::from_secs(SYNC_INTERVAL_SECS));
             }
         });

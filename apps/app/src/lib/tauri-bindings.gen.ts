@@ -83,7 +83,7 @@ async syncSettingsToServer() : Promise<Result<null, string>> {
 }
 },
 /**
- * 서버 데이터 → 로컬 pull
+ * 서버 데이터 → 로컬 pull. 동시 호출은 스킵됨 (폴링/panel-shown/수동 invoke 모두 직렬화).
  */
 async syncFromServer() : Promise<Result<null, string>> {
     try {
