@@ -12,5 +12,6 @@ export * from './number-input';
 export * from './select-input';
 export * from './switch-input';
 export * from './time-input';
+export * from './toggle-input';
 export * from './tooltip-bubble';
 export * from './icons';
