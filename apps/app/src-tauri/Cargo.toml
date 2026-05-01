@@ -1,6 +1,6 @@
 [package]
 name = "moa"
-version = "1.0.2"
+version = "1.1.0-beta.1"
 description = "A lightweight menu bar/system tray app that visualizes your accumulated salary in real-time"
 authors = ["bepyan"]
 edition = "2021"
@@ -29,6 +29,10 @@ log = "0.4"
 regex = "1"
 chrono = { version = "0.4", features = ["serde"] }
 rand = "0.9"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+dotenvy = "0.15"
+jsonwebtoken = "9"
+open = "5"
 
 tauri-plugin-clipboard-manager = "2"
 tauri-plugin-dialog = "2"

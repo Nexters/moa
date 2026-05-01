@@ -102,6 +102,7 @@ export function useSettingsForm({
         queryKey: emergencyDataQuery.file('today-work-schedule'),
       });
       void commands.notifySettingsChanged();
+      void commands.syncSettingsToServer(); // fire-and-forget
       onSuccess?.();
     },
   });

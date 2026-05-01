@@ -1,7 +1,6 @@
 import { useNavigate, useRouterState } from '@tanstack/react-router';
 
 const SCREEN_ORDER = [
-  '/onboarding/welcome',
   '/onboarding/salary',
   '/onboarding/schedule',
   '/onboarding/completion',
@@ -29,6 +28,8 @@ export function useOnboardingNavigation() {
     const prevIndex = currentStep - 1;
     if (prevIndex >= 0) {
       void navigate({ to: SCREEN_ORDER[prevIndex] });
+    } else {
+      void navigate({ to: '/login' });
     }
   };
 

@@ -4,6 +4,8 @@
 //! Command implementations are organized in the `commands` module,
 //! and shared types are in the `types` module.
 
+mod api_client;
+mod auth;
 mod bindings;
 mod commands;
 mod salary;
@@ -11,11 +13,16 @@ mod tray;
 mod types;
 mod utils;
 
+use std::sync::Mutex;
+
 use tauri::Manager;
 
 /// Application entry point. Sets up all plugins and initializes the app.
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    // .env 파일 로드 (없어도 에러 아님)
+    let _ = dotenvy::dotenv();
+
     let builder = bindings::generate_bindings();
 
     // Export TypeScript bindings in debug builds
@@ -111,12 +118,20 @@ pub fn run() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_opener::init())
+        .manage(auth::AuthStore(Mutex::new(None)))
         .setup(|app| {
             log::info!("Application starting up");
             log::debug!(
                 "App handle initialized for package: {}",
                 app.package_info().name
             );
+
+            // 저장된 인증 토큰 복원
+            if let Some(state) = auth::load_auth_token(app.handle()) {
+                let store = app.state::<auth::AuthStore>();
+                *store.0.lock().unwrap() = Some(state);
+                log::info!("저장된 인증 토큰 복원 완료");
+            }
 
             // macOS: Hide dock icon (menu bar app)
             #[cfg(target_os = "macos")]

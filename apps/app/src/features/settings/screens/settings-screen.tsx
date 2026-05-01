@@ -4,6 +4,7 @@ import { enable, disable } from '@tauri-apps/plugin-autostart';
 import { exit } from '@tauri-apps/plugin-process';
 import { toast } from 'sonner';
 
+import { useAuthStatus, useLogout, useProfileNickname } from '~/hooks/use-auth';
 import { useUserSettings } from '~/hooks/use-user-settings';
 import { posthog } from '~/lib/analytics';
 import { useCheckForUpdates } from '~/lib/check-for-updates';
@@ -27,6 +28,7 @@ import {
   AlertDialogTrigger,
 } from '~/ui/alert-dialog';
 
+import { AuthRow } from '../components/auth-row';
 import { SettingsSection } from '../components/settings-section';
 
 const MENUBAR_DISPLAY_OPTIONS = [
@@ -44,6 +46,9 @@ export function SettingsScreen() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data: settings } = useUserSettings();
+  const { data: authStatus } = useAuthStatus();
+  const { data: nickname } = useProfileNickname();
+  const logoutMutation = useLogout();
 
   const { update, installing, install } = useCheckForUpdates({ delay: 0 });
 
@@ -120,7 +125,7 @@ export function SettingsScreen() {
     onSuccess: () => {
       void commands.notifySettingsChanged();
       queryClient.clear();
-      void navigate({ to: '/onboarding/welcome' });
+      void navigate({ to: '/login' });
     },
   });
 
@@ -140,7 +145,16 @@ export function SettingsScreen() {
         onBack={() => navigate({ to: '/home' })}
       />
 
-      <div className="scrollbar-overlay flex min-h-0 flex-1 flex-col gap-5 p-5">
+      <div className="scrollbar-overlay flex min-h-0 flex-1 flex-col gap-6 p-5">
+        <section className="flex flex-col gap-1">
+          <h2 className="b2-400 text-text-medium">
+            {authStatus?.isLoggedIn && authStatus.provider
+              ? `${authStatus.provider === 'kakao' ? '카카오' : 'Apple'} 계정 회원`
+              : '내 계정'}
+          </h2>
+          <AuthRow authStatus={authStatus} nickname={nickname} />
+        </section>
+
         <SettingsSection title="내 정보">
           <InfoRow
             as="button"
@@ -200,32 +214,59 @@ export function SettingsScreen() {
         </SettingsSection>
 
         <div className="flex items-center justify-center gap-3">
-          <AlertDialog>
-            <AlertDialogTrigger
-              render={
-                <Button variant="link" disabled={resetDataMutation.isPending} />
-              }
-            >
-              데이터 초기화
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>데이터를 초기화할까요?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  모든 기록이 삭제되며, 복구할 수 없어요.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>취소</AlertDialogCancel>
-                <AlertDialogAction onClick={() => resetDataMutation.mutate()}>
-                  확인
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          <Button variant="link" onClick={() => exit(0)}>
-            앱 종료하기
-          </Button>
+          {authStatus?.isLoggedIn ? (
+            <>
+              <Button
+                variant="link"
+                disabled={logoutMutation.isPending}
+                onClick={() => logoutMutation.mutate()}
+              >
+                로그아웃
+              </Button>
+              <Button
+                variant="link"
+                onClick={() => {
+                  // TODO: 회원탈퇴 API 연동
+                }}
+              >
+                회원탈퇴
+              </Button>
+            </>
+          ) : (
+            <>
+              <AlertDialog>
+                <AlertDialogTrigger
+                  render={
+                    <Button
+                      variant="link"
+                      disabled={resetDataMutation.isPending}
+                    />
+                  }
+                >
+                  데이터 초기화
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>데이터를 초기화할까요?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      모든 기록이 삭제되며, 복구할 수 없어요.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>취소</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => resetDataMutation.mutate()}
+                    >
+                      확인
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+              <Button variant="link" onClick={() => exit(0)}>
+                앱 종료하기
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </div>

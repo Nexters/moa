@@ -7,11 +7,11 @@ export const Route = createFileRoute('/')({
   beforeLoad: async () => {
     try {
       const isCompleted = unwrapResult(await commands.isOnboardingCompleted());
-      throw redirect({ to: isCompleted ? '/home' : '/onboarding/welcome' });
+      throw redirect({ to: isCompleted ? '/home' : '/login' });
     } catch (e) {
       if (isRedirect(e)) throw e;
       posthog.captureException(e);
-      throw redirect({ to: '/onboarding/welcome' });
+      throw redirect({ to: '/login' });
     }
   },
 });

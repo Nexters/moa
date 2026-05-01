@@ -145,7 +145,7 @@ jobs:
             #### 자동 업데이트
             기존 사용자는 자동 업데이트 알림을 받습니다.
           releaseDraft: true
-          prerelease: false
+          prerelease: ${{ contains(github.ref_name, '-') || contains(inputs.version, '-') }}
           includeUpdaterJson: true
           args: ${{ matrix.args }}
 

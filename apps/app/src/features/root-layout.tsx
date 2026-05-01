@@ -54,6 +54,16 @@ export function RootLayout() {
     };
   }, [queryClient]);
 
+  // 패널 열릴 때 서버 데이터 sync (fire-and-forget)
+  useEffect(() => {
+    const unlisten = listen('panel-shown', () => {
+      void commands.syncFromServer();
+    });
+    return () => {
+      void unlisten.then((fn) => fn());
+    };
+  }, []);
+
   return (
     <>
       <Outlet />
