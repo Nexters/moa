@@ -61,7 +61,7 @@ jobs:
           - platform: 'macos-latest'
             args: '--target x86_64-apple-darwin'
           - platform: 'windows-latest'
-            args: ''
+            args: '--bundles nsis,updater'
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -140,7 +140,6 @@ jobs:
 
             #### Windows
             - **EXE**: `moa_<version>_x64-setup.exe`
-            - **MSI**: `moa_<version>_x64_en-US.msi`
 
             #### 자동 업데이트
             기존 사용자는 자동 업데이트 알림을 받습니다.
