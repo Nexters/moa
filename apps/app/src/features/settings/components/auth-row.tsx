@@ -13,7 +13,7 @@ export function AuthRow({ authStatus, nickname }: Props) {
     return (
       <Link to="/settings/edit-nickname" className="flex items-center gap-2">
         <span className="t1-700 text-green-40">{nickname ?? ' '}</span>
-        <EditIcon className="text-text-low size-5" />
+        <EditIcon className="text-text-high size-5" />
       </Link>
     );
   }
