@@ -51,6 +51,9 @@ export function PaydayOverlay({
         if (!visible) onClose();
       }}
     >
+      {/* 초록색 radial 글로우 (Lottie 뒤에 깔리는 빛) */}
+      <div className="pointer-events-none absolute top-1/2 left-1/2 size-[360px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-green-50 opacity-50 blur-[100px]" />
+
       {/* 콘텐츠 */}
       <div className="relative flex flex-col items-center px-5">
         <Lottie
