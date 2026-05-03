@@ -63,12 +63,24 @@ struct KakaoTokenResponse {
     id_token: Option<String>,
 }
 
+fn kakao_rest_api_key() -> Result<String, &'static str> {
+    std::env::var("KAKAO_REST_API_KEY")
+        .ok()
+        .or_else(|| option_env!("KAKAO_REST_API_KEY").map(String::from))
+        .ok_or("KAKAO_REST_API_KEY 환경변수 미설정")
+}
+
+fn kakao_client_secret() -> Result<String, &'static str> {
+    std::env::var("KAKAO_CLIENT_SECRET")
+        .ok()
+        .or_else(|| option_env!("KAKAO_CLIENT_SECRET").map(String::from))
+        .ok_or("KAKAO_CLIENT_SECRET 환경변수 미설정")
+}
+
 /// 카카오 REST API로 auth code → id_token 교환
 async fn exchange_kakao_code(code: &str, redirect_uri: &str) -> Result<String, String> {
-    let client_id =
-        std::env::var("KAKAO_REST_API_KEY").map_err(|_| "KAKAO_REST_API_KEY 환경변수 미설정")?;
-    let client_secret =
-        std::env::var("KAKAO_CLIENT_SECRET").map_err(|_| "KAKAO_CLIENT_SECRET 환경변수 미설정")?;
+    let client_id = kakao_rest_api_key()?;
+    let client_secret = kakao_client_secret()?;
 
     let client = reqwest::Client::new();
     let resp = client
@@ -285,8 +297,7 @@ pub async fn social_login(app: AppHandle, provider: AuthProvider) -> Result<Logi
     // provider별 authorize URL 생성
     let authorize_url = match &provider {
         AuthProvider::Kakao => {
-            let client_id = std::env::var("KAKAO_REST_API_KEY")
-                .map_err(|_| "KAKAO_REST_API_KEY 환경변수 미설정")?;
+            let client_id = kakao_rest_api_key()?;
             format!(
                 "https://kauth.kakao.com/oauth/authorize?client_id={}&redirect_uri={}&response_type=code&scope=openid&state={}",
                 client_id,
