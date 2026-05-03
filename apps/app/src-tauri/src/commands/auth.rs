@@ -126,11 +126,39 @@ struct AppleTokenResponse {
 /// 직접 읽어 서명하고 있어 RFC 8252 §8.5(퍼블릭 클라이언트 secret 보관 금지)에
 /// 위배됩니다. 중기적으로 MOA 서버에 `auth code → id_token 교환` 엔드포인트를
 /// 추가하고, 클라이언트는 `auth code`만 전달하는 구조로 이전해야 합니다.
+fn apple_team_id() -> Result<String, &'static str> {
+    std::env::var("APPLE_TEAM_ID")
+        .ok()
+        .or_else(|| option_env!("APPLE_TEAM_ID").map(String::from))
+        .ok_or("APPLE_TEAM_ID 환경변수 미설정")
+}
+
+fn apple_client_id() -> Result<String, &'static str> {
+    std::env::var("APPLE_CLIENT_ID")
+        .ok()
+        .or_else(|| option_env!("APPLE_CLIENT_ID").map(String::from))
+        .ok_or("APPLE_CLIENT_ID 환경변수 미설정")
+}
+
+fn apple_key_id() -> Result<String, &'static str> {
+    std::env::var("APPLE_KEY_ID")
+        .ok()
+        .or_else(|| option_env!("APPLE_KEY_ID").map(String::from))
+        .ok_or("APPLE_KEY_ID 환경변수 미설정")
+}
+
+fn apple_private_key() -> Result<String, &'static str> {
+    std::env::var("APPLE_PRIVATE_KEY")
+        .ok()
+        .or_else(|| option_env!("APPLE_PRIVATE_KEY").map(String::from))
+        .ok_or("APPLE_PRIVATE_KEY 환경변수 미설정")
+}
+
 fn generate_apple_client_secret() -> Result<String, String> {
-    let team_id = std::env::var("APPLE_TEAM_ID").map_err(|_| "APPLE_TEAM_ID 미설정")?;
-    let client_id = std::env::var("APPLE_CLIENT_ID").map_err(|_| "APPLE_CLIENT_ID 미설정")?;
-    let key_id = std::env::var("APPLE_KEY_ID").map_err(|_| "APPLE_KEY_ID 미설정")?;
-    let private_key = std::env::var("APPLE_PRIVATE_KEY").map_err(|_| "APPLE_PRIVATE_KEY 미설정")?;
+    let team_id = apple_team_id()?;
+    let client_id = apple_client_id()?;
+    let key_id = apple_key_id()?;
+    let private_key = apple_private_key()?;
 
     let now = chrono::Utc::now().timestamp() as u64;
     let claims = serde_json::json!({
@@ -156,8 +184,7 @@ fn generate_apple_client_secret() -> Result<String, String> {
 
 /// Apple auth code → id_token 교환
 async fn exchange_apple_code(code: &str, redirect_uri: &str) -> Result<String, String> {
-    let client_id =
-        std::env::var("APPLE_CLIENT_ID").map_err(|_| "APPLE_CLIENT_ID 환경변수 미설정")?;
+    let client_id = apple_client_id()?;
     let client_secret = generate_apple_client_secret()?;
 
     let client = reqwest::Client::new();
@@ -306,8 +333,7 @@ pub async fn social_login(app: AppHandle, provider: AuthProvider) -> Result<Logi
             )
         }
         AuthProvider::Apple => {
-            let client_id =
-                std::env::var("APPLE_CLIENT_ID").map_err(|_| "APPLE_CLIENT_ID 환경변수 미설정")?;
+            let client_id = apple_client_id()?;
             format!(
                 "https://appleid.apple.com/auth/authorize?client_id={}&redirect_uri={}&response_type=code&scope=openid&response_mode=query&state={}",
                 client_id,
