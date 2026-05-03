@@ -5,14 +5,15 @@ import { toast } from 'sonner';
 
 import { commands } from '~/lib/tauri-bindings';
 
-export const WITHDRAWAL_REASON_OPTIONS = [
+export const WITHDRAWAL_REASON_OPTIONS: readonly string[] = [
+  ...(import.meta.env.DEV ? ['테스트'] : []),
   '앱 오류로 사용하기 불편해요',
   '원하는 기능이 부족해요',
   '서비스 이용이 복잡하거나 불편해요',
   '급여 계산이 실제와 달라요',
   '자주 사용하지 않아요',
   '개인정보 · 보안이 걱정돼요',
-] as const;
+];
 
 export interface WithdrawalFormValues {
   reasons: string[];
