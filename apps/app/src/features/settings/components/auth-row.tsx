@@ -11,10 +11,10 @@ interface Props {
 export function AuthRow({ authStatus, nickname }: Props) {
   if (authStatus?.isLoggedIn) {
     return (
-      <div className="flex items-center gap-2">
-        <span className="t1-700 text-green-40">{nickname ?? '\u00A0'}</span>
+      <Link to="/settings/edit-nickname" className="flex items-center gap-2">
+        <span className="t1-700 text-green-40">{nickname ?? ' '}</span>
         <EditIcon className="text-text-low size-5" />
-      </div>
+      </Link>
     );
   }
 
