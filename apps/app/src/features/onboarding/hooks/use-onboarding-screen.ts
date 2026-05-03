@@ -35,6 +35,11 @@ export function useOnboardingNavigation() {
       return;
     }
 
+    if (pathname === '/onboarding/terms') {
+      void navigate({ to: '/onboarding/completion' });
+      return;
+    }
+
     const nextIndex = currentStep + 1;
     if (nextIndex < totalSteps) {
       void navigate({ to: SCREEN_ORDER[nextIndex] });

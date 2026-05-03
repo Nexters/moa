@@ -101,7 +101,7 @@ pub async fn submit_onboarding_terms_agreements(
         .map(|a| a.agreed)
         .unwrap_or(false);
 
-    let mut settings = load_local_settings(&app).unwrap_or_default();
+    let mut settings = load_local_settings(&app)?;
     settings.terms_agreed = resp.has_required_terms_agreed;
     settings.terms_marketing_agreed = marketing_agreed;
     save_user_settings_sync(&app, &settings)?;

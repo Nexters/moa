@@ -61,6 +61,40 @@ export function TermsScreen() {
   const canSubmit =
     terms.length > 0 && requiredAllChecked && !submitMutation.isPending;
 
+  if (termsQuery.isPending) {
+    return (
+      <main className="flex flex-1 flex-col">
+        <AppBar type="detail" onBack={goToPrevious} />
+        <div className="flex flex-1 items-center justify-center">
+          <p className="b1-400 text-text-medium">불러오는 중...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (termsQuery.isError) {
+    return (
+      <main className="flex flex-1 flex-col">
+        <AppBar type="detail" onBack={goToPrevious} />
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6">
+          <p className="b1-400 text-text-medium text-center">
+            약관 정보를 불러오지 못했어요.
+            <br />
+            잠시 후 다시 시도해주세요.
+          </p>
+          <Button
+            variant="secondary"
+            rounded="full"
+            size="md"
+            onClick={() => termsQuery.refetch()}
+          >
+            다시 시도
+          </Button>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="flex flex-1 flex-col">
       <AppBar type="detail" onBack={goToPrevious} />
