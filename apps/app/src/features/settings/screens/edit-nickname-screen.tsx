@@ -79,7 +79,7 @@ function EditNicknameForm({ initialNickname, onDone }: EditNicknameFormProps) {
               generateRandomNickname(form.getFieldValue('nickname')),
             )
           }
-          className="bg-container-primary flex cursor-pointer items-center gap-1 rounded-lg px-3 py-2"
+          className="bg-container-primary flex cursor-pointer items-center gap-1 rounded-sm px-3 py-2"
         >
           <RestartIcon className="text-text-high size-4" />
           <span className="b2-500 text-text-high">랜덤변경</span>

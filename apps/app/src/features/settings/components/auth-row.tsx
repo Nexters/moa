@@ -15,14 +15,8 @@ export function AuthRow({ authStatus, nickname }: Props) {
   if (authStatus?.isLoggedIn) {
     const goToEdit = () => navigate({ to: '/settings/edit-nickname' });
     return (
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={goToEdit}
-          className="t1-700 text-green-40 cursor-pointer"
-        >
-          {nickname ?? ' '}
-        </button>
+      <div className="flex items-center">
+        <span className="t1-700 text-green-40">{nickname ?? ' '}</span>
         <IconButton size="sm" onClick={goToEdit} aria-label="닉네임 수정">
           <EditIcon className="size-5" />
         </IconButton>
