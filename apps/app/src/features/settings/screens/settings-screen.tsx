@@ -225,9 +225,7 @@ export function SettingsScreen() {
               </Button>
               <Button
                 variant="link"
-                onClick={() => {
-                  // TODO: 회원탈퇴 API 연동
-                }}
+                onClick={() => navigate({ to: '/settings/withdrawal' })}
               >
                 회원탈퇴
               </Button>

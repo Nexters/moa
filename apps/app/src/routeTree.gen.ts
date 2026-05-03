@@ -14,6 +14,7 @@ import { Route as HomeRouteImport } from './routes/home'
 import { Route as OnboardingRouteRouteImport } from './routes/onboarding/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SettingsIndexRouteImport } from './routes/settings/index'
+import { Route as SettingsWithdrawalRouteImport } from './routes/settings/withdrawal'
 import { Route as SettingsTermsPolicyRouteImport } from './routes/settings/terms-policy'
 import { Route as SettingsSalaryInfoRouteImport } from './routes/settings/salary-info'
 import { Route as SettingsEditScheduleRouteImport } from './routes/settings/edit-schedule'
@@ -45,6 +46,11 @@ const IndexRoute = IndexRouteImport.update({
 const SettingsIndexRoute = SettingsIndexRouteImport.update({
   id: '/settings/',
   path: '/settings/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsWithdrawalRoute = SettingsWithdrawalRouteImport.update({
+  id: '/settings/withdrawal',
+  path: '/settings/withdrawal',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsTermsPolicyRoute = SettingsTermsPolicyRouteImport.update({
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/settings/edit-schedule': typeof SettingsEditScheduleRoute
   '/settings/salary-info': typeof SettingsSalaryInfoRoute
   '/settings/terms-policy': typeof SettingsTermsPolicyRoute
+  '/settings/withdrawal': typeof SettingsWithdrawalRoute
   '/settings/': typeof SettingsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -109,6 +116,7 @@ export interface FileRoutesByTo {
   '/settings/edit-schedule': typeof SettingsEditScheduleRoute
   '/settings/salary-info': typeof SettingsSalaryInfoRoute
   '/settings/terms-policy': typeof SettingsTermsPolicyRoute
+  '/settings/withdrawal': typeof SettingsWithdrawalRoute
   '/settings': typeof SettingsIndexRoute
 }
 export interface FileRoutesById {
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/settings/edit-schedule': typeof SettingsEditScheduleRoute
   '/settings/salary-info': typeof SettingsSalaryInfoRoute
   '/settings/terms-policy': typeof SettingsTermsPolicyRoute
+  '/settings/withdrawal': typeof SettingsWithdrawalRoute
   '/settings/': typeof SettingsIndexRoute
 }
 export interface FileRouteTypes {
@@ -140,6 +149,7 @@ export interface FileRouteTypes {
     | '/settings/edit-schedule'
     | '/settings/salary-info'
     | '/settings/terms-policy'
+    | '/settings/withdrawal'
     | '/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -154,6 +164,7 @@ export interface FileRouteTypes {
     | '/settings/edit-schedule'
     | '/settings/salary-info'
     | '/settings/terms-policy'
+    | '/settings/withdrawal'
     | '/settings'
   id:
     | '__root__'
@@ -168,6 +179,7 @@ export interface FileRouteTypes {
     | '/settings/edit-schedule'
     | '/settings/salary-info'
     | '/settings/terms-policy'
+    | '/settings/withdrawal'
     | '/settings/'
   fileRoutesById: FileRoutesById
 }
@@ -180,6 +192,7 @@ export interface RootRouteChildren {
   SettingsEditScheduleRoute: typeof SettingsEditScheduleRoute
   SettingsSalaryInfoRoute: typeof SettingsSalaryInfoRoute
   SettingsTermsPolicyRoute: typeof SettingsTermsPolicyRoute
+  SettingsWithdrawalRoute: typeof SettingsWithdrawalRoute
   SettingsIndexRoute: typeof SettingsIndexRoute
 }
 
@@ -218,6 +231,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings/'
       preLoaderRoute: typeof SettingsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/withdrawal': {
+      id: '/settings/withdrawal'
+      path: '/settings/withdrawal'
+      fullPath: '/settings/withdrawal'
+      preLoaderRoute: typeof SettingsWithdrawalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings/terms-policy': {
@@ -297,6 +317,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsEditScheduleRoute: SettingsEditScheduleRoute,
   SettingsSalaryInfoRoute: SettingsSalaryInfoRoute,
   SettingsTermsPolicyRoute: SettingsTermsPolicyRoute,
+  SettingsWithdrawalRoute: SettingsWithdrawalRoute,
   SettingsIndexRoute: SettingsIndexRoute,
 }
 export const routeTree = rootRouteImport

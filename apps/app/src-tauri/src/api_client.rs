@@ -172,6 +172,11 @@ pub struct PaydayPatchRequest {
     pub payday_day: i32,
 }
 
+#[derive(Debug, Serialize)]
+pub struct WithdrawalRequest {
+    pub reason: Vec<String>,
+}
+
 // ============================================================================
 // API Client
 // ============================================================================
@@ -273,6 +278,13 @@ impl ApiClient {
         self.patch("/api/v1/profile/payday", token, req).await
     }
 
+    /// POST /api/v1/member/withdrawal
+    pub async fn post_withdrawal(&self, token: &str, reasons: Vec<String>) -> Result<(), ApiError> {
+        let body = WithdrawalRequest { reason: reasons };
+        self.post_unit("/api/v1/member/withdrawal", token, &body)
+            .await
+    }
+
     // -- helpers --
 
     async fn get<T: serde::de::DeserializeOwned>(
@@ -312,6 +324,33 @@ impl ApiClient {
         let resp = self
             .http
             .patch(&url)
+            .bearer_auth(token)
+            .json(body)
+            .send()
+            .await
+            .map_err(|e| ApiError::Network(e.to_string()))?;
+
+        if resp.status() == 401 {
+            return Err(ApiError::Unauthorized);
+        }
+        if !resp.status().is_success() {
+            let text = resp.text().await.unwrap_or_default();
+            return Err(ApiError::Server(text));
+        }
+
+        Ok(())
+    }
+
+    async fn post_unit<B: Serialize>(
+        &self,
+        path: &str,
+        token: &str,
+        body: &B,
+    ) -> Result<(), ApiError> {
+        let url = format!("{}{}", self.base_url, path);
+        let resp = self
+            .http
+            .post(&url)
             .bearer_auth(token)
             .json(body)
             .send()
