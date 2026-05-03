@@ -6,6 +6,7 @@ import { posthog } from '~/lib/analytics';
 import { assertOnboarded, commands } from '~/lib/tauri-bindings';
 import { IconButton } from '~/ui/icon-button';
 import { CelebrationIcon } from '~/ui/icons';
+import { TooltipBubble } from '~/ui/tooltip-bubble';
 
 import { PaydayOverlay } from './payday-overlay';
 
@@ -36,14 +37,21 @@ export function CelebrateButton() {
 
   return (
     <>
-      <IconButton
-        className="animate-wiggle"
-        data-attr="월급날_축하_클릭"
-        onClick={handleClick}
-        aria-label="월급날 축하"
-      >
-        <CelebrationIcon />
-      </IconButton>
+      <div className="relative">
+        <IconButton
+          className="animate-wiggle"
+          data-attr="월급날_축하_클릭"
+          onClick={handleClick}
+          aria-label="월급날 축하"
+        >
+          <CelebrationIcon />
+        </IconButton>
+        <div className="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 whitespace-nowrap">
+          <TooltipBubble size="sm" placement="top">
+            눌러보세요!
+          </TooltipBubble>
+        </div>
+      </div>
 
       {showOverlay && (
         <PaydayOverlay

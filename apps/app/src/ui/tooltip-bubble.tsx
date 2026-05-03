@@ -4,23 +4,36 @@ import { cn } from 'tailwind-variants';
 interface TooltipBubbleProps {
   children: ReactNode;
   size?: 'sm' | 'md';
+  placement?: 'top' | 'bottom';
 }
 
-export function TooltipBubble({ children, size = 'md' }: TooltipBubbleProps) {
+export function TooltipBubble({
+  children,
+  size = 'md',
+  placement = 'bottom',
+}: TooltipBubbleProps) {
   const sizeStyles = {
     sm: 'px-3.5 py-2',
     md: 'px-5 py-2',
   };
 
   return (
-    <div className="relative flex flex-col items-center">
+    <div
+      className={cn(
+        'relative flex items-center',
+        placement === 'top' ? 'flex-col-reverse' : 'flex-col',
+      )}
+    >
       <div
         className={cn('bg-container-secondary rounded-xl', sizeStyles[size])}
       >
         <p className="b2-400 text-text-high text-center">{children}</p>
       </div>
       <svg
-        className="text-container-secondary"
+        className={cn(
+          'text-container-secondary',
+          placement === 'top' && 'rotate-180',
+        )}
         width="20"
         height="12"
         viewBox="0 0 20 12"

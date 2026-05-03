@@ -1,7 +1,9 @@
 import NumberFlow, { continuous } from '@number-flow/react';
+import Lottie from 'lottie-react';
 import { useEffect, useState } from 'react';
 import { cn } from 'tailwind-variants';
 
+import salaryAnimation from '~/assets/salary.json';
 import { formatMonth } from '~/lib/format';
 import type { SalaryType } from '~/lib/tauri-bindings';
 
@@ -49,12 +51,21 @@ export function PaydayOverlay({
         if (!visible) onClose();
       }}
     >
-      {/* 초록색 blob */}
-      <div className="pointer-events-none absolute top-1/2 left-1/2 size-[240px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-green-50 opacity-50 blur-[80px]" />
+      {/* 초록색 radial 글로우 (Lottie 뒤에 깔리는 빛) */}
+      <div className="pointer-events-none absolute top-1/2 left-1/2 size-[360px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-green-50 opacity-50 blur-[100px]" />
 
       {/* 콘텐츠 */}
       <div className="relative flex flex-col items-center px-5">
-        <p className="b2-500 text-text-medium">{formatMonth()} 누적 월급</p>
+        <Lottie
+          animationData={salaryAnimation}
+          loop={false}
+          autoplay
+          className="h-[89px] w-[128.152px]"
+        />
+
+        <p className="b2-500 text-text-medium mt-2">
+          {formatMonth()} 누적 월급
+        </p>
 
         <div className="flex items-baseline justify-center gap-1">
           <NumberFlow
@@ -74,9 +85,7 @@ export function PaydayOverlay({
         </p>
 
         <p className="c1-400 text-text-low mt-2 text-center">
-          누적 월급액은 입력한 월급/연봉을 기준으로 계산된
-          <br />
-          금액이에요. 실제 급여와 다를 수 있어요.
+          누적 금액은 입력한 월급/연봉을 기준으로 계산돼요.
         </p>
       </div>
     </div>
