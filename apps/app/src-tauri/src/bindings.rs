@@ -2,7 +2,7 @@ use tauri_specta::{collect_commands, Builder};
 
 pub fn generate_bindings() -> Builder<tauri::Wry> {
     use crate::commands::{
-        app, auth, confetti, menubar, notifications, preferences, recovery, user_settings,
+        app, auth, confetti, menubar, notifications, preferences, recovery, terms, user_settings,
     };
     use crate::{salary, tray};
 
@@ -19,6 +19,9 @@ pub fn generate_bindings() -> Builder<tauri::Wry> {
         auth::update_profile_nickname,
         auth::sync_settings_to_server,
         auth::sync_from_server,
+        // Terms
+        terms::get_onboarding_terms,
+        terms::submit_onboarding_terms_agreements,
         // Confetti overlay
         confetti::show_confetti_window,
         confetti::close_confetti_window,

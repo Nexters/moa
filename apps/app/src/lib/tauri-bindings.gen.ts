@@ -116,6 +116,29 @@ async syncFromServer() : Promise<Result<null, string>> {
 }
 },
 /**
+ * GET /api/v1/onboarding/terms
+ */
+async getOnboardingTerms() : Promise<Result<TermItem[], string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_onboarding_terms") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * PUT /api/v1/onboarding/terms/agreements — 응답으로 has_required_terms_agreed 반환.
+ * 로컬 `UserSettings`의 `terms_agreed`/`terms_marketing_agreed`도 함께 갱신.
+ */
+async submitOnboardingTermsAgreements(agreements: TermAgreementInput[]) : Promise<Result<boolean, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("submit_onboarding_terms_agreements", { agreements }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * Creates a full-screen transparent overlay window for the confetti animation.
  * The window is click-through so the user can interact with other apps.
  * Each invocation creates a new window with a unique label, allowing overlapping confetti.
@@ -381,6 +404,8 @@ export type RecoveryError =
  * Salary type for user settings
  */
 export type SalaryType = "monthly" | "yearly"
+export type TermAgreementInput = { code: string; agreed: boolean }
+export type TermItem = { code: string; title: string; required: boolean; contentUrl: string }
 /**
  * User settings for salary calculation (MVP)
  */
@@ -413,6 +438,14 @@ workEndTime?: string;
  * Whether onboarding is completed
  */
 onboardingCompleted: boolean; 
+/**
+ * 필수 약관(TOS, PRIVACY) 모두 동의했는지 — 서버 has_required_terms_agreed 미러
+ */
+termsAgreed?: boolean; 
+/**
+ * 마케팅 정보 수신 동의(선택) 여부
+ */
+termsMarketingAgreed?: boolean; 
 /**
  * Menubar display mode (macOS only): none, daily, accumulated
  */

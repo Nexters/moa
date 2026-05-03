@@ -10,4 +10,5 @@ pub mod menubar;
 pub mod notifications;
 pub mod preferences;
 pub mod recovery;
+pub mod terms;
 pub mod user_settings;

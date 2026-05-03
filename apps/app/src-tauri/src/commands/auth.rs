@@ -619,6 +619,7 @@ async fn sync_after_login(app: &AppHandle, api: &ApiClient, token: &str) -> Resu
         let mut settings = load_local_settings(app).unwrap_or_default();
         merge_server_to_local(&mut settings, &payroll, &work_policy, &profile);
         settings.onboarding_completed = true;
+        settings.terms_agreed = status.has_required_terms_agreed;
         save_user_settings_sync(app, &settings)?;
         salary::notify_settings_changed();
         log::info!("서버 데이터 → 로컬 sync 완료");
@@ -717,7 +718,7 @@ async fn push_local_to_server(
     }
 }
 
-fn load_local_settings(app: &AppHandle) -> Result<UserSettings, String> {
+pub(crate) fn load_local_settings(app: &AppHandle) -> Result<UserSettings, String> {
     let path = get_user_settings_path(app)?;
     if !path.exists() {
         return Ok(UserSettings::default());

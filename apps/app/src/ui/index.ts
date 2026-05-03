@@ -10,6 +10,7 @@ export * from './icon-button';
 export * from './info-card';
 export * from './info-row';
 export * from './number-input';
+export * from './round-checkbox';
 export * from './select-input';
 export * from './switch-input';
 export * from './time-input';

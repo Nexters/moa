@@ -148,6 +148,52 @@ pub struct OnboardingStatusResponse {
 }
 
 // ============================================================================
+// Terms (약관)
+// ============================================================================
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TermDto {
+    pub code: String,
+    pub title: String,
+    pub required: bool,
+    pub content_url: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TermsResponse {
+    pub terms: Vec<TermDto>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TermAgreementUpsertDto {
+    pub code: String,
+    pub agreed: bool,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TermsAgreementRequest {
+    pub agreements: Vec<TermAgreementUpsertDto>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TermAgreementDto {
+    pub code: String,
+    pub agreed: bool,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TermsAgreementsResponse {
+    pub agreements: Vec<TermAgreementDto>,
+    pub has_required_terms_agreed: bool,
+}
+
+// ============================================================================
 // Patch requests
 // ============================================================================
 
@@ -284,6 +330,21 @@ impl ApiClient {
         self.patch("/api/v1/profile/payday", token, req).await
     }
 
+    /// GET /api/v1/onboarding/terms
+    pub async fn get_onboarding_terms(&self, token: &str) -> Result<TermsResponse, ApiError> {
+        self.get("/api/v1/onboarding/terms", token).await
+    }
+
+    /// PUT /api/v1/onboarding/terms/agreements
+    pub async fn put_onboarding_terms_agreements(
+        &self,
+        token: &str,
+        req: &TermsAgreementRequest,
+    ) -> Result<TermsAgreementsResponse, ApiError> {
+        self.put_with_response("/api/v1/onboarding/terms/agreements", token, req)
+            .await
+    }
+
     /// POST /api/v1/member/withdrawal
     pub async fn post_withdrawal(&self, token: &str, reasons: Vec<String>) -> Result<(), ApiError> {
         let body = WithdrawalRequest { reason: reasons };
@@ -355,6 +416,40 @@ impl ApiClient {
         }
 
         Ok(())
+    }
+
+    async fn put_with_response<B: Serialize, T: serde::de::DeserializeOwned>(
+        &self,
+        path: &str,
+        token: &str,
+        body: &B,
+    ) -> Result<T, ApiError> {
+        let url = format!("{}{}", self.base_url, path);
+        let resp = self
+            .http
+            .put(&url)
+            .bearer_auth(token)
+            .json(body)
+            .send()
+            .await
+            .map_err(|e| ApiError::Network(e.to_string()))?;
+
+        if resp.status() == 401 {
+            return Err(ApiError::Unauthorized);
+        }
+        if !resp.status().is_success() {
+            let text = resp.text().await.unwrap_or_default();
+            return Err(ApiError::Server(text));
+        }
+
+        let api_resp: ApiResponse<T> = resp
+            .json()
+            .await
+            .map_err(|e| ApiError::Network(e.to_string()))?;
+
+        api_resp
+            .content
+            .ok_or_else(|| ApiError::Server("응답에 content 없음".into()))
     }
 
     async fn post_unit<B: Serialize>(
