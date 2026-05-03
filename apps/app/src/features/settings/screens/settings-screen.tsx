@@ -216,13 +216,32 @@ export function SettingsScreen() {
         <div className="flex items-center justify-center gap-3">
           {authStatus?.isLoggedIn ? (
             <>
-              <Button
-                variant="link"
-                disabled={logoutMutation.isPending}
-                onClick={() => logoutMutation.mutate()}
-              >
-                로그아웃
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger
+                  render={
+                    <Button
+                      variant="link"
+                      disabled={logoutMutation.isPending}
+                    />
+                  }
+                >
+                  로그아웃
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>로그아웃 하시겠어요?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      로그아웃하면 로그인 화면으로 이동해요.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>취소</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => logoutMutation.mutate()}>
+                      확인
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
               <Button
                 variant="link"
                 onClick={() => navigate({ to: '/settings/withdrawal' })}

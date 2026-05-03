@@ -19,6 +19,7 @@ import { Route as SettingsTermsPolicyRouteImport } from './routes/settings/terms
 import { Route as SettingsSalaryInfoRouteImport } from './routes/settings/salary-info'
 import { Route as SettingsEditScheduleRouteImport } from './routes/settings/edit-schedule'
 import { Route as SettingsEditSalaryRouteImport } from './routes/settings/edit-salary'
+import { Route as SettingsEditNicknameRouteImport } from './routes/settings/edit-nickname'
 import { Route as OnboardingScheduleRouteImport } from './routes/onboarding/schedule'
 import { Route as OnboardingSalaryRouteImport } from './routes/onboarding/salary'
 import { Route as OnboardingCompletionRouteImport } from './routes/onboarding/completion'
@@ -73,6 +74,11 @@ const SettingsEditSalaryRoute = SettingsEditSalaryRouteImport.update({
   path: '/settings/edit-salary',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsEditNicknameRoute = SettingsEditNicknameRouteImport.update({
+  id: '/settings/edit-nickname',
+  path: '/settings/edit-nickname',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OnboardingScheduleRoute = OnboardingScheduleRouteImport.update({
   id: '/schedule',
   path: '/schedule',
@@ -97,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/onboarding/completion': typeof OnboardingCompletionRoute
   '/onboarding/salary': typeof OnboardingSalaryRoute
   '/onboarding/schedule': typeof OnboardingScheduleRoute
+  '/settings/edit-nickname': typeof SettingsEditNicknameRoute
   '/settings/edit-salary': typeof SettingsEditSalaryRoute
   '/settings/edit-schedule': typeof SettingsEditScheduleRoute
   '/settings/salary-info': typeof SettingsSalaryInfoRoute
@@ -112,6 +119,7 @@ export interface FileRoutesByTo {
   '/onboarding/completion': typeof OnboardingCompletionRoute
   '/onboarding/salary': typeof OnboardingSalaryRoute
   '/onboarding/schedule': typeof OnboardingScheduleRoute
+  '/settings/edit-nickname': typeof SettingsEditNicknameRoute
   '/settings/edit-salary': typeof SettingsEditSalaryRoute
   '/settings/edit-schedule': typeof SettingsEditScheduleRoute
   '/settings/salary-info': typeof SettingsSalaryInfoRoute
@@ -128,6 +136,7 @@ export interface FileRoutesById {
   '/onboarding/completion': typeof OnboardingCompletionRoute
   '/onboarding/salary': typeof OnboardingSalaryRoute
   '/onboarding/schedule': typeof OnboardingScheduleRoute
+  '/settings/edit-nickname': typeof SettingsEditNicknameRoute
   '/settings/edit-salary': typeof SettingsEditSalaryRoute
   '/settings/edit-schedule': typeof SettingsEditScheduleRoute
   '/settings/salary-info': typeof SettingsSalaryInfoRoute
@@ -145,6 +154,7 @@ export interface FileRouteTypes {
     | '/onboarding/completion'
     | '/onboarding/salary'
     | '/onboarding/schedule'
+    | '/settings/edit-nickname'
     | '/settings/edit-salary'
     | '/settings/edit-schedule'
     | '/settings/salary-info'
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
     | '/onboarding/completion'
     | '/onboarding/salary'
     | '/onboarding/schedule'
+    | '/settings/edit-nickname'
     | '/settings/edit-salary'
     | '/settings/edit-schedule'
     | '/settings/salary-info'
@@ -175,6 +186,7 @@ export interface FileRouteTypes {
     | '/onboarding/completion'
     | '/onboarding/salary'
     | '/onboarding/schedule'
+    | '/settings/edit-nickname'
     | '/settings/edit-salary'
     | '/settings/edit-schedule'
     | '/settings/salary-info'
@@ -188,6 +200,7 @@ export interface RootRouteChildren {
   OnboardingRouteRoute: typeof OnboardingRouteRouteWithChildren
   HomeRoute: typeof HomeRoute
   LoginRoute: typeof LoginRoute
+  SettingsEditNicknameRoute: typeof SettingsEditNicknameRoute
   SettingsEditSalaryRoute: typeof SettingsEditSalaryRoute
   SettingsEditScheduleRoute: typeof SettingsEditScheduleRoute
   SettingsSalaryInfoRoute: typeof SettingsSalaryInfoRoute
@@ -268,6 +281,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsEditSalaryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings/edit-nickname': {
+      id: '/settings/edit-nickname'
+      path: '/settings/edit-nickname'
+      fullPath: '/settings/edit-nickname'
+      preLoaderRoute: typeof SettingsEditNicknameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/onboarding/schedule': {
       id: '/onboarding/schedule'
       path: '/schedule'
@@ -313,6 +333,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRouteRoute: OnboardingRouteRouteWithChildren,
   HomeRoute: HomeRoute,
   LoginRoute: LoginRoute,
+  SettingsEditNicknameRoute: SettingsEditNicknameRoute,
   SettingsEditSalaryRoute: SettingsEditSalaryRoute,
   SettingsEditScheduleRoute: SettingsEditScheduleRoute,
   SettingsSalaryInfoRoute: SettingsSalaryInfoRoute,

@@ -10,4 +10,5 @@ export { HeroIcon, type HeroIconVariant } from './hero-icon';
 export { HolidayIcon } from './holiday';
 export { KakaoLogoIcon } from './kakao-logo';
 export { MoaLogoIcon } from './moa-logo';
+export { RestartIcon } from './restart';
 export { SettingsIcon } from './settings';

@@ -11,28 +11,25 @@ export function EditIcon(props: ComponentProps<'svg'>) {
       {...props}
     >
       <path
-        d="M11.05 3.00002L4.20829 10.2417C3.94996 10.5167 3.69996 11.0584 3.64996 11.4334L3.34163 14.1334C3.23329 15.1084 3.93329 15.775 4.89996 15.6084L7.58329 15.15C7.95829 15.0834 8.48329 14.8084 8.74163 14.525L15.5833 7.28335C16.7666 6.03335 17.3 4.60835 15.4583 2.86668C13.625 1.14168 12.2333 1.75002 11.05 3.00002Z"
+        d="M4.16732 13.3333L3.33398 16.6667L6.66732 15.8333L16.3221 6.17851C16.973 5.52764 16.973 4.47236 16.3221 3.82149L16.1792 3.67851C15.5283 3.02764 14.473 3.02764 13.8221 3.67851L4.16732 13.3333Z"
         stroke="currentColor"
-        strokeWidth="1.5"
-        strokeMiterlimit="10"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        stroke-width="1.4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
       />
       <path
-        d="M9.90833 4.20831C10.2667 6.50831 12.1333 8.26665 14.45 8.49998"
+        d="M12.5 5L15 7.5"
         stroke="currentColor"
-        strokeWidth="1.5"
-        strokeMiterlimit="10"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        stroke-width="1.4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
       />
       <path
-        d="M2.5 18.3334H17.5"
+        d="M10.834 16.6666H17.5007"
         stroke="currentColor"
-        strokeWidth="1.5"
-        strokeMiterlimit="10"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        stroke-width="1.4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
       />
     </svg>
   );
