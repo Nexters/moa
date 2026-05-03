@@ -12,8 +12,8 @@ use specta::Type;
 use tauri::{AppHandle, Manager};
 
 use crate::api_client::{
-    ApiClient, ApiError, PaydayPatchRequest, PayrollPatchRequest, SalaryInputType, Weekday,
-    WorkPolicyPatchRequest,
+    ApiClient, ApiError, NicknamePatchRequest, PaydayPatchRequest, PayrollPatchRequest,
+    SalaryInputType, Weekday, WorkPolicyPatchRequest,
 };
 use crate::auth;
 use crate::commands::user_settings::{get_user_settings_path, save_user_settings_sync};
@@ -422,6 +422,27 @@ pub async fn get_profile_nickname(app: AppHandle) -> Result<Option<String>, Stri
             Ok(None)
         }
         Err(e) => Err(format!("프로필 조회 실패: {e}")),
+    }
+}
+
+/// 닉네임 수정 (서버 PATCH)
+#[tauri::command]
+#[specta::specta]
+pub async fn update_profile_nickname(app: AppHandle, nickname: String) -> Result<(), String> {
+    let token = auth::get_access_token(&app).ok_or_else(|| "로그인이 필요합니다".to_string())?;
+
+    let base_url = std::env::var("MOA_API_BASE_URL")
+        .unwrap_or_else(|_| "https://www.moa-official.kr".to_string());
+    let api = ApiClient::new(&base_url);
+
+    let req = NicknamePatchRequest { nickname };
+    match api.patch_profile_nickname(&token, &req).await {
+        Ok(_) => Ok(()),
+        Err(ApiError::Unauthorized) => {
+            auth::clear_auth_token(&app);
+            Err("인증이 만료되었습니다".to_string())
+        }
+        Err(e) => Err(format!("닉네임 수정 실패: {e}")),
     }
 }
 

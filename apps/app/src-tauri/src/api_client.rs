@@ -218,6 +218,12 @@ pub struct PaydayPatchRequest {
     pub payday_day: i32,
 }
 
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct NicknamePatchRequest {
+    pub nickname: String,
+}
+
 // ============================================================================
 // API Client
 // ============================================================================
@@ -334,6 +340,16 @@ impl ApiClient {
             .await
     }
 
+    /// PATCH /api/v1/profile/nickname
+    pub async fn patch_profile_nickname(
+        &self,
+        token: &str,
+        req: &NicknamePatchRequest,
+    ) -> Result<ProfileResponse, ApiError> {
+        self.patch_with_response("/api/v1/profile/nickname", token, req)
+            .await
+    }
+
     // -- helpers --
 
     async fn get<T: serde::de::DeserializeOwned>(
@@ -400,6 +416,44 @@ impl ApiClient {
         let resp = self
             .http
             .put(&url)
+            .bearer_auth(token)
+            .json(body)
+            .send()
+            .await
+            .map_err(|e| ApiError::Network(e.to_string()))?;
+
+        if resp.status() == 401 {
+            return Err(ApiError::Unauthorized);
+        }
+        if !resp.status().is_success() {
+            let text = resp.text().await.unwrap_or_default();
+            return Err(ApiError::Server(text));
+        }
+
+        let api_resp: ApiResponse<T> = resp
+            .json()
+            .await
+            .map_err(|e| ApiError::Network(e.to_string()))?;
+
+        api_resp
+            .content
+            .ok_or_else(|| ApiError::Server("응답에 content 없음".into()))
+    }
+
+    async fn patch_with_response<T, B>(
+        &self,
+        path: &str,
+        token: &str,
+        body: &B,
+    ) -> Result<T, ApiError>
+    where
+        T: serde::de::DeserializeOwned,
+        B: Serialize,
+    {
+        let url = format!("{}{}", self.base_url, path);
+        let resp = self
+            .http
+            .patch(&url)
             .bearer_auth(token)
             .json(body)
             .send()

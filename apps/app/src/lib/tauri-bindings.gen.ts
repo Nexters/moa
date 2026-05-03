@@ -72,6 +72,17 @@ async getProfileNickname() : Promise<Result<string | null, string>> {
 }
 },
 /**
+ * 닉네임 수정 (서버 PATCH)
+ */
+async updateProfileNickname(nickname: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("update_profile_nickname", { nickname }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * 로컬 설정 → 서버 push (fire-and-forget 용)
  */
 async syncSettingsToServer() : Promise<Result<null, string>> {
