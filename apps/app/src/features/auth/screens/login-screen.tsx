@@ -1,7 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { getRouteApi, useNavigate } from '@tanstack/react-router';
+import { listen } from '@tauri-apps/api/event';
+import Lottie from 'lottie-react';
+import { useEffect, useState } from 'react';
 
-import moneyBg from '~/assets/money-bg.png';
+import flyingMoneyAnimation from '~/assets/flying-money.json';
 import { useSocialLogin } from '~/hooks/use-auth';
 import { commands } from '~/lib/tauri-bindings';
 import { userSettingsQuery } from '~/queries';
@@ -15,6 +18,17 @@ export function LoginScreen() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const socialLogin = useSocialLogin();
+
+  const [lottieKey, setLottieKey] = useState(0);
+
+  useEffect(() => {
+    const cleanup = listen('menubar_panel_did_open', () => {
+      setLottieKey((prev) => prev + 1);
+    });
+    return () => {
+      void cleanup.then((fn) => fn());
+    };
+  }, []);
 
   const handleSocialLogin = async (provider: 'kakao' | 'apple') => {
     if (socialLogin.isPending) {
@@ -50,10 +64,16 @@ export function LoginScreen() {
         <AppBar type="main" />
       )}
 
-      <div className="flex flex-1 flex-col items-center px-6 pt-3">
-        <img src={moneyBg} alt="" className="w-[340px] object-contain" />
+      <div className="flex flex-1 flex-col items-center">
+        <Lottie
+          key={lottieKey}
+          animationData={flyingMoneyAnimation}
+          loop={false}
+          autoplay
+          className="h-[200px] w-[340px]"
+        />
 
-        <div className="-mt-16 flex flex-col items-center gap-3">
+        <div className="z-1 -mt-24 flex flex-col items-center gap-3">
           <MoaLogoIcon className="h-[44px] w-[144px]" />
           <p className="b2-500 text-text-medium">
             실시간으로 월급이 쌓이는 경험!
