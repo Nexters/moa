@@ -128,7 +128,7 @@ function EditSalaryForm({ settings }: EditSalaryFormProps) {
                 <Button
                   rounded="full"
                   size="lg"
-                  className="w-60"
+                  className="w-full"
                   disabled={!isValid || isSubmitting}
                   onClick={() => form.handleSubmit()}
                 >

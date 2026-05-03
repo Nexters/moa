@@ -118,7 +118,7 @@ export function SalaryScreen() {
               <Button
                 rounded="full"
                 size="lg"
-                className="w-60"
+                className="w-full"
                 disabled={!!salaryAmountError || !!payDayError}
                 onClick={goToNext}
               >
