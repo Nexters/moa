@@ -55,3 +55,17 @@ export function useLogout() {
     },
   });
 }
+
+export function useUpdateNickname() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (nickname: string) => {
+      const result = await commands.updateProfileNickname(nickname);
+      if (result.status === 'error') throw new Error(result.error);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: authQuery.nickname() });
+    },
+  });
+}
