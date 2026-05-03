@@ -64,16 +64,16 @@ export function LoginScreen() {
         <AppBar type="main" />
       )}
 
-      <div className="flex flex-1 flex-col items-center">
+      <div className="flex flex-1 flex-col items-center px-8">
         <Lottie
           key={lottieKey}
           animationData={flyingMoneyAnimation}
           loop={false}
           autoplay
-          className="h-[200px] w-[340px]"
+          className="-mt-12 h-[260px] w-full"
         />
 
-        <div className="z-1 -mt-24 flex flex-col items-center gap-3">
+        <div className="z-1 -mt-20 flex flex-col items-center gap-3">
           <MoaLogoIcon className="h-[44px] w-[144px]" />
           <p className="b2-500 text-text-medium">
             실시간으로 월급이 쌓이는 경험!
