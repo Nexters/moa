@@ -2,8 +2,6 @@ import { Toggle } from '@base-ui/react/toggle';
 import { ToggleGroup } from '@base-ui/react/toggle-group';
 import { cn } from 'tailwind-variants';
 
-import { buttonVariants } from './button';
-
 interface ToggleInputOption<T extends string> {
   value: T;
   label: string;
@@ -33,19 +31,18 @@ export function ToggleInput<T extends string>({
         onValueChange(first as T);
       }}
       disabled={disabled}
-      className={cn('flex w-full gap-2', className)}
+      className={cn('flex w-full gap-3', className)}
     >
       {options.map((option) => (
         <Toggle
           key={option.value}
           value={option.value}
           className={cn(
-            buttonVariants({
-              variant: option.value === value ? 'secondary' : 'tertiary',
-              rounded: 'md',
-              size: 'md',
-            }),
-            'flex-1',
+            'bg-container-primary flex h-14 flex-1 cursor-pointer items-center justify-center rounded-md px-4',
+            'transition-colors duration-150 ease-in-out',
+            option.value === value
+              ? 'b1-600 text-text-high'
+              : 'b1-500 text-text-disabled',
           )}
         >
           {option.label}
