@@ -46,7 +46,7 @@ export function CelebrateButton() {
         >
           <CelebrationIcon />
         </IconButton>
-        <div className="pointer-events-none absolute top-full left-1/2 mt-1 -translate-x-1/2">
+        <div className="pointer-events-none absolute top-full left-1/2 mt-1 -translate-x-1/2 whitespace-nowrap">
           <TooltipBubble size="sm" placement="top">
             눌러보세요!
           </TooltipBubble>
