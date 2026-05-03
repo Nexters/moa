@@ -1,16 +1,15 @@
+import { useForm } from '@tanstack/react-form';
 import { useNavigate } from '@tanstack/react-router';
-import { useState } from 'react';
 import { toast } from 'sonner';
 
-import { useProfileNickname, useUpdateNickname } from '~/hooks/use-auth';
-import { AppBar, AppFooter, Button } from '~/ui';
-import { RestartIcon } from '~/ui/icons';
-
-import { generateRandomNickname } from '../lib/nickname-pool';
+import { generateRandomNickname } from '~/features/settings/lib/nickname-pool';
 import {
   type NicknameError,
   validateNickname,
-} from '../lib/nickname-validation';
+} from '~/features/settings/lib/nickname-validation';
+import { useProfileNickname, useUpdateNickname } from '~/hooks/use-auth';
+import { AppBar, AppFooter, Button } from '~/ui';
+import { RestartIcon } from '~/ui/icons';
 
 export function EditNicknameScreen() {
   const navigate = useNavigate();
@@ -31,67 +30,93 @@ interface EditNicknameFormProps {
 }
 
 function EditNicknameForm({ initialNickname, onDone }: EditNicknameFormProps) {
-  const [value, setValue] = useState(initialNickname);
   const updateMutation = useUpdateNickname();
 
-  const error = validateNickname(value);
-  const helperMessage = getHelperMessage(error);
-  const canSubmit = error === null && !updateMutation.isPending;
-
-  const handleRandomize = () => {
-    setValue(generateRandomNickname(value));
-  };
-
-  const handleSubmit = () => {
-    updateMutation.mutate(value, {
-      onSuccess: onDone,
-      onError: (err) => toast.error(err.message),
-    });
-  };
+  const form = useForm({
+    defaultValues: { nickname: initialNickname },
+    onSubmit: async ({ value }) => {
+      try {
+        await updateMutation.mutateAsync(value.nickname);
+        onDone();
+      } catch (err) {
+        if (err instanceof Error) toast.error(err.message);
+      }
+    },
+  });
 
   return (
     <>
       <div className="mt-14 flex flex-col items-center gap-8 px-5">
-        <div className="flex w-full flex-col gap-2">
-          <p className="t1-700 text-text-high text-center">닉네임</p>
-          <div className="bg-container-primary flex items-center justify-center rounded-xl p-4">
-            <input
-              type="text"
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              placeholder="닉네임을 입력해주세요"
-              className="t1-700 text-green-40 placeholder:text-text-disabled w-full bg-transparent text-center focus:outline-none"
-              autoFocus
-            />
-          </div>
-          <p className="t1-700 text-text-high text-center">로 수정할게요</p>
-        </div>
+        <form.Field
+          name="nickname"
+          validators={{
+            onChange: ({ value }) => validateNickname(value) ?? undefined,
+          }}
+        >
+          {(field) => (
+            <div className="flex w-full flex-col gap-2">
+              <p className="t1-700 text-text-high text-center">닉네임</p>
+              <div className="bg-container-primary flex items-center justify-center rounded-xl p-4">
+                <input
+                  type="text"
+                  value={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.value)}
+                  placeholder="닉네임을 입력해주세요"
+                  className="t1-700 text-green-40 placeholder:text-text-disabled w-full bg-transparent text-center focus:outline-none"
+                  autoFocus
+                />
+              </div>
+              <p className="t1-700 text-text-high text-center">로 수정할게요</p>
+            </div>
+          )}
+        </form.Field>
 
         <button
           type="button"
-          onClick={handleRandomize}
-          className="bg-container-primary text-text-high flex cursor-pointer items-center gap-1 rounded-lg px-3 py-2"
+          onClick={() =>
+            form.setFieldValue(
+              'nickname',
+              generateRandomNickname(form.getFieldValue('nickname')),
+            )
+          }
+          className="bg-container-primary flex cursor-pointer items-center gap-1 rounded-lg px-3 py-2"
         >
-          <RestartIcon className="size-4" />
-          <span className="b2-500">랜덤변경</span>
+          <RestartIcon className="text-text-high size-4" />
+          <span className="b2-500 text-text-high">랜덤변경</span>
         </button>
       </div>
 
-      <AppFooter className="gap-3 px-8">
-        {helperMessage && (
-          <p className="b2-500 text-text-low text-center">{helperMessage}</p>
-        )}
-        <Button
-          variant="primary"
-          rounded="full"
-          size="lg"
-          fullWidth
-          disabled={!canSubmit}
-          onClick={handleSubmit}
-        >
-          {updateMutation.isPending ? '저장 중...' : '완료'}
-        </Button>
-      </AppFooter>
+      <form.Subscribe
+        selector={(state) => ({
+          value: state.values.nickname,
+          isSubmitting: state.isSubmitting,
+        })}
+      >
+        {({ value, isSubmitting }) => {
+          const error = validateNickname(value);
+          const helperMessage = getHelperMessage(error);
+          const canSubmit = error === null && !isSubmitting;
+          return (
+            <AppFooter>
+              {helperMessage && (
+                <p className="b2-500 text-text-low text-center">
+                  {helperMessage}
+                </p>
+              )}
+              <Button
+                variant="primary"
+                rounded="full"
+                size="lg"
+                fullWidth
+                disabled={!canSubmit}
+                onClick={() => form.handleSubmit()}
+              >
+                {isSubmitting ? '저장 중...' : '완료'}
+              </Button>
+            </AppFooter>
+          );
+        }}
+      </form.Subscribe>
     </>
   );
 }
