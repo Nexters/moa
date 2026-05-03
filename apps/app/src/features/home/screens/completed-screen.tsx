@@ -46,7 +46,7 @@ export function CompletedScreen({
           variant="primary"
           rounded="full"
           size="lg"
-          className="w-[240px]"
+          className="w-full"
           onClick={onAcknowledge}
         >
           완료
