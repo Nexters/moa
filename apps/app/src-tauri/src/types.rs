@@ -186,6 +186,12 @@ pub struct UserSettings {
     pub work_end_time: String,
     /// Whether onboarding is completed
     pub onboarding_completed: bool,
+    /// 필수 약관(TOS, PRIVACY) 모두 동의했는지 — 서버 has_required_terms_agreed 미러
+    #[serde(default)]
+    pub terms_agreed: bool,
+    /// 마케팅 정보 수신 동의(선택) 여부
+    #[serde(default)]
+    pub terms_marketing_agreed: bool,
     /// Menubar display mode (macOS only): none, daily, accumulated
     #[serde(default)]
     pub menubar_display_mode: MenubarDisplayMode,
@@ -216,6 +222,8 @@ impl Default for UserSettings {
             work_start_time: default_work_start_time(),
             work_end_time: default_work_end_time(),
             onboarding_completed: false,
+            terms_agreed: false,
+            terms_marketing_agreed: false,
             menubar_display_mode: MenubarDisplayMode::default(),
             menubar_icon_theme: MenubarIconTheme::default(),
         }

@@ -32,6 +32,8 @@ export type {
   MenubarIconTheme,
   RecoveryError,
   SalaryType,
+  TermAgreementInput,
+  TermItem,
   UserSettings,
 } from './tauri-bindings.gen';
 
