@@ -2,7 +2,6 @@ import { useForm } from '@tanstack/react-form';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { openUrl } from '@tauri-apps/plugin-opener';
-import { cn } from 'tailwind-variants';
 
 import { posthog } from '~/lib/analytics';
 import {
@@ -11,8 +10,8 @@ import {
   type TermItem,
 } from '~/lib/tauri-bindings';
 import { onboardingTermsQueryOptions, userSettingsQuery } from '~/queries';
-import { AppBar, AppFooter, Button } from '~/ui';
-import { CheckIcon, ChevronRightIcon } from '~/ui/icons';
+import { AppBar, AppFooter, Button, RoundCheckbox } from '~/ui';
+import { ChevronRightIcon } from '~/ui/icons';
 
 import { useOnboardingContext } from '..';
 
@@ -78,6 +77,9 @@ function TermsForm({ terms, onBack }: TermsFormProps) {
         value.agreements,
       );
       if (result.status === 'error') throw new Error(result.error);
+      if (!result.data) {
+        throw new Error('필수 약관 동의가 확인되지 않았습니다.');
+      }
       await queryClient.invalidateQueries({
         queryKey: userSettingsQuery.all(),
       });
@@ -120,7 +122,7 @@ function TermsForm({ terms, onBack }: TermsFormProps) {
                   className="bg-container-primary flex items-center gap-3 rounded-md px-4 py-3.5"
                   aria-pressed={allChecked}
                 >
-                  <Checkbox checked={allChecked} />
+                  <RoundCheckbox checked={allChecked} />
                   <span className="b1-600 text-text-high flex-1 text-left">
                     전체 동의하기
                   </span>
@@ -147,7 +149,7 @@ function TermsForm({ terms, onBack }: TermsFormProps) {
                         aria-label={`${item.title} 동의`}
                         className="flex flex-1 items-center gap-3 text-left"
                       >
-                        <Checkbox checked={field.state.value} />
+                        <RoundCheckbox checked={field.state.value} />
                         <span className="b2-500 text-text-medium">
                           {requiredLabel} {item.title}
                         </span>
@@ -205,25 +207,5 @@ function TermsForm({ terms, onBack }: TermsFormProps) {
         </form.Subscribe>
       </div>
     </main>
-  );
-}
-
-interface CheckboxProps {
-  checked: boolean;
-}
-
-function Checkbox({ checked }: CheckboxProps) {
-  return (
-    <span
-      className={cn(
-        'flex size-6 shrink-0 items-center justify-center rounded-full border-[1.5px] transition-colors',
-        checked
-          ? 'bg-green-40 border-green-40 text-gray-90'
-          : 'border-text-low text-transparent',
-      )}
-      aria-hidden="true"
-    >
-      <CheckIcon className="size-4" />
-    </span>
   );
 }
