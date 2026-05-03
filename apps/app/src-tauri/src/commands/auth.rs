@@ -377,6 +377,29 @@ pub async fn logout(app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+/// 회원 탈퇴
+#[tauri::command]
+#[specta::specta]
+pub async fn withdraw_member(app: AppHandle, reasons: Vec<String>) -> Result<(), String> {
+    let token = auth::get_access_token(&app).ok_or("로그인 상태가 아닙니다")?;
+    let base_url = std::env::var("MOA_API_BASE_URL")
+        .unwrap_or_else(|_| "https://www.moa-official.kr".to_string());
+    let api = ApiClient::new(&base_url);
+
+    // 401(Unauthorized)도 사실상 탈퇴 완료로 간주: 서버에 이미 없는 상태이므로 로컬 정리만 수행.
+    match api.post_withdrawal(&token, reasons).await {
+        Ok(()) | Err(ApiError::Unauthorized) => {
+            auth::clear_auth_token(&app);
+            crate::commands::user_settings::reset_all_data(app.clone())
+                .await
+                .ok();
+            log::info!("회원 탈퇴 완료");
+            Ok(())
+        }
+        Err(e) => Err(format!("회원 탈퇴 실패: {e}")),
+    }
+}
+
 /// 인증 상태 확인
 #[tauri::command]
 #[specta::specta]

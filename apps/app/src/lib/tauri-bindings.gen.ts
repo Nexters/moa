@@ -50,6 +50,17 @@ async logout() : Promise<Result<null, string>> {
 }
 },
 /**
+ * 회원 탈퇴
+ */
+async withdrawMember(reasons: string[]) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("withdraw_member", { reasons }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * 인증 상태 확인
  */
 async getAuthStatus() : Promise<Result<AuthStatus, string>> {

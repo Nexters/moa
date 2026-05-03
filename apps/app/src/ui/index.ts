@@ -3,6 +3,7 @@ export * from './app-toaster';
 export * from './app-footer';
 export * from './badge';
 export * from './button';
+export * from './checkbox';
 export * from './day-chip';
 export * from './field';
 export * from './icon-button';
