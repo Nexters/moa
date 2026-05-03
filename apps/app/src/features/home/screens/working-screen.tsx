@@ -41,7 +41,7 @@ export function WorkingScreen({
           variant="primary"
           rounded="full"
           size="lg"
-          className="w-[240px]"
+          className="w-full"
           disabled={isPending}
           onClick={onEarlyLeave}
         >

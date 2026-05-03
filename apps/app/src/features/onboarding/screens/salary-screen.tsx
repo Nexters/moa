@@ -1,12 +1,11 @@
 import { MAX_SALARY_AMOUNT } from '~/lib/constants';
-import type { SalaryType } from '~/lib/tauri-bindings';
 import {
   AppBar,
   AppFooter,
   Button,
   Field,
   NumberInput,
-  SelectInput,
+  ToggleInput,
 } from '~/ui';
 
 import { useOnboardingContext } from '..';
@@ -31,10 +30,10 @@ export function SalaryScreen() {
             {(field) => (
               <Field.Root name={field.name}>
                 <Field.Label>급여 유형</Field.Label>
-                <SelectInput
+                <ToggleInput
                   options={SALARY_TYPE_OPTIONS}
                   value={field.state.value}
-                  onValueChange={(v) => field.handleChange(v as SalaryType)}
+                  onValueChange={field.handleChange}
                 />
               </Field.Root>
             )}
@@ -119,7 +118,7 @@ export function SalaryScreen() {
               <Button
                 rounded="full"
                 size="lg"
-                className="w-60"
+                className="w-full"
                 disabled={!!salaryAmountError || !!payDayError}
                 onClick={goToNext}
               >

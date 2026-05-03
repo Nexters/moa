@@ -46,7 +46,7 @@ export function BeforeWorkScreen({
           variant="primary"
           rounded="full"
           size="lg"
-          className="w-[240px]"
+          className="w-full"
           disabled={isPending}
           onClick={onStartWork}
         >
