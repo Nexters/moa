@@ -1,6 +1,7 @@
-import { Link } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 
 import type { AuthStatus } from '~/lib/tauri-bindings';
+import { IconButton } from '~/ui';
 import { ChevronRightIcon, EditIcon } from '~/ui/icons';
 
 interface Props {
@@ -9,12 +10,23 @@ interface Props {
 }
 
 export function AuthRow({ authStatus, nickname }: Props) {
+  const navigate = useNavigate();
+
   if (authStatus?.isLoggedIn) {
+    const goToEdit = () => navigate({ to: '/settings/edit-nickname' });
     return (
-      <Link to="/settings/edit-nickname" className="flex items-center gap-2">
-        <span className="t1-700 text-green-40">{nickname ?? ' '}</span>
-        <EditIcon className="text-text-high size-5" />
-      </Link>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={goToEdit}
+          className="t1-700 text-green-40 cursor-pointer"
+        >
+          {nickname ?? ' '}
+        </button>
+        <IconButton size="sm" onClick={goToEdit} aria-label="닉네임 수정">
+          <EditIcon className="size-5" />
+        </IconButton>
+      </div>
     );
   }
 
