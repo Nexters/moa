@@ -19,15 +19,6 @@ export function WithdrawalScreen() {
         onBack={() => navigate({ to: '/settings' })}
       />
 
-      <header className="flex flex-col gap-1.5 px-5">
-        <p className="b2-400 text-text-medium">헤어지게 되어 아쉬워요..</p>
-        <h1 className="t2-700 text-text-high">
-          탈퇴 사유를 알려주시면 더 나은 서비스를
-          <br />
-          제공하기 위해 노력할게요.
-        </h1>
-      </header>
-
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -35,28 +26,39 @@ export function WithdrawalScreen() {
         }}
         className="flex min-h-0 flex-1 flex-col"
       >
-        <div className="scrollbar-overlay flex flex-col gap-6 px-5 pt-7 pb-32">
-          <form.Field name="reasons">
-            {(field) =>
-              WITHDRAWAL_REASON_OPTIONS.map((label) => {
-                const checked = field.state.value.includes(label);
-                return (
-                  <Checkbox
-                    key={label}
-                    label={label}
-                    checked={checked}
-                    onChange={(next) =>
-                      field.handleChange(
-                        next
-                          ? [...field.state.value, label]
-                          : field.state.value.filter((r) => r !== label),
-                      )
-                    }
-                  />
-                );
-              })
-            }
-          </form.Field>
+        <div className="scrollbar-overlay flex flex-col px-5 pb-32">
+          <header className="mb-7 flex flex-col gap-1.5">
+            <p className="b2-400 text-text-medium">헤어지게 되어 아쉬워요..</p>
+            <h1 className="t2-700 text-text-high">
+              탈퇴 사유를 알려주시면 더 나은 서비스를
+              <br />
+              제공하기 위해 노력할게요.
+            </h1>
+          </header>
+
+          <div className="flex flex-col gap-6">
+            <form.Field name="reasons">
+              {(field) =>
+                WITHDRAWAL_REASON_OPTIONS.map((label) => {
+                  const checked = field.state.value.includes(label);
+                  return (
+                    <Checkbox
+                      key={label}
+                      label={label}
+                      checked={checked}
+                      onChange={(next) =>
+                        field.handleChange(
+                          next
+                            ? [...field.state.value, label]
+                            : field.state.value.filter((r) => r !== label),
+                        )
+                      }
+                    />
+                  );
+                })
+              }
+            </form.Field>
+          </div>
         </div>
 
         <div className="from-bg-primary/0 to-bg-primary pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-b px-8 pt-10 pb-8">
