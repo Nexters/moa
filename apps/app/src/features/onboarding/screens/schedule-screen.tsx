@@ -82,7 +82,7 @@ export function ScheduleScreen() {
                 <Button
                   rounded="full"
                   size="lg"
-                  className="w-60"
+                  className="w-full"
                   disabled={hasErrors || isSubmitting}
                   onClick={() => form.handleSubmit()}
                 >

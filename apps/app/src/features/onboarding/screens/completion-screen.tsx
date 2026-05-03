@@ -38,7 +38,7 @@ export function CompletionScreen() {
         <Button
           rounded="full"
           size="lg"
-          className="w-60"
+          className="w-full"
           onClick={handleComplete}
         >
           완료

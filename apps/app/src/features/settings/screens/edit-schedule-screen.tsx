@@ -79,7 +79,7 @@ function EditScheduleForm({ settings }: EditScheduleFormProps) {
                 <Button
                   rounded="full"
                   size="lg"
-                  className="w-60"
+                  className="w-full"
                   disabled={!isValid || isSubmitting}
                   onClick={() => form.handleSubmit()}
                 >
