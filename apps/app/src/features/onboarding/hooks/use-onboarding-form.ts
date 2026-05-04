@@ -1,8 +1,9 @@
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { generateRandomNickname } from '~/features/settings/lib/nickname-pool';
 import { commands, type SalaryType } from '~/lib/tauri-bindings';
-import { userSettingsQuery } from '~/queries';
+import { authQuery, userSettingsQuery } from '~/queries';
 
 export const SALARY_TYPE_OPTIONS = [
   { value: 'monthly', label: '월급' },
@@ -46,11 +47,21 @@ export function useOnboardingForm({ onSuccess }: UseOnboardingFormOptions) {
         throw new Error(result.error);
       }
 
+      // 서버 온보딩 완료 시그널: /api/v1/onboarding/{payroll,work-policy,profile} PATCH.
+      // nickname은 자동 생성 — 사용자는 추후 /settings/edit-nickname 에서 수정.
+      const nickname = generateRandomNickname();
+      const completeResult = await commands.completeOnboarding(nickname);
+      if (completeResult.status === 'error') {
+        throw new Error(completeResult.error);
+      }
+
       await queryClient.invalidateQueries({
         queryKey: userSettingsQuery.all(),
       });
+      await queryClient.invalidateQueries({
+        queryKey: authQuery.all(),
+      });
       void commands.notifySettingsChanged();
-      void commands.syncSettingsToServer(); // fire-and-forget
       onSuccess();
     },
   });

@@ -362,6 +362,34 @@ impl ApiClient {
             .await
     }
 
+    /// PATCH /api/v1/onboarding/payroll — 온보딩 단계용 (서버 온보딩 완료 시그널)
+    pub async fn patch_onboarding_payroll(
+        &self,
+        token: &str,
+        req: &PayrollPatchRequest,
+    ) -> Result<(), ApiError> {
+        self.patch("/api/v1/onboarding/payroll", token, req).await
+    }
+
+    /// PATCH /api/v1/onboarding/work-policy — 온보딩 단계용
+    pub async fn patch_onboarding_work_policy(
+        &self,
+        token: &str,
+        req: &WorkPolicyPatchRequest,
+    ) -> Result<(), ApiError> {
+        self.patch("/api/v1/onboarding/work-policy", token, req)
+            .await
+    }
+
+    /// PATCH /api/v1/onboarding/profile — 온보딩 단계용 (nickname 필수)
+    pub async fn patch_onboarding_profile(
+        &self,
+        token: &str,
+        req: &NicknamePatchRequest,
+    ) -> Result<(), ApiError> {
+        self.patch("/api/v1/onboarding/profile", token, req).await
+    }
+
     // -- helpers --
 
     async fn get<T: serde::de::DeserializeOwned>(

@@ -512,6 +512,70 @@ pub async fn update_profile_nickname(app: AppHandle, nickname: String) -> Result
     }
 }
 
+/// 온보딩 완료 — 서버에 payroll/work-policy/profile(nickname) 등록.
+///
+/// 클라이언트가 saveUserSettings 로 로컬 저장한 직후 호출되어야 함.
+/// 일반 PATCH(`/api/v1/payroll` 등)는 서버 "온보딩 완료" 플래그를 켜지 않으므로,
+/// 온보딩 단계 전용 PATCH(`/api/v1/onboarding/*`)를 따로 호출해야 한다.
+#[tauri::command]
+#[specta::specta]
+pub async fn complete_onboarding(app: AppHandle, nickname: String) -> Result<(), String> {
+    let token = auth::get_access_token(&app).ok_or_else(|| "로그인이 필요합니다".to_string())?;
+    let settings = load_local_settings(&app)?;
+
+    let base_url = std::env::var("MOA_API_BASE_URL")
+        .unwrap_or_else(|_| "https://www.moa-official.kr".to_string());
+    let api = ApiClient::new(&base_url);
+
+    let payroll_req = PayrollPatchRequest {
+        salary_input_type: to_server_salary_type(&settings.salary_type),
+        salary_amount: settings.salary_amount as i64,
+    };
+    let work_policy_req = WorkPolicyPatchRequest {
+        workdays: settings
+            .work_days
+            .iter()
+            .filter_map(|&d| Weekday::from_local_index(d))
+            .collect(),
+        clock_in_time: settings.work_start_time.clone(),
+        clock_out_time: settings.work_end_time.clone(),
+    };
+    let profile_req = NicknamePatchRequest { nickname };
+
+    if let Err(e) = api.patch_onboarding_payroll(&token, &payroll_req).await {
+        if matches!(e, ApiError::Unauthorized) {
+            auth::clear_auth_token(&app);
+        }
+        return Err(format!("온보딩 payroll 등록 실패: {e}"));
+    }
+    if let Err(e) = api
+        .patch_onboarding_work_policy(&token, &work_policy_req)
+        .await
+    {
+        if matches!(e, ApiError::Unauthorized) {
+            auth::clear_auth_token(&app);
+        }
+        return Err(format!("온보딩 work-policy 등록 실패: {e}"));
+    }
+    if let Err(e) = api.patch_onboarding_profile(&token, &profile_req).await {
+        if matches!(e, ApiError::Unauthorized) {
+            auth::clear_auth_token(&app);
+        }
+        return Err(format!("온보딩 profile 등록 실패: {e}"));
+    }
+
+    // payday는 온보딩 전용 엔드포인트가 없어 일반 PATCH 사용. 실패해도 치명적이지 않음.
+    let payday_req = PaydayPatchRequest {
+        payday_day: settings.pay_day as i32,
+    };
+    if let Err(e) = api.patch_profile_payday(&token, &payday_req).await {
+        log::warn!("payday 등록 실패 (온보딩에는 영향 없음): {e}");
+    }
+
+    log::info!("온보딩 서버 등록 완료");
+    Ok(())
+}
+
 /// 로컬 설정 → 서버 push (fire-and-forget 용)
 #[tauri::command]
 #[specta::specta]
