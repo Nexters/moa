@@ -4,7 +4,7 @@ import { listen } from '@tauri-apps/api/event';
 import { useEffect, useRef } from 'react';
 
 import { UpdateAlertDialog } from '~/lib/check-for-updates';
-import { commands } from '~/lib/tauri-bindings';
+import { commands, unwrapResult } from '~/lib/tauri-bindings';
 import { userSettingsQuery } from '~/queries';
 import { router } from '~/router';
 import { AppToaster } from '~/ui';
@@ -28,19 +28,38 @@ export function RootLayout() {
   }, []);
 
   useEffect(() => {
-    const cleanListen = listen('menubar_panel_did_open', () => {
-      const currentPath = router.state.location.pathname;
+    const cleanListen = listen('menubar_panel_did_open', async () => {
       if (pendingNavRef.current) {
         void router.navigate({ to: pendingNavRef.current });
         pendingNavRef.current = null;
-      } else if (
-        !currentPath.startsWith('/onboarding') &&
-        !currentPath.startsWith('/login')
-      ) {
-        // /login 에서는 useSocialLogin onSuccess가 needsOnboarding 여부에 따라
-        // /onboarding/salary 또는 /home 으로 라우팅하므로 강제 이동 금지.
-        // 그렇지 않으면 로그인 직후 panel did open 이 /home → guard → /login 로 race 발생.
-        void router.navigate({ to: '/home' });
+        (document.activeElement as HTMLElement)?.blur();
+        return;
+      }
+
+      // 패널이 열릴 때 인증/온보딩 상태로 결정적 라우팅.
+      // mutation 콜백 race(useSocialLogin onSuccess vs panel did open)에 의존하지 않고,
+      // 로그인 직후·재오픈 시점 모두 항상 옳은 화면으로 수렴시킨다.
+      const currentPath = router.state.location.pathname;
+      try {
+        const auth = unwrapResult(await commands.getAuthStatus());
+        if (auth.isLoggedIn) {
+          const onboardingDone = unwrapResult(
+            await commands.isOnboardingCompleted(),
+          );
+          if (!onboardingDone) {
+            if (!currentPath.startsWith('/onboarding')) {
+              void router.navigate({ to: '/onboarding/salary' });
+            }
+          } else if (
+            !currentPath.startsWith('/onboarding') &&
+            !currentPath.startsWith('/login')
+          ) {
+            void router.navigate({ to: '/home' });
+          }
+        }
+        // 비로그인 상태는 / 와 /home 의 beforeLoad 가드가 /login 으로 보낸다.
+      } catch {
+        // 상태 조회 실패는 라우트 가드가 fallback 처리하므로 swallow
       }
       (document.activeElement as HTMLElement)?.blur();
     });
