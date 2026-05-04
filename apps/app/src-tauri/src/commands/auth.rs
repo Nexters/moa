@@ -388,7 +388,13 @@ pub async fn social_login(app: AppHandle, provider: AuthProvider) -> Result<Logi
     let needs_onboarding = sync_after_login(&app, &api, &access_token).await?;
 
     // OAuth 완료 후 앱 패널 자동 표시
-    crate::tray::show_main_window(&app);
+    // social_login은 async — tokio worker thread에서 실행된다.
+    // show_main_window는 NSEvent/NSWindow 같은 main-thread-only Cocoa API를 호출하므로
+    // 반드시 main thread로 디스패치해야 SIGABRT/패닉을 피할 수 있다.
+    let app_for_show = app.clone();
+    let _ = app.run_on_main_thread(move || {
+        crate::tray::show_main_window(&app_for_show);
+    });
 
     Ok(LoginResult {
         is_logged_in: true,

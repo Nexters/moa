@@ -162,9 +162,22 @@ pub fn check_menubar_frontmost() -> bool {
 }
 
 /// Positions the menubar panel below the menu bar, centered on the mouse cursor.
+///
+/// 안전성: 본 함수는 NSEvent/NSWindow 같은 main-thread-only Cocoa API를 호출하므로
+/// 반드시 main thread에서 실행되어야 한다. 또한 OAuth 콜백 등 이례적 컨텍스트에서는
+/// `get_monitor_with_cursor()`가 None을 반환할 수 있으므로 primary/첫 모니터로 폴백한다.
 pub fn position_menubar_panel(app_handle: &AppHandle, padding_top: f64) {
-    let window = app_handle.get_webview_window("main").unwrap();
-    let monitor = monitor::get_monitor_with_cursor().unwrap();
+    let Some(window) = app_handle.get_webview_window("main") else {
+        log::warn!("position_menubar_panel: main 윈도우 없음 — skip");
+        return;
+    };
+    let monitor = monitor::get_monitor_with_cursor()
+        .or_else(|| monitor::get_monitors().into_iter().find(|m| m.is_primary()))
+        .or_else(|| monitor::get_monitors().into_iter().next());
+    let Some(monitor) = monitor else {
+        log::warn!("position_menubar_panel: 모니터 정보 없음 — skip");
+        return;
+    };
 
     let scale_factor = monitor.scale_factor();
     let visible_area = monitor.visible_area();
@@ -173,7 +186,11 @@ pub fn position_menubar_panel(app_handle: &AppHandle, padding_top: f64) {
 
     let mouse_location: NSPoint = unsafe { msg_send![class!(NSEvent), mouseLocation] };
 
-    let handle: id = window.ns_window().unwrap() as _;
+    let Ok(handle_ptr) = window.ns_window() else {
+        log::warn!("position_menubar_panel: ns_window() 실패 — skip");
+        return;
+    };
+    let handle: id = handle_ptr as _;
     let mut win_frame: NSRect = unsafe { msg_send![handle, frame] };
 
     // Y축: 화면 최상단에서 padding_top만큼 아래로 배치
