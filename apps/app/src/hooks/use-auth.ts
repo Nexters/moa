@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { generateRandomNickname } from '~/features/settings/lib/nickname-pool';
+import { posthog } from '~/lib/analytics';
 import type { AuthProvider } from '~/lib/tauri-bindings';
 import { commands } from '~/lib/tauri-bindings';
 import { authQuery, authQueryOptions, userSettingsQuery } from '~/queries';
@@ -25,12 +27,28 @@ export function useSocialLogin() {
       if (result.status === 'error') throw new Error(result.error);
       return result.data;
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       void queryClient.invalidateQueries({ queryKey: authQuery.all() });
       void queryClient.invalidateQueries({
         queryKey: userSettingsQuery.all(),
       });
       void commands.notifySettingsChanged();
+
+      try {
+        const cur = await commands.getProfileNickname();
+        if (cur.status === 'ok' && (cur.data ?? '').trim() === '') {
+          const patched = await commands.updateProfileNickname(
+            generateRandomNickname(),
+          );
+          if (patched.status === 'ok') {
+            void queryClient.invalidateQueries({
+              queryKey: authQuery.nickname(),
+            });
+          }
+        }
+      } catch (e) {
+        posthog.captureException(e);
+      }
     },
     onError: (error) => {
       if (error.message.includes('취소')) {
