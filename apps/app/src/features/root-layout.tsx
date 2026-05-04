@@ -33,7 +33,13 @@ export function RootLayout() {
       if (pendingNavRef.current) {
         void router.navigate({ to: pendingNavRef.current });
         pendingNavRef.current = null;
-      } else if (!currentPath.startsWith('/onboarding')) {
+      } else if (
+        !currentPath.startsWith('/onboarding') &&
+        !currentPath.startsWith('/login')
+      ) {
+        // /login 에서는 useSocialLogin onSuccess가 needsOnboarding 여부에 따라
+        // /onboarding/salary 또는 /home 으로 라우팅하므로 강제 이동 금지.
+        // 그렇지 않으면 로그인 직후 panel did open 이 /home → guard → /login 로 race 발생.
         void router.navigate({ to: '/home' });
       }
       (document.activeElement as HTMLElement)?.blur();
