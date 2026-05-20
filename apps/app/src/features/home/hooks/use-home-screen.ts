@@ -51,6 +51,7 @@ export type HomeMainScreen =
       todaySchedule: TodayWorkSchedule | null;
       isPending?: boolean;
       onEarlyLeave: () => void;
+      onVacation: () => void;
     }
   | {
       screen: 'completed';
@@ -154,7 +155,7 @@ export function useHomeScreen(): HomeScreenState {
   });
 
   const vacationMutation = useMutation({
-    mutationFn: async (_vars: { fromScreen: 'before-work' }) => {
+    mutationFn: async (_vars: { fromScreen: 'before-work' | 'working' }) => {
       await setVacation();
     },
   });
@@ -203,6 +204,10 @@ export function useHomeScreen(): HomeScreenState {
 
   const handleVacationFromBeforeWork = () => {
     vacationMutation.mutate({ fromScreen: 'before-work' });
+  };
+
+  const handleVacationFromWorking = () => {
+    vacationMutation.mutate({ fromScreen: 'working' });
   };
 
   const handleStartWork = () => {
@@ -295,6 +300,7 @@ export function useHomeScreen(): HomeScreenState {
         todaySchedule,
         isPending: true,
         onEarlyLeave: () => {},
+        onVacation: () => {},
       },
     };
   }
@@ -324,11 +330,28 @@ export function useHomeScreen(): HomeScreenState {
         todaySchedule,
         isPending: true,
         onEarlyLeave: () => {},
+        onVacation: () => {},
       },
     };
   }
 
   if (vacationMutation.isPending) {
+    const fromScreen = vacationMutation.variables?.fromScreen;
+    if (fromScreen === 'working') {
+      return {
+        isLoading: false,
+        mainScreen: {
+          screen: 'working' as const,
+          settings,
+          salaryInfo,
+          todaySchedule,
+          isPending: true,
+          onEarlyLeave: () => {},
+          onVacation: () => {},
+        },
+      };
+    }
+
     return {
       isLoading: false,
       mainScreen: {
@@ -353,6 +376,7 @@ export function useHomeScreen(): HomeScreenState {
     onTodayWorkFromVacation: handleTodayWorkFromVacation,
     onTodayWorkFromDayOff: handleTodayWorkFromDayOff,
     onVacationFromBeforeWork: handleVacationFromBeforeWork,
+    onVacationFromWorking: handleVacationFromWorking,
     onStartWork: handleStartWork,
     onEarlyLeave: handleEarlyLeave,
     onAcknowledge: handleAcknowledge,
@@ -374,6 +398,7 @@ interface ResolveParams {
   onTodayWorkFromVacation: () => void;
   onTodayWorkFromDayOff: () => void;
   onVacationFromBeforeWork: () => void;
+  onVacationFromWorking: () => void;
   onStartWork: () => void;
   onEarlyLeave: () => void;
   onAcknowledge: () => void;
@@ -390,6 +415,7 @@ function resolveMainScreen(params: ResolveParams): HomeMainScreen {
     onTodayWorkFromVacation,
     onTodayWorkFromDayOff,
     onVacationFromBeforeWork,
+    onVacationFromWorking,
     onStartWork,
     onEarlyLeave,
     onAcknowledge,
@@ -431,6 +457,7 @@ function resolveMainScreen(params: ResolveParams): HomeMainScreen {
         salaryInfo,
         todaySchedule,
         onEarlyLeave,
+        onVacation: onVacationFromWorking,
       };
     case 'completed':
       if (isAcknowledged) {
