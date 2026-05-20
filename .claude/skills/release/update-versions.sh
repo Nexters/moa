@@ -16,8 +16,10 @@ echo "Updating versions to $VERSION..."
 jq --arg v "$VERSION" '.version = $v' "$APP_PKG" > tmp.json && mv tmp.json "$APP_PKG"
 echo "  Updated $APP_PKG"
 
-# 2. apps/app/src-tauri/Cargo.toml (first version = line only)
-sed -i '' "0,/^version = \"[^\"]*\"/s/version = \"[^\"]*\"/version = \"$VERSION\"/" "$CARGO_TOML"
+# 2. apps/app/src-tauri/Cargo.toml (first `version = "..."` line only — the [package] version)
+# BSD sed (macOS default) lacks GNU's `0,/re/` address range, so use awk to replace only the first match.
+awk -v v="$VERSION" '!u && /^version = "/{sub(/"[^"]*"/, "\"" v "\""); u=1} {print}' "$CARGO_TOML" > tmp.toml && mv tmp.toml "$CARGO_TOML"
+grep -q "^version = \"$VERSION\"" "$CARGO_TOML" || { echo "ERROR: failed to set version in $CARGO_TOML" >&2; exit 1; }
 echo "  Updated $CARGO_TOML"
 
 # 3. apps/app/src-tauri/tauri.conf.json
