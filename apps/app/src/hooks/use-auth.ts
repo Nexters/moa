@@ -31,6 +31,9 @@ export function useSocialLogin() {
         queryKey: userSettingsQuery.all(),
       });
       void commands.notifySettingsChanged();
+      // 닉네임 자동 등록은 useOnboardingForm 의 completeOnboarding 으로 일원화.
+      // 여기서 일반 PATCH 를 호출해도 신규 사용자는 ONBOARDING_INCOMPLETE 로 거부되고,
+      // 기존 사용자에겐 dead PATCH 가 되어 비효율 + 덮어쓰기 위험만 남는다.
     },
     onError: (error) => {
       if (error.message.includes('취소')) {

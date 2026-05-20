@@ -116,6 +116,21 @@ async syncFromServer() : Promise<Result<null, string>> {
 }
 },
 /**
+ * 온보딩 완료 — 서버에 payroll/work-policy/profile(nickname) 등록.
+ * 
+ * 클라이언트가 saveUserSettings 로 로컬 저장한 직후 호출되어야 함.
+ * 일반 PATCH(`/api/v1/payroll` 등)는 서버 "온보딩 완료" 플래그를 켜지 않으므로,
+ * 온보딩 단계 전용 PATCH(`/api/v1/onboarding/*`)를 따로 호출해야 한다.
+ */
+async completeOnboarding(nickname: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("complete_onboarding", { nickname }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * GET /api/v1/onboarding/terms
  */
 async getOnboardingTerms() : Promise<Result<TermItem[], string>> {

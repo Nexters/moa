@@ -1,8 +1,9 @@
 import { useForm } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { generateRandomNickname } from '~/features/settings/lib/nickname-pool';
 import { commands, type SalaryType } from '~/lib/tauri-bindings';
-import { userSettingsQuery } from '~/queries';
+import { authQuery, userSettingsQuery } from '~/queries';
 
 export const SALARY_TYPE_OPTIONS = [
   { value: 'monthly', label: '월급' },
@@ -37,20 +38,47 @@ export function useOnboardingForm({ onSuccess }: UseOnboardingFormOptions) {
   const form = useForm({
     defaultValues: DEFAULT_VALUES,
     onSubmit: async ({ value }) => {
-      const result = await commands.saveUserSettings({
+      // 1) form 데이터만 로컬에 먼저 저장. onboardingCompleted 는 일부러 false 로 둠.
+      //    이 단계에서 true 로 굳히면 completeOnboarding 가 중간에 실패해도
+      //    panel-open listener 가 isOnboardingCompleted=true 를 보고 /home 으로
+      //    끌고 가, 사용자가 온보딩을 재시도할 길이 막힌다.
+      const saved = await commands.saveUserSettings({
+        ...value,
+        onboardingCompleted: false,
+      });
+      if (saved.status === 'error') {
+        throw new Error(saved.error);
+      }
+
+      // 2) 서버 온보딩 등록. 서버에 닉네임이 이미 있으면 보존하고,
+      //    없을 때만 자동 생성한다(reset 후 재온보딩 시 기존 닉네임 덮어쓰기 방지).
+      const existing = await commands.getProfileNickname();
+      const existingNickname =
+        existing.status === 'ok' ? (existing.data ?? '').trim() : '';
+      const nickname =
+        existingNickname !== '' ? existingNickname : generateRandomNickname();
+
+      const completeResult = await commands.completeOnboarding(nickname);
+      if (completeResult.status === 'error') {
+        throw new Error(completeResult.error);
+      }
+
+      // 3) 서버 등록이 확인된 후에만 로컬 완료 플래그를 켠다.
+      const flipped = await commands.saveUserSettings({
         ...value,
         onboardingCompleted: true,
       });
-
-      if (result.status === 'error') {
-        throw new Error(result.error);
+      if (flipped.status === 'error') {
+        throw new Error(flipped.error);
       }
 
       await queryClient.invalidateQueries({
         queryKey: userSettingsQuery.all(),
       });
+      await queryClient.invalidateQueries({
+        queryKey: authQuery.all(),
+      });
       void commands.notifySettingsChanged();
-      void commands.syncSettingsToServer(); // fire-and-forget
       onSuccess();
     },
   });

@@ -99,13 +99,15 @@ function TermsForm({ terms, onBack }: TermsFormProps) {
     <main className="flex flex-1 flex-col">
       <AppBar type="detail" onBack={onBack} />
 
-      <div className="flex flex-1 flex-col px-6 pt-3">
-        <h1 className="t2-700 text-text-high">약관에 동의해주세요</h1>
-        <p className="b1-400 text-text-medium mt-3">
-          서비스 이용을 위해 다음 약관에 동의해주세요.
+      <div className="flex flex-1 flex-col px-5">
+        <h1 className="t2-700 text-text-high">
+          이용을 위해 약관 동의가 필요해요
+        </h1>
+        <p className="b2-400 text-text-medium mt-1.5">
+          필수 항목에 동의하면 바로 시작할 수 있어요.
         </p>
 
-        <div className="mt-8 flex flex-col gap-2.5">
+        <div className="mt-8 flex flex-col gap-4">
           <form.Subscribe selector={(s) => s.values.agreements}>
             {(agreements) => {
               const allChecked = agreements.every((a) => a.agreed);
@@ -119,7 +121,7 @@ function TermsForm({ terms, onBack }: TermsFormProps) {
                 <button
                   type="button"
                   onClick={toggleAll}
-                  className="bg-container-primary flex items-center gap-3 rounded-md px-4 py-3.5"
+                  className="flex h-8 items-center gap-2"
                   aria-pressed={allChecked}
                 >
                   <RoundCheckbox checked={allChecked} />
@@ -131,15 +133,14 @@ function TermsForm({ terms, onBack }: TermsFormProps) {
             }}
           </form.Subscribe>
 
-          <ul className="flex flex-col gap-2">
+          <div className="bg-divider-primary h-px w-full" />
+
+          <ul className="flex flex-col gap-3">
             {terms.map((item, index) => {
               const requiredLabel = item.required ? '(필수)' : '(선택)';
 
               return (
-                <li
-                  key={item.code}
-                  className="flex items-center gap-3 px-4 py-2"
-                >
+                <li key={item.code} className="flex h-8 items-center gap-2">
                   <form.Field name={`agreements[${index}].agreed`}>
                     {(field) => (
                       <button
@@ -147,10 +148,10 @@ function TermsForm({ terms, onBack }: TermsFormProps) {
                         onClick={() => field.handleChange(!field.state.value)}
                         aria-pressed={field.state.value}
                         aria-label={`${item.title} 동의`}
-                        className="flex flex-1 items-center gap-3 text-left"
+                        className="flex flex-1 items-center gap-2 text-left"
                       >
                         <RoundCheckbox checked={field.state.value} />
-                        <span className="b2-500 text-text-medium">
+                        <span className="b1-400 text-text-high">
                           {requiredLabel} {item.title}
                         </span>
                       </button>
@@ -162,7 +163,7 @@ function TermsForm({ terms, onBack }: TermsFormProps) {
                     aria-label={`${item.title} 자세히 보기`}
                     className="cursor-pointer"
                   >
-                    <ChevronRightIcon className="text-text-low size-5" />
+                    <ChevronRightIcon className="text-text-low size-6" />
                   </button>
                 </li>
               );
@@ -195,7 +196,7 @@ function TermsForm({ terms, onBack }: TermsFormProps) {
                 <Button
                   rounded="full"
                   size="lg"
-                  className="w-60"
+                  fullWidth
                   disabled={!requiredAllChecked || isSubmitting}
                   onClick={() => form.handleSubmit()}
                 >
