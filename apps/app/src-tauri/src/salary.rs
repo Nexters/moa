@@ -279,21 +279,22 @@ fn calculate_salary(
         raw_current_minutes
     };
 
-    let (today_earnings, work_status) = if today_status_override == Some(TodayWorkStatus::PublicHoliday) {
-        (0.0, WorkStatus::PublicHoliday)
-    } else if today_status_override == Some(TodayWorkStatus::AnnualLeave) {
-        (daily_rate, WorkStatus::AnnualLeave)
-    } else if today_status_override == Some(TodayWorkStatus::DayOff) || !is_work_day {
-        (0.0, WorkStatus::DayOff)
-    } else if current_minutes < work_start_minutes {
-        (0.0, WorkStatus::BeforeWork)
-    } else if current_minutes >= work_end_minutes {
-        (daily_rate, WorkStatus::Completed)
-    } else {
-        let worked_minutes = current_minutes - work_start_minutes;
-        let worked_seconds = worked_minutes * 60 + now.time().second();
-        (per_second * worked_seconds as f64, WorkStatus::Working)
-    };
+    let (today_earnings, work_status) =
+        if today_status_override == Some(TodayWorkStatus::PublicHoliday) {
+            (0.0, WorkStatus::PublicHoliday)
+        } else if today_status_override == Some(TodayWorkStatus::AnnualLeave) {
+            (daily_rate, WorkStatus::AnnualLeave)
+        } else if today_status_override == Some(TodayWorkStatus::DayOff) || !is_work_day {
+            (0.0, WorkStatus::DayOff)
+        } else if current_minutes < work_start_minutes {
+            (0.0, WorkStatus::BeforeWork)
+        } else if current_minutes >= work_end_minutes {
+            (daily_rate, WorkStatus::Completed)
+        } else {
+            let worked_minutes = current_minutes - work_start_minutes;
+            let worked_seconds = worked_minutes * 60 + now.time().second();
+            (per_second * worked_seconds as f64, WorkStatus::Working)
+        };
 
     let worked_days = get_worked_days_since_pay_day(period_start, today, work_days);
     let accumulated_earnings = (worked_days as f64 * daily_rate + today_earnings).round();
@@ -588,13 +589,8 @@ mod tests {
             .unwrap()
             .and_hms_opt(12, 0, 0)
             .unwrap();
-        let result = calculate_salary(
-            &settings,
-            Some(TodayWorkStatus::AnnualLeave),
-            None,
-            now,
-        )
-        .unwrap();
+        let result =
+            calculate_salary(&settings, Some(TodayWorkStatus::AnnualLeave), None, now).unwrap();
         assert_eq!(result.work_status, WorkStatus::AnnualLeave);
         assert_eq!(result.today_earnings, result.daily_rate);
     }
@@ -606,8 +602,7 @@ mod tests {
             .unwrap()
             .and_hms_opt(12, 0, 0)
             .unwrap();
-        let result =
-            calculate_salary(&settings, Some(TodayWorkStatus::DayOff), None, now).unwrap();
+        let result = calculate_salary(&settings, Some(TodayWorkStatus::DayOff), None, now).unwrap();
         assert_eq!(result.work_status, WorkStatus::DayOff);
         assert_eq!(result.today_earnings, 0.0);
     }
@@ -619,13 +614,8 @@ mod tests {
             .unwrap()
             .and_hms_opt(12, 0, 0)
             .unwrap();
-        let result = calculate_salary(
-            &settings,
-            Some(TodayWorkStatus::PublicHoliday),
-            None,
-            now,
-        )
-        .unwrap();
+        let result =
+            calculate_salary(&settings, Some(TodayWorkStatus::PublicHoliday), None, now).unwrap();
         assert_eq!(result.work_status, WorkStatus::PublicHoliday);
         assert_eq!(result.today_earnings, 0.0);
     }
