@@ -129,6 +129,14 @@ export function SettingsScreen() {
     },
   });
 
+  const handleLogout = () => {
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        void navigate({ to: '/login' });
+      },
+    });
+  };
+
   const handleContactUs = async () => {
     try {
       await openContactForm();
@@ -217,7 +225,7 @@ export function SettingsScreen() {
 
         {authStatus?.isLoggedIn ? (
           <div className="flex items-center justify-center gap-4">
-            <AlertDialog>
+            <AlertDialog key="logout-dialog">
               <AlertDialogTrigger
                 render={
                   <Button variant="link" disabled={logoutMutation.isPending} />
@@ -234,7 +242,7 @@ export function SettingsScreen() {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>취소</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => logoutMutation.mutate()}>
+                  <AlertDialogAction onClick={handleLogout}>
                     확인
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -250,7 +258,7 @@ export function SettingsScreen() {
           </div>
         ) : (
           <div className="flex items-center justify-center gap-3">
-            <AlertDialog>
+            <AlertDialog key="reset-data-dialog">
               <AlertDialogTrigger
                 render={
                   <Button
