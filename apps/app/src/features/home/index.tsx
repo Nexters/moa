@@ -2,6 +2,8 @@ import { useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 
 import { CelebrateButton } from '~/features/confetti/celebrate-button';
+import { useTodayWorkSchedule } from '~/hooks/use-today-work-schedule';
+import { useTodayWorkStatus } from '~/hooks/use-today-work-status';
 import { AppBar } from '~/ui/app-bar';
 
 import { useHomeScreen } from './hooks/use-home-screen';
@@ -9,28 +11,73 @@ import { AdjustTodayScheduleScreen } from './screens/adjust-today-schedule-scree
 import { BeforeWorkScreen } from './screens/before-work-screen';
 import { CompletedScreen } from './screens/completed-screen';
 import { DayOffScreen } from './screens/day-off-screen';
+import { ExtendWorkScreen } from './screens/extend-work-screen';
 import { PostCompletedScreen } from './screens/post-completed-screen';
-import { VacationScreen } from './screens/vacation-screen';
 import { WorkingScreen } from './screens/working-screen';
+
+type AdjustMode = null | 'working' | 'completed';
 
 export function Home() {
   const navigate = useNavigate();
-  const [isAdjustingWorkTime, setIsAdjustingWorkTime] = useState(false);
+  const [adjustMode, setAdjustMode] = useState<AdjustMode>(null);
+  const [isExtendingWork, setIsExtendingWork] = useState(false);
   const { isLoading, mainScreen } = useHomeScreen();
+  const { saveSchedule, clearSchedule } = useTodayWorkSchedule();
+  const { saveStatus, clearStatus } = useTodayWorkStatus();
 
   useEffect(() => {
-    if (isAdjustingWorkTime && mainScreen?.screen !== 'working') {
-      setIsAdjustingWorkTime(false);
+    if (!mainScreen) return;
+    if (adjustMode === 'working' && mainScreen.screen !== 'working') {
+      setAdjustMode(null);
     }
-  }, [isAdjustingWorkTime, mainScreen?.screen]);
+    if (adjustMode === 'completed' && mainScreen.screen !== 'completed') {
+      setAdjustMode(null);
+    }
+    if (isExtendingWork && mainScreen.screen !== 'completed') {
+      setIsExtendingWork(false);
+    }
+  }, [adjustMode, isExtendingWork, mainScreen]);
 
   if (isLoading || !mainScreen) return null;
 
-  if (isAdjustingWorkTime && mainScreen.screen === 'working') {
+  if (adjustMode === 'working' && mainScreen.screen === 'working') {
     return (
       <AdjustTodayScheduleScreen
-        screenState={mainScreen}
-        onBack={() => setIsAdjustingWorkTime(false)}
+        settings={mainScreen.settings}
+        todaySchedule={mainScreen.todaySchedule}
+        isPending={mainScreen.isPending}
+        showStatusOptions
+        onBack={() => setAdjustMode(null)}
+        onSave={async (startTime, endTime) => {
+          await Promise.all([clearStatus(), saveSchedule(startTime, endTime)]);
+        }}
+        onSaveStatus={async (status) => {
+          await Promise.all([saveStatus(status), clearSchedule()]);
+        }}
+      />
+    );
+  }
+
+  if (adjustMode === 'completed' && mainScreen.screen === 'completed') {
+    return (
+      <AdjustTodayScheduleScreen
+        settings={mainScreen.settings}
+        todaySchedule={mainScreen.todaySchedule}
+        isPending={mainScreen.isPending}
+        onBack={() => setAdjustMode(null)}
+        onSave={mainScreen.onAdjustSchedule}
+      />
+    );
+  }
+
+  if (isExtendingWork && mainScreen.screen === 'completed') {
+    return (
+      <ExtendWorkScreen
+        settings={mainScreen.settings}
+        todaySchedule={mainScreen.todaySchedule}
+        isPending={mainScreen.isPending}
+        onBack={() => setIsExtendingWork(false)}
+        onSubmit={mainScreen.onExtendWork}
       />
     );
   }
@@ -43,19 +90,28 @@ export function Home() {
         actions={<CelebrateButton />}
       />
       <div className="flex flex-1 flex-col px-5 pt-3">
-        {mainScreen.screen === 'vacation' && <VacationScreen {...mainScreen} />}
-        {mainScreen.screen === 'day-off' && <DayOffScreen {...mainScreen} />}
+        {mainScreen.screen === 'non-working' && (
+          <DayOffScreen {...mainScreen} />
+        )}
         {mainScreen.screen === 'before-work' && (
           <BeforeWorkScreen {...mainScreen} />
         )}
         {mainScreen.screen === 'working' && (
           <WorkingScreen
             {...mainScreen}
-            onAdjustWorkTime={() => setIsAdjustingWorkTime(true)}
+            onAdjustWorkTime={() => setAdjustMode('working')}
           />
         )}
         {mainScreen.screen === 'completed' && (
-          <CompletedScreen {...mainScreen} />
+          <CompletedScreen
+            settings={mainScreen.settings}
+            salaryInfo={mainScreen.salaryInfo}
+            todaySchedule={mainScreen.todaySchedule}
+            isPending={mainScreen.isPending}
+            onAcknowledge={mainScreen.onAcknowledge}
+            onAdjustWorkTime={() => setAdjustMode('completed')}
+            onExtendWork={() => setIsExtendingWork(true)}
+          />
         )}
         {mainScreen.screen === 'post-completed' && (
           <PostCompletedScreen {...mainScreen} />

@@ -484,7 +484,10 @@ pub fn update_icon_state(app: &AppHandle, work_status: &WorkStatus) {
 
             log::debug!("트레이 아이콘: 근무 완료 (초록)");
         }
-        WorkStatus::BeforeWork | WorkStatus::DayOff => {
+        WorkStatus::BeforeWork
+        | WorkStatus::AnnualLeave
+        | WorkStatus::DayOff
+        | WorkStatus::PublicHoliday => {
             ANIMATING.store(false, Ordering::SeqCst);
             IS_COMPLETED.store(false, Ordering::Relaxed);
             log::debug!("트레이 아이콘 애니메이션 중지");

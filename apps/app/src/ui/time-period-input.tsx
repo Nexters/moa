@@ -57,6 +57,8 @@ interface TimePeriodInputProps {
   value?: TimePeriodValue;
   defaultValue?: TimePeriodValue;
   onChange?: (value: TimePeriodValue) => void;
+  disabledStart?: boolean;
+  error?: string | null;
 }
 
 export function TimePeriodInput({
@@ -65,6 +67,8 @@ export function TimePeriodInput({
   value: valueProp,
   defaultValue = DEFAULT_VALUE,
   onChange: onChangeProp,
+  disabledStart,
+  error,
 }: TimePeriodInputProps) {
   const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue);
 
@@ -77,9 +81,13 @@ export function TimePeriodInput({
 
   useEffect(() => {
     if (autoFocus) {
-      startHourRef.current?.focus();
+      if (disabledStart) {
+        endHourRef.current?.focus();
+      } else {
+        startHourRef.current?.focus();
+      }
     }
-  }, [autoFocus]);
+  }, [autoFocus, disabledStart]);
 
   const handleChange = (newValue: TimePeriodValue) => {
     if (!isControlled) {
@@ -99,20 +107,30 @@ export function TimePeriodInput({
           hourRef={startHourRef}
           minuteRef={startMinuteRef}
           onRightFocus={() => endHourRef.current?.focus()}
+          disabled={disabledStart}
         />
         <ArrowRightIcon className="text-text-low" />
         <TimeInput
           value={value.endTime}
           onChange={(endTime) => handleChange({ ...value, endTime })}
           hourRef={endHourRef}
-          onLeftFocus={() => startMinuteRef.current?.focus()}
+          onLeftFocus={() =>
+            disabledStart ? undefined : startMinuteRef.current?.focus()
+          }
         />
       </div>
-      {duration && (
+      {error ? (
         <div className="flex items-center gap-1">
-          <ClockIcon className="text-green-40" />
-          <span className="b2-500 text-green-40">{duration}</span>
+          <ClockIcon className="text-error" />
+          <span className="b2-500 text-error">{error}</span>
         </div>
+      ) : (
+        duration && (
+          <div className="flex items-center gap-1">
+            <ClockIcon className="text-green-40" />
+            <span className="b2-500 text-green-40">{duration}</span>
+          </div>
+        )
       )}
     </div>
   );

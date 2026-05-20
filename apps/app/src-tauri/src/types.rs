@@ -124,7 +124,9 @@ pub enum WorkStatus {
     BeforeWork,
     Working,
     Completed,
+    AnnualLeave,
     DayOff,
+    PublicHoliday,
 }
 
 // ============================================================================
