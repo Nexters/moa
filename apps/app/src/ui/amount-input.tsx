@@ -34,7 +34,7 @@ export function AmountInput({
       />
       {error ? (
         <Field.Error className="flex items-center gap-1">
-          <AttentionCircleIcon />
+          <AttentionCircleIcon aria-hidden="true" focusable={false} />
           <span>{error}</span>
         </Field.Error>
       ) : (

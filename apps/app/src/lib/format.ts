@@ -12,6 +12,7 @@ export function formatKoreanAmount(amount: number): string {
   const eok = Math.floor(amount / 100_000_000);
   const man = Math.floor((amount % 100_000_000) / 10_000);
 
+  if (amount % 10_000 !== 0) return formatCurrency(amount);
   if (eok > 0 && man > 0) return `${eok}억 ${man}만원`;
   if (eok > 0) return `${eok}억원`;
   if (man > 0) return `${man}만원`;

@@ -153,10 +153,10 @@ export function SalaryScreen() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={goToPrevious}>네</AlertDialogCancel>
-            <AlertDialogAction onClick={() => setConfirmOpen(false)}>
+            <AlertDialogCancel onClick={() => setConfirmOpen(false)}>
               아니오
-            </AlertDialogAction>
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={goToPrevious}>네</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
