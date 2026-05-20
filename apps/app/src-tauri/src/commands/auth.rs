@@ -250,9 +250,43 @@ fn wait_for_auth_code(listener: &TcpListener, expected_state: &str) -> Result<St
         .map_err(|e| format!("소켓 설정 실패: {e}"))?;
 
     let deadline = std::time::Instant::now() + std::time::Duration::from_secs(120);
-    let (mut stream, _) = loop {
+    loop {
         match listener.accept() {
-            Ok(conn) => break conn,
+            Ok((mut stream, _)) => {
+                if SOCIAL_LOGIN_CANCELLED.load(Ordering::Relaxed) {
+                    write_expired_oauth_response(&mut stream);
+                    return Err("소셜 로그인이 취소되었습니다".to_string());
+                }
+
+                let mut buf = [0u8; 4096];
+                let n = stream
+                    .read(&mut buf)
+                    .map_err(|e| format!("요청 읽기 실패: {e}"))?;
+                let request = String::from_utf8_lossy(&buf[..n]);
+
+                // GET /callback?code=xxx&state=yyy HTTP/1.1
+                let Some(state) = extract_query_param(&request, "state") else {
+                    write_expired_oauth_response(&mut stream);
+                    continue;
+                };
+                if state != expected_state {
+                    write_expired_oauth_response(&mut stream);
+                    continue;
+                }
+
+                if let Some(error) = extract_query_param(&request, "error") {
+                    write_failed_oauth_response(&mut stream);
+                    return Err(format!("OAuth 제공자 오류: {error}"));
+                }
+
+                let Some(code) = extract_query_param(&request, "code") else {
+                    write_failed_oauth_response(&mut stream);
+                    return Err("callback에서 auth code를 찾을 수 없습니다".to_string());
+                };
+
+                write_success_oauth_response(&mut stream);
+                return Ok(code);
+            }
             Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
                 if SOCIAL_LOGIN_CANCELLED.load(Ordering::Relaxed) {
                     return Err("소셜 로그인이 취소되었습니다".to_string());
@@ -264,33 +298,56 @@ fn wait_for_auth_code(listener: &TcpListener, expected_state: &str) -> Result<St
             }
             Err(e) => return Err(format!("연결 수신 실패: {e}")),
         }
-    };
-
-    let mut buf = [0u8; 4096];
-    let n = stream
-        .read(&mut buf)
-        .map_err(|e| format!("요청 읽기 실패: {e}"))?;
-    let request = String::from_utf8_lossy(&buf[..n]);
-
-    // GET /callback?code=xxx&state=yyy HTTP/1.1
-    let code = extract_query_param(&request, "code")
-        .ok_or_else(|| "callback에서 auth code를 찾을 수 없습니다".to_string())?;
-    let state = extract_query_param(&request, "state")
-        .ok_or_else(|| "callback에 state 파라미터 없음 — CSRF 의심".to_string())?;
-    if state != expected_state {
-        return Err("state 검증 실패 — CSRF 의심".to_string());
     }
+}
 
+fn write_expired_oauth_response(stream: &mut impl Write) {
+    write_oauth_html_response(
+        stream,
+        "만료된 로그인 창",
+        "Moa에서 새로 열린 로그인 창을 사용해 주세요.",
+        "!",
+        "#9ca3af",
+    );
+}
+
+fn write_success_oauth_response(stream: &mut impl Write) {
+    write_oauth_html_response(
+        stream,
+        "로그인 완료",
+        "Moa 앱으로 돌아가세요",
+        "&#10003;",
+        "#1fd683",
+    );
+}
+
+fn write_failed_oauth_response(stream: &mut impl Write) {
+    write_oauth_html_response(
+        stream,
+        "로그인 실패",
+        "Moa 앱으로 돌아가 다시 시도해 주세요.",
+        "!",
+        "#ef4444",
+    );
+}
+
+fn write_oauth_html_response(
+    stream: &mut impl Write,
+    title: &str,
+    description: &str,
+    icon: &str,
+    icon_color: &str,
+) {
     // HTML 응답 — theme.css 디자인 시스템(bg-primary, container-primary, green-40, text-high/medium) 반영
-    let body = r#"<!DOCTYPE html><html lang="ko"><body style="margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#141414;font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif"><div style="text-align:center;padding:40px;background:#212224;border-radius:16px"><div style="font-size:48px;line-height:1;margin-bottom:16px;color:#1fd683">&#10003;</div><h2 style="margin:0 0 8px;font-size:20px;line-height:28px;letter-spacing:-0.2px;font-weight:700;color:#ffffff">로그인 완료</h2><p style="margin:0;font-size:14px;line-height:21px;letter-spacing:-0.2px;font-weight:400;color:rgba(255,255,255,0.6)">Moa 앱으로 돌아가세요</p></div></body></html>"#;
+    let body = format!(
+        r#"<!DOCTYPE html><html lang="ko"><body style="margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#141414;font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif"><div style="text-align:center;padding:40px;background:#212224;border-radius:16px"><div style="font-size:48px;line-height:1;margin-bottom:16px;color:{icon_color}">{icon}</div><h2 style="margin:0 0 8px;font-size:20px;line-height:28px;letter-spacing:-0.2px;font-weight:700;color:#ffffff">{title}</h2><p style="margin:0;font-size:14px;line-height:21px;letter-spacing:-0.2px;font-weight:400;color:rgba(255,255,255,0.6)">{description}</p></div></body></html>"#
+    );
     let response = format!(
         "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
         body.len(),
         body
     );
     let _ = stream.write_all(response.as_bytes());
-
-    Ok(code)
 }
 
 fn extract_query_param(request: &str, key: &str) -> Option<String> {
@@ -326,7 +383,7 @@ pub async fn social_login(app: AppHandle, provider: AuthProvider) -> Result<Logi
         AuthProvider::Kakao => {
             let client_id = kakao_rest_api_key()?;
             format!(
-                "https://kauth.kakao.com/oauth/authorize?client_id={}&redirect_uri={}&response_type=code&scope=openid&state={}",
+                "https://kauth.kakao.com/oauth/authorize?client_id={}&redirect_uri={}&response_type=code&scope=openid&prompt=login&state={}",
                 client_id,
                 urlencoded(&redirect_uri),
                 state,
@@ -865,4 +922,84 @@ fn handle_api_error(app: &AppHandle, error: &ApiError, context: &str) -> bool {
 
 fn urlencoded(s: &str) -> String {
     s.replace(':', "%3A").replace('/', "%2F")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::net::TcpStream;
+    use std::sync::mpsc;
+    use std::time::Duration;
+
+    fn callback_listener() -> (TcpListener, u16) {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let port = listener.local_addr().unwrap().port();
+        (listener, port)
+    }
+
+    fn wait_for_auth_code_async(listener: TcpListener) -> mpsc::Receiver<Result<String, String>> {
+        let (tx, rx) = mpsc::channel();
+        std::thread::spawn(move || {
+            tx.send(wait_for_auth_code(&listener, "expected")).unwrap();
+        });
+        rx
+    }
+
+    fn send_callback(port: u16, query: &str) -> String {
+        let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
+        stream
+            .set_read_timeout(Some(Duration::from_secs(1)))
+            .unwrap();
+        write!(
+            stream,
+            "GET /callback?{query} HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n"
+        )
+        .unwrap();
+
+        let mut response = String::new();
+        stream.read_to_string(&mut response).unwrap();
+        response
+    }
+
+    #[test]
+    fn wait_for_auth_code_returns_code_for_matching_state() {
+        SOCIAL_LOGIN_CANCELLED.store(false, Ordering::Relaxed);
+        let (listener, port) = callback_listener();
+        let rx = wait_for_auth_code_async(listener);
+
+        let response = send_callback(port, "code=valid-code&state=expected");
+        assert!(response.contains("로그인 완료"));
+
+        let result = rx.recv_timeout(Duration::from_secs(1)).unwrap();
+        assert_eq!(result.unwrap(), "valid-code");
+    }
+
+    #[test]
+    fn wait_for_auth_code_ignores_stale_state_then_accepts_matching_state() {
+        SOCIAL_LOGIN_CANCELLED.store(false, Ordering::Relaxed);
+        let (listener, port) = callback_listener();
+        let rx = wait_for_auth_code_async(listener);
+
+        let stale_response = send_callback(port, "code=stale-code&state=stale");
+        assert!(stale_response.contains("만료된 로그인 창"));
+
+        let valid_response = send_callback(port, "code=valid-code&state=expected");
+        assert!(valid_response.contains("로그인 완료"));
+
+        let result = rx.recv_timeout(Duration::from_secs(1)).unwrap();
+        assert_eq!(result.unwrap(), "valid-code");
+    }
+
+    #[test]
+    fn wait_for_auth_code_returns_error_for_provider_error_matching_state() {
+        SOCIAL_LOGIN_CANCELLED.store(false, Ordering::Relaxed);
+        let (listener, port) = callback_listener();
+        let rx = wait_for_auth_code_async(listener);
+
+        let response = send_callback(port, "error=access_denied&state=expected");
+        assert!(response.contains("로그인 실패"));
+
+        let result = rx.recv_timeout(Duration::from_secs(1)).unwrap();
+        assert_eq!(result.unwrap_err(), "OAuth 제공자 오류: access_denied");
+    }
 }

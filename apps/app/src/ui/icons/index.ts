@@ -1,6 +1,7 @@
 export { AppleLogoIcon } from './apple-logo';
 export { ArrowLeftIcon } from './arrow-left';
 export { ArrowRightIcon } from './arrow-right';
+export { AttentionCircleIcon } from './attention-circle';
 export { CelebrationIcon } from './celebration';
 export { CheckIcon } from './check';
 export { ClockIcon } from './clock';

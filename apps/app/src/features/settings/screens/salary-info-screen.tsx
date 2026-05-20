@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router';
 
 import { useUserSettings } from '~/hooks/use-user-settings';
+import { formatKoreanAmount } from '~/lib/format';
 import { type SalaryType } from '~/lib/tauri-bindings';
 import { AppBar, InfoRow } from '~/ui';
 
@@ -10,22 +11,7 @@ const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 
 function formatSalary(amount: number, type?: SalaryType): string {
   const typeLabel = type === 'yearly' ? '연봉' : '월급';
-
-  let formatted: string;
-  const eok = Math.floor(amount / 100_000_000);
-  const man = Math.floor((amount % 100_000_000) / 10_000);
-
-  if (eok > 0 && man > 0) {
-    formatted = `${eok}억 ${man}만원`;
-  } else if (eok > 0) {
-    formatted = `${eok}억원`;
-  } else if (man > 0) {
-    formatted = `${man}만원`;
-  } else {
-    formatted = `${amount.toLocaleString()}원`;
-  }
-
-  return `${typeLabel} · ${formatted}`;
+  return `${typeLabel} · ${formatKoreanAmount(amount)}`;
 }
 
 function formatWorkDays(days: number[] | undefined): string {
