@@ -29,7 +29,12 @@ export function Home() {
         {mainScreen.screen === 'before-work' && (
           <BeforeWorkScreen {...mainScreen} />
         )}
-        {mainScreen.screen === 'working' && <WorkingScreen {...mainScreen} />}
+        {mainScreen.screen === 'working' && (
+          <WorkingScreen
+            {...mainScreen}
+            onAdjustWorkTime={() => navigate({ to: '/settings/edit-schedule' })}
+          />
+        )}
         {mainScreen.screen === 'completed' && (
           <CompletedScreen {...mainScreen} />
         )}

@@ -1,10 +1,5 @@
-import {
-  AppFooter,
-  Button,
-  InfoCard,
-  InfoCardDivider,
-  InfoCardRow,
-} from '~/ui';
+import { AppFooter, Button, InfoCard, InfoCardDivider } from '~/ui';
+import { ChevronRightIcon } from '~/ui/icons';
 
 import { HeroSection } from '../components/hero-section';
 import { HomeMainScreen } from '../hooks/use-home-screen';
@@ -15,8 +10,10 @@ export function WorkingScreen({
   todaySchedule,
   isPending,
   onEarlyLeave,
-  onVacation,
-}: Extract<HomeMainScreen, { screen: 'working' }>) {
+  onAdjustWorkTime,
+}: Extract<HomeMainScreen, { screen: 'working' }> & {
+  onAdjustWorkTime: () => void;
+}) {
   const workStart = todaySchedule?.workStartTime ?? settings.workStartTime;
   const workEnd = todaySchedule?.workEndTime ?? settings.workEndTime;
 
@@ -29,11 +26,25 @@ export function WorkingScreen({
       />
 
       <InfoCard>
-        <InfoCardRow label="근무 상태">
+        <div className="flex flex-col items-start gap-1">
+          <span className="b1-400 text-text-medium">근무 상태</span>
           <span className="b1-600 text-green-40">근무 중</span>
-        </InfoCardRow>
+        </div>
         <InfoCardDivider />
-        <InfoCardRow label="근무 시간" value={`${workStart} - ${workEnd}`} />
+        <button
+          type="button"
+          aria-label="근무시간 조정"
+          className="hover:bg-interactive-hover -mx-2 flex items-center justify-between gap-3 rounded-md px-2 py-1.5 text-left transition-colors"
+          onClick={onAdjustWorkTime}
+        >
+          <span className="flex flex-col items-start gap-1">
+            <span className="b1-400 text-text-medium">근무 시간</span>
+            <span className="b1-600 text-text-high">
+              {workStart} - {workEnd}
+            </span>
+          </span>
+          <ChevronRightIcon className="text-text-low size-6 shrink-0" />
+        </button>
       </InfoCard>
 
       <AppFooter>
@@ -46,14 +57,6 @@ export function WorkingScreen({
           onClick={onEarlyLeave}
         >
           일찍 퇴근하기
-        </Button>
-        <Button
-          variant="link"
-          size="flat"
-          disabled={isPending}
-          onClick={onVacation}
-        >
-          오늘 휴가예요
         </Button>
       </AppFooter>
     </div>
