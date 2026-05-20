@@ -190,21 +190,23 @@ export function SettingsScreen() {
         </SettingsSection>
 
         <SettingsSection title="앱 정보">
-          <InfoRow label="버전 정보">
-            <span className="flex items-center gap-2">
+          <div className="b1-500 bg-container-primary flex items-center justify-between rounded-md px-4 py-3.5">
+            <span className="flex items-center gap-1.5">
+              <span className="text-text-high">버전 정보</span>
               <span className="text-text-medium">{`v${__APP_VERSION__}`}</span>
-              {update && (
-                <Button
-                  variant="link"
-                  size="flat"
-                  disabled={installing}
-                  onClick={install}
-                >
-                  {installing ? '업데이트 중...' : '업데이트'}
-                </Button>
-              )}
             </span>
-          </InfoRow>
+            {update && (
+              <Button
+                variant="link"
+                size="flat"
+                className="text-green-40 hover:text-green-30 disabled:text-text-disabled active:text-green-50"
+                disabled={installing}
+                onClick={install}
+              >
+                {installing ? '업데이트 중...' : '업데이트'}
+              </Button>
+            )}
+          </div>
           <InfoRow
             as="button"
             label="약관 및 정책"
