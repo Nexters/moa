@@ -216,7 +216,8 @@ export function TimeInput({
   return (
     <div
       className={cn(
-        'bg-container-primary inline-flex w-fit items-center gap-2 rounded-md px-4 py-3',
+        'bg-container-primary inline-flex w-fit items-center gap-2 rounded-md border border-transparent px-4 py-3',
+        'focus-within:border-green-40',
         className,
       )}
     >
