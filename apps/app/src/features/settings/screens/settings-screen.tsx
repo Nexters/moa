@@ -211,7 +211,7 @@ export function SettingsScreen() {
                 disabled={installing}
                 onClick={install}
               >
-                {installing ? '업데이트 중...' : '업데이트'}
+                업데이트
               </Button>
             )}
           </div>
