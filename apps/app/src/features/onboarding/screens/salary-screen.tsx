@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { MAX_SALARY_AMOUNT } from '~/lib/constants';
 import {
   AppBar,
@@ -7,16 +9,27 @@ import {
   NumberInput,
   ToggleInput,
 } from '~/ui';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '~/ui/alert-dialog';
 
 import { useOnboardingContext } from '..';
 import { SALARY_TYPE_OPTIONS } from '../hooks/use-onboarding-form';
 
 export function SalaryScreen() {
   const { form, goToNext, goToPrevious } = useOnboardingContext();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   return (
     <main className="flex flex-1 flex-col">
-      <AppBar type="detail" onBack={goToPrevious} />
+      <AppBar type="detail" onBack={() => setConfirmOpen(true)} />
 
       <div className="flex flex-1 flex-col px-6 pt-3">
         <h1 className="t2-700 text-text-high">급여 정보를 알려주세요</h1>
@@ -128,6 +141,25 @@ export function SalaryScreen() {
           )}
         </form.Subscribe>
       </div>
+
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader className="gap-2">
+            <AlertDialogTitle>정말 그만 작성하실 건가요?</AlertDialogTitle>
+            <AlertDialogDescription>
+              뒤로 돌아가기를 누르면
+              <br />
+              지금까지 작성한 정보가 사라져요
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={goToPrevious}>네</AlertDialogCancel>
+            <AlertDialogAction onClick={() => setConfirmOpen(false)}>
+              아니오
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 }
