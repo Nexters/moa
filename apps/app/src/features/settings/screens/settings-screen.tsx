@@ -215,7 +215,7 @@ export function SettingsScreen() {
           <InfoRow as="button" label="문의하기" onClick={handleContactUs} />
         </SettingsSection>
 
-        <div className="flex items-center justify-center gap-3">
+        <div className="flex items-center justify-center gap-4">
           {authStatus?.isLoggedIn ? (
             <>
               <AlertDialog>
@@ -244,6 +244,7 @@ export function SettingsScreen() {
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
+              <span aria-hidden="true" className="h-3 w-px bg-white/8" />
               <Button
                 variant="link"
                 onClick={() => navigate({ to: '/settings/withdrawal' })}
