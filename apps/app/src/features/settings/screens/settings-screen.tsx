@@ -215,79 +215,72 @@ export function SettingsScreen() {
           <InfoRow as="button" label="문의하기" onClick={handleContactUs} />
         </SettingsSection>
 
-        <div className="flex items-center justify-center gap-4">
-          {authStatus?.isLoggedIn ? (
-            <>
-              <AlertDialog>
-                <AlertDialogTrigger
-                  render={
-                    <Button
-                      variant="link"
-                      disabled={logoutMutation.isPending}
-                    />
-                  }
-                >
-                  로그아웃
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>로그아웃 하시겠어요?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      로그아웃하면 로그인 화면으로 이동해요.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>취소</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => logoutMutation.mutate()}>
-                      확인
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-              <span aria-hidden="true" className="h-3 w-px bg-white/8" />
-              <Button
-                variant="link"
-                onClick={() => navigate({ to: '/settings/withdrawal' })}
+        {authStatus?.isLoggedIn ? (
+          <div className="flex items-center justify-center gap-4">
+            <AlertDialog>
+              <AlertDialogTrigger
+                render={
+                  <Button variant="link" disabled={logoutMutation.isPending} />
+                }
               >
-                회원탈퇴
-              </Button>
-            </>
-          ) : (
-            <>
-              <AlertDialog>
-                <AlertDialogTrigger
-                  render={
-                    <Button
-                      variant="link"
-                      disabled={resetDataMutation.isPending}
-                    />
-                  }
-                >
-                  데이터 초기화
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>데이터를 초기화할까요?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      모든 기록이 삭제되며, 복구할 수 없어요.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>취소</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => resetDataMutation.mutate()}
-                    >
-                      확인
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-              <Button variant="link" onClick={() => exit(0)}>
-                앱 종료하기
-              </Button>
-            </>
-          )}
-        </div>
+                로그아웃
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>로그아웃 하시겠어요?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    로그아웃하면 로그인 화면으로 이동해요.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>취소</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => logoutMutation.mutate()}>
+                    확인
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            <span aria-hidden="true" className="h-3 w-px bg-white/8" />
+            <Button
+              variant="link"
+              onClick={() => navigate({ to: '/settings/withdrawal' })}
+            >
+              회원탈퇴
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center gap-3">
+            <AlertDialog>
+              <AlertDialogTrigger
+                render={
+                  <Button
+                    variant="link"
+                    disabled={resetDataMutation.isPending}
+                  />
+                }
+              >
+                데이터 초기화
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>데이터를 초기화할까요?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    모든 기록이 삭제되며, 복구할 수 없어요.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>취소</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => resetDataMutation.mutate()}>
+                    확인
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            <Button variant="link" onClick={() => exit(0)}>
+              앱 종료하기
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
