@@ -1,7 +1,9 @@
 import { useState } from 'react';
 
 import { MAX_SALARY_AMOUNT } from '~/lib/constants';
+import { formatKoreanAmount } from '~/lib/format';
 import {
+  AmountInput,
   AppBar,
   AppFooter,
   Button,
@@ -57,9 +59,9 @@ export function SalaryScreen() {
             name="salaryAmount"
             validators={{
               onChange: ({ value }) => {
-                if (value <= 0) return '급여 금액은 0보다 커야 합니다';
+                if (value < 10_000) return '금액은 1만원 이상 입력해 주세요';
                 if (value > MAX_SALARY_AMOUNT)
-                  return `최대 ${(MAX_SALARY_AMOUNT / 10_000).toLocaleString()}만원까지 입력할 수 있습니다`;
+                  return `최대 ${formatKoreanAmount(MAX_SALARY_AMOUNT)}까지 입력할 수 있습니다`;
                 return undefined;
               },
             }}
@@ -72,17 +74,15 @@ export function SalaryScreen() {
                     invalid={field.state.meta.errors.length > 0}
                   >
                     <Field.Label>금액</Field.Label>
-                    <NumberInput
-                      max={MAX_SALARY_AMOUNT / 10_000}
-                      defaultValue={salaryType === 'monthly' ? 300 : 3600}
-                      value={field.state.value / 10_000}
-                      onValueChange={(v) =>
-                        field.handleChange((v ?? 0) * 10_000)
+                    <AmountInput
+                      max={MAX_SALARY_AMOUNT}
+                      defaultValue={
+                        salaryType === 'monthly' ? 3_000_000 : 36_000_000
                       }
+                      value={field.state.value}
+                      onValueChange={field.handleChange}
+                      error={field.state.meta.errors.filter(Boolean)[0]}
                     />
-                    {field.state.meta.errors.filter(Boolean).map((error) => (
-                      <Field.Error key={error}>{error}</Field.Error>
-                    ))}
                   </Field.Root>
                 )}
               </form.Subscribe>

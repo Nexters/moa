@@ -1,3 +1,4 @@
+export * from './amount-input';
 export * from './app-bar';
 export * from './app-toaster';
 export * from './app-footer';
