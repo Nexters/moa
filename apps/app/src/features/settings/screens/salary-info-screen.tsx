@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 
+import { useProfileWorkplace } from '~/hooks/use-auth';
 import { useUserSettings } from '~/hooks/use-user-settings';
 import { formatKoreanAmount } from '~/lib/format';
 import { type SalaryType } from '~/lib/tauri-bindings';
@@ -34,6 +35,7 @@ function formatTimeRange(
 export function SalaryInfoScreen() {
   const navigate = useNavigate();
   const { data: settings } = useUserSettings();
+  const { data: workplace } = useProfileWorkplace();
 
   return (
     <main className="flex flex-1 flex-col">
@@ -44,6 +46,20 @@ export function SalaryInfoScreen() {
       />
 
       <div className="flex flex-col gap-5 overflow-y-auto p-5">
+        <SettingsSection>
+          <InfoRow
+            as="button"
+            label="회사명"
+            onClick={() => navigate({ to: '/settings/edit-workplace' })}
+          >
+            {workplace ? (
+              <span className="text-green-40">{workplace}</span>
+            ) : (
+              <span className="text-text-disabled">미등록</span>
+            )}
+          </InfoRow>
+        </SettingsSection>
+
         <SettingsSection title="월급 정보">
           <InfoRow
             as="button"

@@ -17,6 +17,7 @@ import { Route as SettingsIndexRouteImport } from './routes/settings/index'
 import { Route as SettingsWithdrawalRouteImport } from './routes/settings/withdrawal'
 import { Route as SettingsTermsPolicyRouteImport } from './routes/settings/terms-policy'
 import { Route as SettingsSalaryInfoRouteImport } from './routes/settings/salary-info'
+import { Route as SettingsEditWorkplaceRouteImport } from './routes/settings/edit-workplace'
 import { Route as SettingsEditScheduleRouteImport } from './routes/settings/edit-schedule'
 import { Route as SettingsEditSalaryRouteImport } from './routes/settings/edit-salary'
 import { Route as SettingsEditNicknameRouteImport } from './routes/settings/edit-nickname'
@@ -63,6 +64,11 @@ const SettingsTermsPolicyRoute = SettingsTermsPolicyRouteImport.update({
 const SettingsSalaryInfoRoute = SettingsSalaryInfoRouteImport.update({
   id: '/settings/salary-info',
   path: '/settings/salary-info',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsEditWorkplaceRoute = SettingsEditWorkplaceRouteImport.update({
+  id: '/settings/edit-workplace',
+  path: '/settings/edit-workplace',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsEditScheduleRoute = SettingsEditScheduleRouteImport.update({
@@ -113,6 +119,7 @@ export interface FileRoutesByFullPath {
   '/settings/edit-nickname': typeof SettingsEditNicknameRoute
   '/settings/edit-salary': typeof SettingsEditSalaryRoute
   '/settings/edit-schedule': typeof SettingsEditScheduleRoute
+  '/settings/edit-workplace': typeof SettingsEditWorkplaceRoute
   '/settings/salary-info': typeof SettingsSalaryInfoRoute
   '/settings/terms-policy': typeof SettingsTermsPolicyRoute
   '/settings/withdrawal': typeof SettingsWithdrawalRoute
@@ -130,6 +137,7 @@ export interface FileRoutesByTo {
   '/settings/edit-nickname': typeof SettingsEditNicknameRoute
   '/settings/edit-salary': typeof SettingsEditSalaryRoute
   '/settings/edit-schedule': typeof SettingsEditScheduleRoute
+  '/settings/edit-workplace': typeof SettingsEditWorkplaceRoute
   '/settings/salary-info': typeof SettingsSalaryInfoRoute
   '/settings/terms-policy': typeof SettingsTermsPolicyRoute
   '/settings/withdrawal': typeof SettingsWithdrawalRoute
@@ -148,6 +156,7 @@ export interface FileRoutesById {
   '/settings/edit-nickname': typeof SettingsEditNicknameRoute
   '/settings/edit-salary': typeof SettingsEditSalaryRoute
   '/settings/edit-schedule': typeof SettingsEditScheduleRoute
+  '/settings/edit-workplace': typeof SettingsEditWorkplaceRoute
   '/settings/salary-info': typeof SettingsSalaryInfoRoute
   '/settings/terms-policy': typeof SettingsTermsPolicyRoute
   '/settings/withdrawal': typeof SettingsWithdrawalRoute
@@ -167,6 +176,7 @@ export interface FileRouteTypes {
     | '/settings/edit-nickname'
     | '/settings/edit-salary'
     | '/settings/edit-schedule'
+    | '/settings/edit-workplace'
     | '/settings/salary-info'
     | '/settings/terms-policy'
     | '/settings/withdrawal'
@@ -184,6 +194,7 @@ export interface FileRouteTypes {
     | '/settings/edit-nickname'
     | '/settings/edit-salary'
     | '/settings/edit-schedule'
+    | '/settings/edit-workplace'
     | '/settings/salary-info'
     | '/settings/terms-policy'
     | '/settings/withdrawal'
@@ -201,6 +212,7 @@ export interface FileRouteTypes {
     | '/settings/edit-nickname'
     | '/settings/edit-salary'
     | '/settings/edit-schedule'
+    | '/settings/edit-workplace'
     | '/settings/salary-info'
     | '/settings/terms-policy'
     | '/settings/withdrawal'
@@ -215,6 +227,7 @@ export interface RootRouteChildren {
   SettingsEditNicknameRoute: typeof SettingsEditNicknameRoute
   SettingsEditSalaryRoute: typeof SettingsEditSalaryRoute
   SettingsEditScheduleRoute: typeof SettingsEditScheduleRoute
+  SettingsEditWorkplaceRoute: typeof SettingsEditWorkplaceRoute
   SettingsSalaryInfoRoute: typeof SettingsSalaryInfoRoute
   SettingsTermsPolicyRoute: typeof SettingsTermsPolicyRoute
   SettingsWithdrawalRoute: typeof SettingsWithdrawalRoute
@@ -277,6 +290,13 @@ declare module '@tanstack/react-router' {
       path: '/settings/salary-info'
       fullPath: '/settings/salary-info'
       preLoaderRoute: typeof SettingsSalaryInfoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/edit-workplace': {
+      id: '/settings/edit-workplace'
+      path: '/settings/edit-workplace'
+      fullPath: '/settings/edit-workplace'
+      preLoaderRoute: typeof SettingsEditWorkplaceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings/edit-schedule': {
@@ -357,6 +377,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsEditNicknameRoute: SettingsEditNicknameRoute,
   SettingsEditSalaryRoute: SettingsEditSalaryRoute,
   SettingsEditScheduleRoute: SettingsEditScheduleRoute,
+  SettingsEditWorkplaceRoute: SettingsEditWorkplaceRoute,
   SettingsSalaryInfoRoute: SettingsSalaryInfoRoute,
   SettingsTermsPolicyRoute: SettingsTermsPolicyRoute,
   SettingsWithdrawalRoute: SettingsWithdrawalRoute,
