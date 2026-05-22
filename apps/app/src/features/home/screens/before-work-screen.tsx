@@ -7,6 +7,7 @@ import {
   InfoCardRow,
   TooltipBubble,
 } from '~/ui';
+import { ChevronRightIcon } from '~/ui/icons';
 
 import { HeroSection } from '../components/hero-section';
 import { HomeMainScreen } from '../hooks/use-home-screen';
@@ -16,9 +17,11 @@ export function BeforeWorkScreen({
   salaryInfo,
   todaySchedule,
   isPending,
-  onVacation,
   onStartWork,
-}: Extract<HomeMainScreen, { screen: 'before-work' }>) {
+  onAdjustWorkTime,
+}: Extract<HomeMainScreen, { screen: 'before-work' }> & {
+  onAdjustWorkTime: () => void;
+}) {
   const workStart = todaySchedule?.workStartTime ?? settings.workStartTime;
   const workEnd = todaySchedule?.workEndTime ?? settings.workEndTime;
 
@@ -37,7 +40,20 @@ export function BeforeWorkScreen({
           value={formatCurrency(salaryInfo.dailyRate)}
         />
         <InfoCardDivider />
-        <InfoCardRow label="근무 시간" value={`${workStart} - ${workEnd}`} />
+        <button
+          type="button"
+          aria-label="근무시간 조정"
+          className="-mx-2 flex cursor-pointer items-center justify-between gap-3 px-2 py-1.5 text-left"
+          onClick={onAdjustWorkTime}
+        >
+          <span className="flex h-6 items-center gap-3">
+            <span className="b1-400 text-text-medium">근무 시간</span>
+            <span className="b1-600 text-text-high">
+              {workStart} - {workEnd}
+            </span>
+          </span>
+          <ChevronRightIcon className="text-text-low size-6 shrink-0" />
+        </button>
       </InfoCard>
 
       <AppFooter>
@@ -50,15 +66,7 @@ export function BeforeWorkScreen({
           disabled={isPending}
           onClick={onStartWork}
         >
-          일찍 출근하기
-        </Button>
-        <Button
-          variant="link"
-          size="flat"
-          disabled={isPending}
-          onClick={onVacation}
-        >
-          오늘 연차예요
+          지금 출근하기
         </Button>
       </AppFooter>
     </div>
