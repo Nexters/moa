@@ -16,6 +16,14 @@ export function useProfileNickname() {
   });
 }
 
+export function useProfileWorkplace() {
+  const { data: authStatus } = useAuthStatus();
+  return useQuery({
+    ...authQueryOptions.workplace(),
+    enabled: authStatus?.isLoggedIn === true,
+  });
+}
+
 export function useSocialLogin() {
   const queryClient = useQueryClient();
 
@@ -69,6 +77,20 @@ export function useUpdateNickname() {
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: authQuery.nickname() });
+    },
+  });
+}
+
+export function useUpdateWorkplace() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (workplace: string) => {
+      const result = await commands.updateProfileWorkplace(workplace);
+      if (result.status === 'error') throw new Error(result.error);
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: authQuery.workplace() });
     },
   });
 }

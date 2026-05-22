@@ -13,7 +13,7 @@ use tauri::{AppHandle, Manager};
 
 use crate::api_client::{
     ApiClient, ApiError, NicknamePatchRequest, PaydayPatchRequest, PayrollPatchRequest,
-    SalaryInputType, Weekday, WorkPolicyPatchRequest,
+    SalaryInputType, Weekday, WorkPolicyPatchRequest, WorkplacePatchRequest,
 };
 use crate::auth;
 use crate::commands::user_settings::{get_user_settings_path, save_user_settings_sync};
@@ -566,6 +566,50 @@ pub async fn update_profile_nickname(app: AppHandle, nickname: String) -> Result
             Err("인증이 만료되었습니다".to_string())
         }
         Err(e) => Err(format!("닉네임 수정 실패: {e}")),
+    }
+}
+
+/// 서버에서 프로필 회사명 조회
+#[tauri::command]
+#[specta::specta]
+pub async fn get_profile_workplace(app: AppHandle) -> Result<Option<String>, String> {
+    let token = match auth::get_access_token(&app) {
+        Some(t) => t,
+        None => return Ok(None),
+    };
+
+    let base_url = std::env::var("MOA_API_BASE_URL")
+        .unwrap_or_else(|_| "https://www.moa-official.kr".to_string());
+    let api = ApiClient::new(&base_url);
+
+    match api.get_profile(&token).await {
+        Ok(profile) => Ok(profile.workplace),
+        Err(ApiError::Unauthorized) => {
+            auth::clear_auth_token(&app);
+            Ok(None)
+        }
+        Err(e) => Err(format!("프로필 조회 실패: {e}")),
+    }
+}
+
+/// 회사명 수정 (서버 PATCH)
+#[tauri::command]
+#[specta::specta]
+pub async fn update_profile_workplace(app: AppHandle, workplace: String) -> Result<(), String> {
+    let token = auth::get_access_token(&app).ok_or_else(|| "로그인이 필요합니다".to_string())?;
+
+    let base_url = std::env::var("MOA_API_BASE_URL")
+        .unwrap_or_else(|_| "https://www.moa-official.kr".to_string());
+    let api = ApiClient::new(&base_url);
+
+    let req = WorkplacePatchRequest { workplace };
+    match api.patch_profile_workplace(&token, &req).await {
+        Ok(()) => Ok(()),
+        Err(ApiError::Unauthorized) => {
+            auth::clear_auth_token(&app);
+            Err("인증이 만료되었습니다".to_string())
+        }
+        Err(e) => Err(format!("회사명 수정 실패: {e}")),
     }
 }
 

@@ -94,6 +94,28 @@ async updateProfileNickname(nickname: string) : Promise<Result<null, string>> {
 }
 },
 /**
+ * 서버에서 프로필 회사명 조회
+ */
+async getProfileWorkplace() : Promise<Result<string | null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("get_profile_workplace") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * 회사명 수정 (서버 PATCH)
+ */
+async updateProfileWorkplace(workplace: string) : Promise<Result<null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("update_profile_workplace", { workplace }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * 로컬 설정 → 서버 push (fire-and-forget 용)
  */
 async syncSettingsToServer() : Promise<Result<null, string>> {

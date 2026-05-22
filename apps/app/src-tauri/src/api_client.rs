@@ -229,6 +229,12 @@ pub struct NicknamePatchRequest {
     pub nickname: String,
 }
 
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkplacePatchRequest {
+    pub workplace: String,
+}
+
 // ============================================================================
 // API Client
 // ============================================================================
@@ -360,6 +366,15 @@ impl ApiClient {
     ) -> Result<ProfileResponse, ApiError> {
         self.patch_with_response("/api/v1/profile/nickname", token, req)
             .await
+    }
+
+    /// PATCH /api/v1/profile/workplace
+    pub async fn patch_profile_workplace(
+        &self,
+        token: &str,
+        req: &WorkplacePatchRequest,
+    ) -> Result<(), ApiError> {
+        self.patch("/api/v1/profile/workplace", token, req).await
     }
 
     /// PATCH /api/v1/onboarding/payroll — 온보딩 단계용 (서버 온보딩 완료 시그널)

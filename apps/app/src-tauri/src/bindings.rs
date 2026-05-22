@@ -17,6 +17,8 @@ pub fn generate_bindings() -> Builder<tauri::Wry> {
         auth::get_auth_status,
         auth::get_profile_nickname,
         auth::update_profile_nickname,
+        auth::get_profile_workplace,
+        auth::update_profile_workplace,
         auth::sync_settings_to_server,
         auth::sync_from_server,
         auth::complete_onboarding,
