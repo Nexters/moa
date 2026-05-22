@@ -169,6 +169,7 @@ export function useHomeScreen(): HomeScreenState {
       status: TodayWorkStatus;
     }) => {
       await saveStatus(_vars.status);
+      await waitForSalaryTick((info) => info.workStatus === _vars.status);
     },
   });
 

@@ -3,11 +3,11 @@ import {
   AppFooter,
   Button,
   InfoCard,
+  InfoCardButtonRow,
   InfoCardDivider,
   InfoCardRow,
   TooltipBubble,
 } from '~/ui';
-import { ChevronRightIcon } from '~/ui/icons';
 
 import { HeroSection } from '../components/hero-section';
 import { HomeMainScreen } from '../hooks/use-home-screen';
@@ -40,20 +40,12 @@ export function BeforeWorkScreen({
           value={formatCurrency(salaryInfo.dailyRate)}
         />
         <InfoCardDivider />
-        <button
-          type="button"
-          aria-label="근무시간 조정"
-          className="-mx-2 flex h-6 cursor-pointer items-center justify-between gap-3 px-2 text-left"
+        <InfoCardButtonRow
+          label="근무 시간"
+          value={`${workStart} - ${workEnd}`}
+          ariaLabel="근무시간 조정"
           onClick={onAdjustWorkTime}
-        >
-          <span className="flex h-6 items-center gap-3">
-            <span className="b1-400 text-text-medium">근무 시간</span>
-            <span className="b1-600 text-text-high">
-              {workStart} - {workEnd}
-            </span>
-          </span>
-          <ChevronRightIcon className="text-text-low size-6 shrink-0" />
-        </button>
+        />
       </InfoCard>
 
       <AppFooter>
