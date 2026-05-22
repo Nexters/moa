@@ -2,6 +2,10 @@ import { useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 
 import { CelebrateButton } from '~/features/confetti/celebrate-button';
+import {
+  waitForNextSalaryTick,
+  waitForSalaryTick,
+} from '~/hooks/use-salary-tick';
 import { useTodayWorkSchedule } from '~/hooks/use-today-work-schedule';
 import { useTodayWorkStatus } from '~/hooks/use-today-work-status';
 import { AppBar } from '~/ui/app-bar';
@@ -50,9 +54,11 @@ export function Home() {
         onBack={() => setAdjustMode(null)}
         onSave={async (startTime, endTime) => {
           await Promise.all([clearStatus(), saveSchedule(startTime, endTime)]);
+          await waitForNextSalaryTick();
         }}
         onSaveStatus={async (status) => {
           await Promise.all([saveStatus(status), clearSchedule()]);
+          await waitForSalaryTick((info) => info.workStatus === status);
         }}
       />
     );

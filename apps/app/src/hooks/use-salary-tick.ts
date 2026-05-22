@@ -27,6 +27,10 @@ export function waitForSalaryTick(
   });
 }
 
+export function waitForNextSalaryTick(): Promise<SalaryInfo> {
+  return waitForSalaryTick(() => true);
+}
+
 export interface SalaryInfo {
   /** 일급 (원) */
   dailyRate: number;

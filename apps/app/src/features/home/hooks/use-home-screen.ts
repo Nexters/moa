@@ -1,7 +1,11 @@
 import { useMutation } from '@tanstack/react-query';
 
 import type { SalaryInfo } from '~/hooks/use-salary-tick';
-import { useSalaryTick, waitForSalaryTick } from '~/hooks/use-salary-tick';
+import {
+  useSalaryTick,
+  waitForNextSalaryTick,
+  waitForSalaryTick,
+} from '~/hooks/use-salary-tick';
 import type { TodayWorkSchedule } from '~/hooks/use-today-work-schedule';
 import { useTodayWorkSchedule } from '~/hooks/use-today-work-schedule';
 import type { TodayWorkStatus } from '~/hooks/use-today-work-status';
@@ -129,7 +133,7 @@ export function useHomeScreen(): HomeScreenState {
       endTime: string;
     }) => {
       await Promise.all([saveSchedule(startTime, endTime), clearAcknowledge()]);
-      await waitForSalaryTick((info) => info.workStatus !== 'completed');
+      await waitForNextSalaryTick();
     },
   });
 
