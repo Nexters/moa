@@ -1,4 +1,10 @@
-import { AppFooter, Button, InfoCard, InfoCardDivider } from '~/ui';
+import {
+  AppFooter,
+  Button,
+  InfoCard,
+  InfoCardDivider,
+  InfoCardRow,
+} from '~/ui';
 import { ChevronRightIcon } from '~/ui/icons';
 
 import { HeroSection } from '../components/hero-section';
@@ -26,10 +32,9 @@ export function WorkingScreen({
       />
 
       <InfoCard>
-        <div className="flex flex-col items-start gap-1">
-          <span className="b1-400 text-text-medium">근무 상태</span>
+        <InfoCardRow label="근무 상태">
           <span className="b1-600 text-green-40">근무 중</span>
-        </div>
+        </InfoCardRow>
         <InfoCardDivider />
         <button
           type="button"
@@ -37,7 +42,7 @@ export function WorkingScreen({
           className="hover:bg-interactive-hover -mx-2 flex items-center justify-between gap-3 rounded-md px-2 py-1.5 text-left transition-colors"
           onClick={onAdjustWorkTime}
         >
-          <span className="flex flex-col items-start gap-1">
+          <span className="flex h-6 items-center gap-3">
             <span className="b1-400 text-text-medium">근무 시간</span>
             <span className="b1-600 text-text-high">
               {workStart} - {workEnd}

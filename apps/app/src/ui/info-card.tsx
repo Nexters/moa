@@ -35,7 +35,7 @@ interface InfoCardRowProps {
 
 export function InfoCardRow({ label, value, children }: InfoCardRowProps) {
   return (
-    <div className="flex h-6 items-center justify-between">
+    <div className="flex h-6 items-center gap-3">
       <span className="b1-400 text-text-medium">{label}</span>
       {children ?? <span className="b1-600 text-text-high">{value}</span>}
     </div>

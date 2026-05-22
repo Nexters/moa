@@ -3,7 +3,13 @@ import type { SalaryInfo } from '~/hooks/use-salary-tick';
 import type { TodayWorkSchedule } from '~/hooks/use-today-work-schedule';
 import { formatCurrency } from '~/lib/format';
 import type { OnboardedUserSettings } from '~/lib/tauri-bindings';
-import { AppFooter, Button, InfoCard, InfoCardDivider } from '~/ui';
+import {
+  AppFooter,
+  Button,
+  InfoCard,
+  InfoCardDivider,
+  InfoCardRow,
+} from '~/ui';
 import { ChevronRightIcon } from '~/ui/icons';
 
 import { HeroSection } from '../components/hero-section';
@@ -41,12 +47,10 @@ export function CompletedScreen({
         amount={salaryInfo.todayEarnings}
       />
       <InfoCard>
-        <div className="flex flex-col items-start gap-1">
-          <span className="b1-400 text-text-medium">이번달 누적 월급</span>
-          <span className="b1-600 text-text-high">
-            {formatCurrency(salaryInfo.accumulatedEarnings)}
-          </span>
-        </div>
+        <InfoCardRow
+          label="이번달 누적 월급"
+          value={formatCurrency(salaryInfo.accumulatedEarnings)}
+        />
         <InfoCardDivider />
         <button
           type="button"
@@ -55,7 +59,7 @@ export function CompletedScreen({
           onClick={onAdjustWorkTime}
           disabled={isPending}
         >
-          <span className="flex flex-col items-start gap-1">
+          <span className="flex h-6 items-center gap-3">
             <span className="b1-400 text-text-medium">근무 시간</span>
             <span className="b1-600 text-text-high">
               {workStart} - {workEnd}
