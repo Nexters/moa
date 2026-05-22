@@ -33,7 +33,7 @@ export function SalaryScreen() {
     <main className="flex flex-1 flex-col">
       <AppBar type="detail" onBack={() => setConfirmOpen(true)} />
 
-      <div className="flex flex-1 flex-col px-6 pt-3">
+      <div className="flex flex-1 flex-col px-6">
         <h1 className="t2-700 text-text-high">급여 정보를 알려주세요</h1>
         <p className="b2-500 text-text-medium mt-2">
           세전, 세후 상관없이 보고 싶은 금액을 입력해주세요.
