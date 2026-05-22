@@ -43,7 +43,7 @@ export function PaydayOverlay({
     <div
       className={cn(
         'fixed inset-0 z-50 flex flex-col items-center justify-center pb-10',
-        'bg-dim-dark backdrop-blur-md',
+        'bg-dim-dark backdrop-blur-[10px]',
         'transition-opacity',
         visible ? 'opacity-100 duration-300' : 'opacity-0 duration-700',
       )}
@@ -52,7 +52,7 @@ export function PaydayOverlay({
       }}
     >
       {/* 초록색 radial 글로우 (Lottie 뒤에 깔리는 빛) */}
-      <div className="pointer-events-none absolute top-1/2 left-1/2 size-[360px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-green-50 opacity-50 blur-[100px]" />
+      <div className="bg-green-60 pointer-events-none absolute top-1/2 left-1/2 h-[340px] w-[336px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-60 blur-[200px]" />
 
       {/* 콘텐츠 */}
       <div className="relative flex flex-col items-center px-5">

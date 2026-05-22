@@ -84,6 +84,7 @@ interface TimePickerInputProps {
   onLeftFocus?: () => void;
   onRightFocus?: () => void;
   className?: string;
+  disabled?: boolean;
 }
 
 function TimePickerInput({
@@ -94,10 +95,15 @@ function TimePickerInput({
   onLeftFocus,
   onRightFocus,
   className,
+  disabled,
 }: TimePickerInputProps) {
   const [hasTypedFirstDigit, setHasTypedFirstDigit] = useState(false);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (disabled) {
+      e.preventDefault();
+      return;
+    }
     if (e.key === 'Tab') return;
 
     e.preventDefault();
@@ -149,10 +155,13 @@ function TimePickerInput({
       inputMode="numeric"
       value={value}
       readOnly
+      disabled={disabled}
+      tabIndex={disabled ? -1 : undefined}
       onKeyDown={handleKeyDown}
       className={cn(
         'bg-container-primary b1-500 text-text-high w-[48px] rounded-sm py-1 text-center tabular-nums',
         'focus:bg-container-secondary focus:outline-none',
+        disabled && 'text-text-medium cursor-not-allowed focus:bg-transparent',
         className,
       )}
     />
@@ -172,6 +181,7 @@ export interface TimeInputProps {
   onChange?: (value: string) => void;
   onLeftFocus?: () => void;
   onRightFocus?: () => void;
+  disabled?: boolean;
 }
 
 export function TimeInput({
@@ -183,6 +193,7 @@ export function TimeInput({
   minuteRef: minuteRefProp,
   onLeftFocus,
   onRightFocus,
+  disabled,
 }: TimeInputProps) {
   const [uncontrolledValue, setUncontrolledValue] = useState(defaultValue);
 
@@ -228,8 +239,13 @@ export function TimeInput({
         onChange={handleHourChange}
         onLeftFocus={onLeftFocus}
         onRightFocus={() => minuteRef.current?.focus()}
+        disabled={disabled}
       />
-      <span className="b1-500 text-text-medium">:</span>
+      <span
+        className={cn('b1-500 text-text-medium', disabled && 'text-text-low')}
+      >
+        :
+      </span>
       <TimePickerInput
         ref={minuteRef}
         picker="minutes"
@@ -237,6 +253,7 @@ export function TimeInput({
         onChange={handleMinuteChange}
         onLeftFocus={() => hourRef.current?.focus()}
         onRightFocus={onRightFocus}
+        disabled={disabled}
       />
     </div>
   );

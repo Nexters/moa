@@ -4,8 +4,9 @@ import type { SalaryInfo } from '~/hooks/use-salary-tick';
 import { useSalaryTick, waitForSalaryTick } from '~/hooks/use-salary-tick';
 import type { TodayWorkSchedule } from '~/hooks/use-today-work-schedule';
 import { useTodayWorkSchedule } from '~/hooks/use-today-work-schedule';
+import type { TodayWorkStatus } from '~/hooks/use-today-work-status';
+import { useTodayWorkStatus } from '~/hooks/use-today-work-status';
 import { useUserSettings } from '~/hooks/use-user-settings';
-import { useVacation } from '~/hooks/use-vacation';
 import { useWorkCompletedAck } from '~/hooks/use-work-completed-ack';
 import {
   assertOnboarded,
@@ -24,13 +25,8 @@ import {
 
 export type HomeMainScreen =
   | {
-      screen: 'vacation';
-      salaryInfo: SalaryInfo;
-      isPending?: boolean;
-      onTodayWork: () => void;
-    }
-  | {
-      screen: 'day-off';
+      screen: 'non-working';
+      status: TodayWorkStatus;
       salaryInfo: SalaryInfo;
       isPending?: boolean;
       onTodayWork: () => void;
@@ -58,7 +54,10 @@ export type HomeMainScreen =
       settings: OnboardedUserSettings;
       salaryInfo: SalaryInfo;
       todaySchedule: TodayWorkSchedule | null;
+      isPending?: boolean;
       onAcknowledge: () => void;
+      onAdjustSchedule: (startTime: string, endTime: string) => Promise<void>;
+      onExtendWork: (newEndTime: string) => Promise<void>;
     }
   | {
       screen: 'post-completed';
@@ -85,11 +84,10 @@ export function useHomeScreen(): HomeScreenState {
     saveSchedule,
   } = useTodayWorkSchedule();
   const {
-    isOnVacation,
-    isLoading: vacationLoading,
-    clearVacation,
-    setVacation,
-  } = useVacation();
+    isLoading: workStatusLoading,
+    clearStatus,
+    saveStatus,
+  } = useTodayWorkStatus();
   const salaryInfo = useSalaryTick();
   const {
     isAcknowledged,
@@ -102,18 +100,23 @@ export function useHomeScreen(): HomeScreenState {
     mutationFn: async ({
       startTime,
       endTime,
-      withVacationClear,
+      withStatusClear,
     }: {
       startTime: string;
       endTime: string;
-      withVacationClear: boolean;
+      withStatusClear: boolean;
     }) => {
-      if (withVacationClear) {
-        await Promise.all([clearVacation(), saveSchedule(startTime, endTime)]);
+      if (withStatusClear) {
+        await Promise.all([clearStatus(), saveSchedule(startTime, endTime)]);
       } else {
         await saveSchedule(startTime, endTime);
       }
-      await waitForSalaryTick((info) => info.workStatus !== 'day-off');
+      await waitForSalaryTick(
+        (info) =>
+          info.workStatus !== 'annual-leave' &&
+          info.workStatus !== 'day-off' &&
+          info.workStatus !== 'public-holiday',
+      );
     },
   });
 
@@ -154,15 +157,18 @@ export function useHomeScreen(): HomeScreenState {
     },
   });
 
-  const vacationMutation = useMutation({
-    mutationFn: async (_vars: { fromScreen: 'before-work' | 'working' }) => {
-      await setVacation();
+  const workStatusMutation = useMutation({
+    mutationFn: async (_vars: {
+      fromScreen: 'before-work' | 'working';
+      status: TodayWorkStatus;
+    }) => {
+      await saveStatus(_vars.status);
     },
   });
 
   // 로딩 체크
   const allLoading =
-    isLoading || vacationLoading || ackLoading || scheduleLoading;
+    isLoading || workStatusLoading || ackLoading || scheduleLoading;
 
   if (allLoading || !settings || !salaryInfo) {
     return {
@@ -180,11 +186,16 @@ export function useHomeScreen(): HomeScreenState {
     todaySchedule?.workEndTime ?? settings.workEndTime;
 
   // 핸들러
-  const handleTodayWorkFromVacation = () => {
+  const handleTodayWorkFromNonWorking = () => {
+    if (!salaryInfo.isWorkDay) {
+      handleTodayWorkFromDayOff();
+      return;
+    }
+
     todayWorkMutation.mutate({
       startTime: settings.workStartTime,
       endTime: settings.workEndTime,
-      withVacationClear: true,
+      withStatusClear: true,
     });
   };
 
@@ -198,16 +209,22 @@ export function useHomeScreen(): HomeScreenState {
     todayWorkMutation.mutate({
       startTime: now,
       endTime,
-      withVacationClear: false,
+      withStatusClear: true,
     });
   };
 
   const handleVacationFromBeforeWork = () => {
-    vacationMutation.mutate({ fromScreen: 'before-work' });
+    workStatusMutation.mutate({
+      fromScreen: 'before-work',
+      status: 'annual-leave',
+    });
   };
 
   const handleVacationFromWorking = () => {
-    vacationMutation.mutate({ fromScreen: 'working' });
+    workStatusMutation.mutate({
+      fromScreen: 'working',
+      status: 'annual-leave',
+    });
   };
 
   const handleStartWork = () => {
@@ -265,24 +282,27 @@ export function useHomeScreen(): HomeScreenState {
     });
   };
 
+  const handleAdjustScheduleFromCompleted = async (
+    startTime: string,
+    endTime: string,
+  ) => {
+    await stillWorkingMutation.mutateAsync({ startTime, endTime });
+  };
+
+  const handleExtendWork = async (newEndTime: string) => {
+    await stillWorkingMutation.mutateAsync({
+      startTime: getEffectiveStartTime(),
+      endTime: newEndTime,
+    });
+  };
+
   // 화면 전환 중 → 현재 화면 유지 (Rust 응답 대기)
   if (todayWorkMutation.isPending) {
-    const fromVacation = todayWorkMutation.variables?.withVacationClear;
-    if (fromVacation) {
-      return {
-        isLoading: false,
-        mainScreen: {
-          screen: 'vacation' as const,
-          salaryInfo,
-          isPending: true,
-          onTodayWork: () => {},
-        },
-      };
-    }
     return {
       isLoading: false,
       mainScreen: {
-        screen: 'day-off' as const,
+        screen: 'non-working' as const,
+        status: getNonWorkingStatus(salaryInfo.workStatus),
         salaryInfo,
         isPending: true,
         onTodayWork: () => {},
@@ -291,6 +311,21 @@ export function useHomeScreen(): HomeScreenState {
   }
 
   if (stillWorkingMutation.isPending) {
+    if (isAcknowledged) {
+      return {
+        isLoading: false,
+        mainScreen: {
+          screen: 'completed' as const,
+          settings,
+          salaryInfo,
+          todaySchedule,
+          isPending: true,
+          onAcknowledge: () => {},
+          onAdjustSchedule: async () => {},
+          onExtendWork: async () => {},
+        },
+      };
+    }
     return {
       isLoading: false,
       mainScreen: {
@@ -335,51 +370,52 @@ export function useHomeScreen(): HomeScreenState {
     };
   }
 
-  if (vacationMutation.isPending) {
-    const fromScreen = vacationMutation.variables?.fromScreen;
-    if (fromScreen === 'before-work') {
+  if (workStatusMutation.isPending) {
+    const fromScreen = workStatusMutation.variables?.fromScreen;
+    if (fromScreen === 'working') {
       return {
         isLoading: false,
         mainScreen: {
-          screen: 'before-work' as const,
+          screen: 'working' as const,
           settings,
           salaryInfo,
           todaySchedule,
           isPending: true,
+          onEarlyLeave: () => {},
           onVacation: () => {},
-          onStartWork: () => {},
         },
       };
     }
+
     return {
       isLoading: false,
       mainScreen: {
-        screen: 'working' as const,
+        screen: 'before-work' as const,
         settings,
         salaryInfo,
         todaySchedule,
         isPending: true,
-        onEarlyLeave: () => {},
         onVacation: () => {},
+        onStartWork: () => {},
       },
     };
   }
 
   // 메인 스크린 결정
   const mainScreen = resolveMainScreen({
-    isOnVacation,
     salaryInfo,
     settings,
     todaySchedule,
     isAcknowledged,
-    onTodayWorkFromVacation: handleTodayWorkFromVacation,
-    onTodayWorkFromDayOff: handleTodayWorkFromDayOff,
+    onTodayWorkFromNonWorking: handleTodayWorkFromNonWorking,
     onVacationFromBeforeWork: handleVacationFromBeforeWork,
     onVacationFromWorking: handleVacationFromWorking,
     onStartWork: handleStartWork,
     onEarlyLeave: handleEarlyLeave,
     onAcknowledge: handleAcknowledge,
     onStillWorking: handleStillWorking,
+    onAdjustScheduleFromCompleted: handleAdjustScheduleFromCompleted,
+    onExtendWork: handleExtendWork,
   });
 
   return {
@@ -389,53 +425,63 @@ export function useHomeScreen(): HomeScreenState {
 }
 
 interface ResolveParams {
-  isOnVacation: boolean;
   salaryInfo: SalaryInfo;
   settings: OnboardedUserSettings;
   todaySchedule: TodayWorkSchedule | null;
   isAcknowledged: boolean;
-  onTodayWorkFromVacation: () => void;
-  onTodayWorkFromDayOff: () => void;
+  onTodayWorkFromNonWorking: () => void;
   onVacationFromBeforeWork: () => void;
   onVacationFromWorking: () => void;
   onStartWork: () => void;
   onEarlyLeave: () => void;
   onAcknowledge: () => void;
   onStillWorking: () => void;
+  onAdjustScheduleFromCompleted: (
+    startTime: string,
+    endTime: string,
+  ) => Promise<void>;
+  onExtendWork: (newEndTime: string) => Promise<void>;
+}
+
+function isNonWorkingStatus(
+  status: SalaryInfo['workStatus'],
+): status is TodayWorkStatus {
+  return (
+    status === 'annual-leave' ||
+    status === 'day-off' ||
+    status === 'public-holiday'
+  );
+}
+
+function getNonWorkingStatus(
+  status: SalaryInfo['workStatus'],
+): TodayWorkStatus {
+  return isNonWorkingStatus(status) ? status : 'day-off';
 }
 
 function resolveMainScreen(params: ResolveParams): HomeMainScreen {
   const {
-    isOnVacation,
     salaryInfo,
     settings,
     todaySchedule,
     isAcknowledged,
-    onTodayWorkFromVacation,
-    onTodayWorkFromDayOff,
+    onTodayWorkFromNonWorking,
     onVacationFromBeforeWork,
     onVacationFromWorking,
     onStartWork,
     onEarlyLeave,
     onAcknowledge,
     onStillWorking,
+    onAdjustScheduleFromCompleted,
+    onExtendWork,
   } = params;
 
-  // 휴가 우선 체크
-  if (isOnVacation) {
+  if (isNonWorkingStatus(salaryInfo.workStatus)) {
     return {
-      screen: 'vacation',
+      screen: 'non-working',
+      status: salaryInfo.workStatus,
       salaryInfo,
-      onTodayWork: onTodayWorkFromVacation,
-    };
-  }
-
-  // 비근무일 (주말/출근하지 않는 요일)
-  if (salaryInfo.workStatus === 'day-off') {
-    return {
-      screen: 'day-off',
-      salaryInfo,
-      onTodayWork: onTodayWorkFromDayOff,
+      onTodayWork: onTodayWorkFromNonWorking,
     };
   }
 
@@ -481,6 +527,8 @@ function resolveMainScreen(params: ResolveParams): HomeMainScreen {
         salaryInfo,
         todaySchedule,
         onAcknowledge,
+        onAdjustSchedule: onAdjustScheduleFromCompleted,
+        onExtendWork,
       };
   }
 }

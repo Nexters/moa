@@ -58,7 +58,7 @@ export function BeforeWorkScreen({
           disabled={isPending}
           onClick={onVacation}
         >
-          오늘 휴가예요
+          오늘 연차예요
         </Button>
       </AppFooter>
     </div>

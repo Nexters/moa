@@ -1,22 +1,32 @@
 import { useLottieOverlay } from '~/hooks/use-lottie-overlay';
+import type { SalaryInfo } from '~/hooks/use-salary-tick';
+import type { TodayWorkSchedule } from '~/hooks/use-today-work-schedule';
 import { formatCurrency } from '~/lib/format';
-import {
-  AppFooter,
-  Button,
-  InfoCard,
-  InfoCardDivider,
-  InfoCardRow,
-} from '~/ui';
+import type { OnboardedUserSettings } from '~/lib/tauri-bindings';
+import { AppFooter, Button, InfoCard, InfoCardDivider } from '~/ui';
+import { ChevronRightIcon } from '~/ui/icons';
 
 import { HeroSection } from '../components/hero-section';
-import type { HomeMainScreen } from '../hooks/use-home-screen';
+
+interface CompletedScreenProps {
+  settings: OnboardedUserSettings;
+  salaryInfo: SalaryInfo;
+  todaySchedule: TodayWorkSchedule | null;
+  isPending?: boolean;
+  onAcknowledge: () => void;
+  onAdjustWorkTime: () => void;
+  onExtendWork: () => void;
+}
 
 export function CompletedScreen({
   settings,
   salaryInfo,
   todaySchedule,
+  isPending,
   onAcknowledge,
-}: Extract<HomeMainScreen, { screen: 'completed' }>) {
+  onAdjustWorkTime,
+  onExtendWork,
+}: CompletedScreenProps) {
   const lottieOverlay = useLottieOverlay();
 
   const workStart = todaySchedule?.workStartTime ?? settings.workStartTime;
@@ -31,26 +41,52 @@ export function CompletedScreen({
         amount={salaryInfo.todayEarnings}
       />
       <InfoCard>
-        <InfoCardRow
-          label="오늘 근무 시간"
-          value={`${workStart} - ${workEnd}`}
-        />
+        <div className="flex flex-col items-start gap-1">
+          <span className="b1-400 text-text-medium">이번달 누적 월급</span>
+          <span className="b1-600 text-text-high">
+            {formatCurrency(salaryInfo.accumulatedEarnings)}
+          </span>
+        </div>
         <InfoCardDivider />
-        <InfoCardRow
-          label="이번달 누적 월급"
-          value={formatCurrency(salaryInfo.accumulatedEarnings)}
-        />
+        <button
+          type="button"
+          aria-label="근무시간 조정"
+          className="hover:bg-interactive-hover -mx-2 flex items-center justify-between gap-3 rounded-md px-2 py-1.5 text-left transition-colors"
+          onClick={onAdjustWorkTime}
+          disabled={isPending}
+        >
+          <span className="flex flex-col items-start gap-1">
+            <span className="b1-400 text-text-medium">근무 시간</span>
+            <span className="b1-600 text-text-high">
+              {workStart} - {workEnd}
+            </span>
+          </span>
+          <ChevronRightIcon className="text-text-low size-6 shrink-0" />
+        </button>
       </InfoCard>
       <AppFooter>
-        <Button
-          variant="primary"
-          rounded="full"
-          size="lg"
-          className="w-full"
-          onClick={onAcknowledge}
-        >
-          완료
-        </Button>
+        <div className="flex w-full gap-3">
+          <Button
+            variant="tertiary"
+            rounded="full"
+            size="lg"
+            className="flex-1"
+            disabled={isPending}
+            onClick={onExtendWork}
+          >
+            더 일할게요
+          </Button>
+          <Button
+            variant="primary"
+            rounded="full"
+            size="lg"
+            className="flex-1"
+            disabled={isPending}
+            onClick={onAcknowledge}
+          >
+            완료
+          </Button>
+        </div>
       </AppFooter>
     </div>
   );

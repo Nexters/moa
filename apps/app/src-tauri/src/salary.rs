@@ -37,6 +37,21 @@ struct VacationState {
     date: String,
 }
 
+/// Today work status stored in recovery/today-work-status.json
+#[derive(Debug, Clone, Copy, Deserialize, PartialEq)]
+#[serde(rename_all = "kebab-case")]
+enum TodayWorkStatus {
+    AnnualLeave,
+    DayOff,
+    PublicHoliday,
+}
+
+#[derive(Deserialize)]
+struct TodayWorkStatusState {
+    date: String,
+    status: TodayWorkStatus,
+}
+
 /// Today work schedule stored in recovery/today-work-schedule.json
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -112,8 +127,7 @@ pub fn start_salary_ticker(app_handle: AppHandle) {
             let now = Local::now();
             let today_str = now.format("%Y-%m-%d").to_string();
 
-            let is_on_vacation =
-                load_vacation_state(&recovery_dir).is_some_and(|date| date == today_str);
+            let today_status_override = resolve_today_status_override(&recovery_dir, &today_str);
 
             let today_override =
                 load_today_schedule(&recovery_dir).and_then(|(date, start, end)| {
@@ -126,7 +140,7 @@ pub fn start_salary_ticker(app_handle: AppHandle) {
 
             let Some(payload) = calculate_salary(
                 s,
-                is_on_vacation,
+                today_status_override,
                 today_override
                     .as_ref()
                     .map(|(s, e)| (s.as_str(), e.as_str())),
@@ -140,14 +154,14 @@ pub fn start_salary_ticker(app_handle: AppHandle) {
             let new_title = match s.menubar_display_mode {
                 MenubarDisplayMode::None => Some(String::new()),
                 MenubarDisplayMode::Daily => {
-                    if payload.work_status == WorkStatus::DayOff {
+                    if is_non_working_status(&payload.work_status) {
                         Some(String::new())
                     } else {
                         Some(format_tray_title(payload.today_earnings))
                     }
                 }
                 MenubarDisplayMode::Accumulated => {
-                    if payload.work_status == WorkStatus::DayOff {
+                    if is_non_working_status(&payload.work_status) {
                         Some(String::new())
                     } else {
                         Some(format_tray_title(payload.accumulated_earnings))
@@ -193,7 +207,7 @@ pub fn start_salary_ticker(app_handle: AppHandle) {
 
 fn calculate_salary(
     settings: &UserSettings,
-    is_on_vacation: bool,
+    today_status_override: Option<TodayWorkStatus>,
     today_override: Option<(&str, &str)>,
     now: chrono::NaiveDateTime,
 ) -> Option<SalaryTickPayload> {
@@ -265,19 +279,22 @@ fn calculate_salary(
         raw_current_minutes
     };
 
-    let (today_earnings, work_status) = if !is_work_day {
-        (0.0, WorkStatus::DayOff)
-    } else if is_on_vacation {
-        (daily_rate, WorkStatus::DayOff)
-    } else if current_minutes < work_start_minutes {
-        (0.0, WorkStatus::BeforeWork)
-    } else if current_minutes >= work_end_minutes {
-        (daily_rate, WorkStatus::Completed)
-    } else {
-        let worked_minutes = current_minutes - work_start_minutes;
-        let worked_seconds = worked_minutes * 60 + now.time().second();
-        (per_second * worked_seconds as f64, WorkStatus::Working)
-    };
+    let (today_earnings, work_status) =
+        if today_status_override == Some(TodayWorkStatus::PublicHoliday) {
+            (0.0, WorkStatus::PublicHoliday)
+        } else if today_status_override == Some(TodayWorkStatus::AnnualLeave) {
+            (daily_rate, WorkStatus::AnnualLeave)
+        } else if today_status_override == Some(TodayWorkStatus::DayOff) || !is_work_day {
+            (0.0, WorkStatus::DayOff)
+        } else if current_minutes < work_start_minutes {
+            (0.0, WorkStatus::BeforeWork)
+        } else if current_minutes >= work_end_minutes {
+            (daily_rate, WorkStatus::Completed)
+        } else {
+            let worked_minutes = current_minutes - work_start_minutes;
+            let worked_seconds = worked_minutes * 60 + now.time().second();
+            (per_second * worked_seconds as f64, WorkStatus::Working)
+        };
 
     let worked_days = get_worked_days_since_pay_day(period_start, today, work_days);
     let accumulated_earnings = (worked_days as f64 * daily_rate + today_earnings).round();
@@ -297,6 +314,23 @@ fn calculate_salary(
 // ============================================================================
 // Helpers
 // ============================================================================
+
+fn is_non_working_status(work_status: &WorkStatus) -> bool {
+    matches!(
+        work_status,
+        WorkStatus::AnnualLeave | WorkStatus::DayOff | WorkStatus::PublicHoliday
+    )
+}
+
+fn resolve_today_status_override(recovery_dir: &Path, today: &str) -> Option<TodayWorkStatus> {
+    load_today_work_status(recovery_dir)
+        .and_then(|(date, status)| (date == today).then_some(status))
+        .or_else(|| {
+            load_vacation_state(recovery_dir)
+                .is_some_and(|date| date == today)
+                .then_some(TodayWorkStatus::AnnualLeave)
+        })
+}
 
 /// Parse "HH:MM" to minutes since midnight.
 fn time_to_minutes(time: &str) -> u32 {
@@ -438,6 +472,13 @@ fn load_vacation_state(recovery_dir: &Path) -> Option<String> {
     Some(state.date)
 }
 
+fn load_today_work_status(recovery_dir: &Path) -> Option<(String, TodayWorkStatus)> {
+    let path = recovery_dir.join("today-work-status.json");
+    let contents = std::fs::read_to_string(path).ok()?;
+    let state: TodayWorkStatusState = serde_json::from_str(&contents).ok()?;
+    Some((state.date, state.status))
+}
+
 fn load_today_schedule(recovery_dir: &Path) -> Option<(String, String, String)> {
     let path = recovery_dir.join("today-work-schedule.json");
     let contents = std::fs::read_to_string(path).ok()?;
@@ -457,6 +498,7 @@ fn load_today_schedule(recovery_dir: &Path) -> Option<(String, String, String)> 
 mod tests {
     use super::*;
     use crate::types::MenubarDisplayMode;
+    use std::time::{SystemTime, UNIX_EPOCH};
 
     fn make_settings(salary_amount: u32, pay_day: u8) -> UserSettings {
         UserSettings {
@@ -470,6 +512,16 @@ mod tests {
             menubar_display_mode: MenubarDisplayMode::Daily,
             ..Default::default()
         }
+    }
+
+    fn make_temp_dir(name: &str) -> std::path::PathBuf {
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let path = std::env::temp_dir().join(format!("moa-{name}-{nanos}"));
+        std::fs::create_dir_all(&path).unwrap();
+        path
     }
 
     #[test]
@@ -511,7 +563,7 @@ mod tests {
             .unwrap()
             .and_hms_opt(12, 0, 0)
             .unwrap();
-        let result = calculate_salary(&settings, false, None, now).unwrap();
+        let result = calculate_salary(&settings, None, None, now).unwrap();
         assert_eq!(result.work_status, WorkStatus::DayOff);
         assert_eq!(result.today_earnings, 0.0);
     }
@@ -524,21 +576,59 @@ mod tests {
             .unwrap()
             .and_hms_opt(12, 0, 0)
             .unwrap();
-        let result = calculate_salary(&settings, false, None, now).unwrap();
+        let result = calculate_salary(&settings, None, None, now).unwrap();
         assert_eq!(result.work_status, WorkStatus::Working);
         assert!(result.today_earnings > 0.0);
     }
 
     #[test]
-    fn test_calculate_salary_vacation() {
+    fn test_calculate_salary_annual_leave() {
         let settings = make_settings(3_000_000, 25);
-        // Monday but on vacation
+        // Monday but on annual leave
         let now = NaiveDate::from_ymd_opt(2025, 2, 10)
             .unwrap()
             .and_hms_opt(12, 0, 0)
             .unwrap();
-        let result = calculate_salary(&settings, true, None, now).unwrap();
+        let result =
+            calculate_salary(&settings, Some(TodayWorkStatus::AnnualLeave), None, now).unwrap();
+        assert_eq!(result.work_status, WorkStatus::AnnualLeave);
+        assert_eq!(result.today_earnings, result.daily_rate);
+    }
+
+    #[test]
+    fn test_calculate_salary_manual_day_off() {
+        let settings = make_settings(3_000_000, 25);
+        let now = NaiveDate::from_ymd_opt(2025, 2, 10)
+            .unwrap()
+            .and_hms_opt(12, 0, 0)
+            .unwrap();
+        let result = calculate_salary(&settings, Some(TodayWorkStatus::DayOff), None, now).unwrap();
         assert_eq!(result.work_status, WorkStatus::DayOff);
+        assert_eq!(result.today_earnings, 0.0);
+    }
+
+    #[test]
+    fn test_calculate_salary_public_holiday() {
+        let settings = make_settings(3_000_000, 25);
+        let now = NaiveDate::from_ymd_opt(2025, 2, 10)
+            .unwrap()
+            .and_hms_opt(12, 0, 0)
+            .unwrap();
+        let result =
+            calculate_salary(&settings, Some(TodayWorkStatus::PublicHoliday), None, now).unwrap();
+        assert_eq!(result.work_status, WorkStatus::PublicHoliday);
+        assert_eq!(result.today_earnings, 0.0);
+    }
+
+    #[test]
+    fn test_legacy_vacation_state_falls_back_to_annual_leave() {
+        let dir = make_temp_dir("legacy-vacation");
+        std::fs::write(dir.join("vacation-state.json"), r#"{"date":"2025-02-10"}"#).unwrap();
+
+        let status = resolve_today_status_override(&dir, "2025-02-10");
+
+        assert_eq!(status, Some(TodayWorkStatus::AnnualLeave));
+        let _ = std::fs::remove_dir_all(dir);
     }
 
     #[test]
@@ -592,7 +682,7 @@ mod tests {
             .unwrap()
             .and_hms_opt(20, 0, 0)
             .unwrap();
-        let result = calculate_salary(&settings, false, None, now).unwrap();
+        let result = calculate_salary(&settings, None, None, now).unwrap();
         assert_eq!(result.work_status, WorkStatus::Working);
         assert!(result.today_earnings > 0.0);
     }
@@ -605,7 +695,7 @@ mod tests {
             .unwrap()
             .and_hms_opt(15, 0, 0)
             .unwrap();
-        let result = calculate_salary(&settings, false, None, now).unwrap();
+        let result = calculate_salary(&settings, None, None, now).unwrap();
         assert_eq!(result.work_status, WorkStatus::Completed);
     }
 
@@ -617,7 +707,7 @@ mod tests {
             .unwrap()
             .and_hms_opt(1, 0, 0)
             .unwrap();
-        let result = calculate_salary(&settings, false, None, now).unwrap();
+        let result = calculate_salary(&settings, None, None, now).unwrap();
         assert_eq!(result.work_status, WorkStatus::Completed);
     }
 
@@ -633,7 +723,7 @@ mod tests {
             .unwrap()
             .and_hms_opt(2, 0, 0)
             .unwrap();
-        let result = calculate_salary(&settings, false, None, now).unwrap();
+        let result = calculate_salary(&settings, None, None, now).unwrap();
         assert_eq!(result.work_status, WorkStatus::Working);
         assert!(result.today_earnings > 0.0);
     }
@@ -652,7 +742,7 @@ mod tests {
             .unwrap()
             .and_hms_opt(2, 0, 0)
             .unwrap();
-        let result = calculate_salary(&settings, false, None, now).unwrap();
+        let result = calculate_salary(&settings, None, None, now).unwrap();
         assert_eq!(result.work_status, WorkStatus::Working);
         assert!(result.today_earnings > 0.0);
     }

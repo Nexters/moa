@@ -2,7 +2,13 @@ import { listen } from '@tauri-apps/api/event';
 import { useEffect, useState } from 'react';
 
 /** 근무 상태 */
-export type WorkStatus = 'before-work' | 'working' | 'completed' | 'day-off';
+export type WorkStatus =
+  | 'before-work'
+  | 'working'
+  | 'completed'
+  | 'annual-leave'
+  | 'day-off'
+  | 'public-holiday';
 
 /**
  * 조건을 만족하는 다음 salary-tick 이벤트를 기다림.
