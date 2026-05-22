@@ -52,7 +52,7 @@ export function InfoCardDivider() {
 // InfoCardButtonRow (클릭 가능한 정보 행 — 우측 chevron 포함)
 interface InfoCardButtonRowProps {
   label: string;
-  value: string;
+  detail: string;
   onClick: () => void;
   disabled?: boolean;
   ariaLabel?: string;
@@ -60,7 +60,7 @@ interface InfoCardButtonRowProps {
 
 export function InfoCardButtonRow({
   label,
-  value,
+  detail,
   onClick,
   disabled,
   ariaLabel,
@@ -75,7 +75,7 @@ export function InfoCardButtonRow({
     >
       <span className="flex h-6 items-center gap-3">
         <span className="b1-400 text-text-medium">{label}</span>
-        <span className="b1-600 text-text-high">{value}</span>
+        <span className="b1-600 text-text-high">{detail}</span>
       </span>
       <ChevronRightIcon className="text-text-low size-6 shrink-0" />
     </button>

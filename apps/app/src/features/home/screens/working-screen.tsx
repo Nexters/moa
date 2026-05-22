@@ -38,7 +38,7 @@ export function WorkingScreen({
         <InfoCardDivider />
         <InfoCardButtonRow
           label="근무 시간"
-          value={`${workStart} - ${workEnd}`}
+          detail={`${workStart} - ${workEnd}`}
           ariaLabel="근무시간 조정"
           onClick={onAdjustWorkTime}
         />
