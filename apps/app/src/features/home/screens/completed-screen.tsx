@@ -55,7 +55,7 @@ export function CompletedScreen({
         <button
           type="button"
           aria-label="근무시간 조정"
-          className="-mx-2 flex cursor-pointer items-center justify-between gap-3 px-2 py-1.5 text-left"
+          className="-mx-2 flex h-[38px] cursor-pointer items-center justify-between gap-3 px-2 text-left"
           onClick={onAdjustWorkTime}
           disabled={isPending}
         >
