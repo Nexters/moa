@@ -146,6 +146,7 @@ export function useHomeScreen(): HomeScreenState {
       endTime: string;
     }) => {
       await saveSchedule(startTime, endTime);
+      await waitForNextSalaryTick();
     },
   });
 
@@ -158,6 +159,7 @@ export function useHomeScreen(): HomeScreenState {
       endTime: string;
     }) => {
       await saveSchedule(startTime, endTime);
+      await waitForNextSalaryTick();
     },
   });
 
