@@ -62,10 +62,12 @@ export function AdjustTodayScheduleScreen({
 
   return (
     <main className="flex flex-1 flex-col">
-      <AppBar type="detail" title="근무시간 조정" onBack={onBack} />
+      <AppBar type="detail" onBack={onBack} />
 
-      <div className="scrollbar-overlay flex flex-1 flex-col p-5">
+      <div className="scrollbar-overlay flex flex-1 flex-col px-5 pb-5">
         <div className="flex flex-col gap-8">
+          <h1 className="t2-700 text-text-high">일정을 변경할까요?</h1>
+
           {showStatusOptions && (
             <Field.Root className="gap-3">
               <Field.Label>어떤 일정인가요?</Field.Label>

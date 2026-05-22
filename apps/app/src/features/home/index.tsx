@@ -2,6 +2,10 @@ import { useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 
 import { CelebrateButton } from '~/features/confetti/celebrate-button';
+import {
+  waitForNextSalaryTick,
+  waitForSalaryTick,
+} from '~/hooks/use-salary-tick';
 import { useTodayWorkSchedule } from '~/hooks/use-today-work-schedule';
 import { useTodayWorkStatus } from '~/hooks/use-today-work-status';
 import { AppBar } from '~/ui/app-bar';
@@ -15,7 +19,7 @@ import { ExtendWorkScreen } from './screens/extend-work-screen';
 import { PostCompletedScreen } from './screens/post-completed-screen';
 import { WorkingScreen } from './screens/working-screen';
 
-type AdjustMode = null | 'working' | 'completed';
+type AdjustMode = null | 'before-work' | 'working' | 'completed';
 
 export function Home() {
   const navigate = useNavigate();
@@ -27,6 +31,9 @@ export function Home() {
 
   useEffect(() => {
     if (!mainScreen) return;
+    if (adjustMode === 'before-work' && mainScreen.screen !== 'before-work') {
+      setAdjustMode(null);
+    }
     if (adjustMode === 'working' && mainScreen.screen !== 'working') {
       setAdjustMode(null);
     }
@@ -40,6 +47,26 @@ export function Home() {
 
   if (isLoading || !mainScreen) return null;
 
+  if (adjustMode === 'before-work' && mainScreen.screen === 'before-work') {
+    return (
+      <AdjustTodayScheduleScreen
+        settings={mainScreen.settings}
+        todaySchedule={mainScreen.todaySchedule}
+        isPending={mainScreen.isPending}
+        showStatusOptions
+        onBack={() => setAdjustMode(null)}
+        onSave={async (startTime, endTime) => {
+          await Promise.all([clearStatus(), saveSchedule(startTime, endTime)]);
+          await waitForNextSalaryTick();
+        }}
+        onSaveStatus={async (status) => {
+          await Promise.all([saveStatus(status), clearSchedule()]);
+          await waitForSalaryTick((info) => info.workStatus === status);
+        }}
+      />
+    );
+  }
+
   if (adjustMode === 'working' && mainScreen.screen === 'working') {
     return (
       <AdjustTodayScheduleScreen
@@ -50,9 +77,11 @@ export function Home() {
         onBack={() => setAdjustMode(null)}
         onSave={async (startTime, endTime) => {
           await Promise.all([clearStatus(), saveSchedule(startTime, endTime)]);
+          await waitForNextSalaryTick();
         }}
         onSaveStatus={async (status) => {
           await Promise.all([saveStatus(status), clearSchedule()]);
+          await waitForSalaryTick((info) => info.workStatus === status);
         }}
       />
     );
@@ -94,7 +123,10 @@ export function Home() {
           <DayOffScreen {...mainScreen} />
         )}
         {mainScreen.screen === 'before-work' && (
-          <BeforeWorkScreen {...mainScreen} />
+          <BeforeWorkScreen
+            {...mainScreen}
+            onAdjustWorkTime={() => setAdjustMode('before-work')}
+          />
         )}
         {mainScreen.screen === 'working' && (
           <WorkingScreen

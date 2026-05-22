@@ -8,7 +8,7 @@ type NonWorkingScreenState = Extract<HomeMainScreen, { screen: 'non-working' }>;
 
 const STATUS_LABEL: Record<NonWorkingScreenState['status'], string> = {
   'annual-leave': '연차',
-  'day-off': '근무 예정 없음',
+  'day-off': '근무 없음',
   'public-holiday': '공휴일',
 };
 

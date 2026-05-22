@@ -3,6 +3,7 @@ import {
   AppFooter,
   Button,
   InfoCard,
+  InfoCardButtonRow,
   InfoCardDivider,
   InfoCardRow,
   TooltipBubble,
@@ -16,9 +17,11 @@ export function BeforeWorkScreen({
   salaryInfo,
   todaySchedule,
   isPending,
-  onVacation,
   onStartWork,
-}: Extract<HomeMainScreen, { screen: 'before-work' }>) {
+  onAdjustWorkTime,
+}: Extract<HomeMainScreen, { screen: 'before-work' }> & {
+  onAdjustWorkTime: () => void;
+}) {
   const workStart = todaySchedule?.workStartTime ?? settings.workStartTime;
   const workEnd = todaySchedule?.workEndTime ?? settings.workEndTime;
 
@@ -37,7 +40,12 @@ export function BeforeWorkScreen({
           value={formatCurrency(salaryInfo.dailyRate)}
         />
         <InfoCardDivider />
-        <InfoCardRow label="근무 시간" value={`${workStart} - ${workEnd}`} />
+        <InfoCardButtonRow
+          label="근무 시간"
+          detail={`${workStart} - ${workEnd}`}
+          ariaLabel="근무시간 조정"
+          onClick={onAdjustWorkTime}
+        />
       </InfoCard>
 
       <AppFooter>
@@ -50,15 +58,7 @@ export function BeforeWorkScreen({
           disabled={isPending}
           onClick={onStartWork}
         >
-          일찍 출근하기
-        </Button>
-        <Button
-          variant="link"
-          size="flat"
-          disabled={isPending}
-          onClick={onVacation}
-        >
-          오늘 연차예요
+          지금 출근하기
         </Button>
       </AppFooter>
     </div>

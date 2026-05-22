@@ -2,7 +2,7 @@ import { useState } from 'react';
 
 import type { TodayWorkSchedule } from '~/hooks/use-today-work-schedule';
 import type { OnboardedUserSettings } from '~/lib/tauri-bindings';
-import { normalizeOvernightMinutes, timeToMinutes } from '~/lib/time';
+import { timeToMinutes } from '~/lib/time';
 import { AppBar, AppFooter, Button, Field } from '~/ui';
 import { TimePeriodInput, type TimePeriodValue } from '~/ui/time-period-input';
 
@@ -23,16 +23,11 @@ function isEndAfterOriginal(
   const origEnd = timeToMinutes(originalEndTime);
   const newEnd = timeToMinutes(newEndTime);
 
-  const { normalizedEnd: normalizedOrig } = normalizeOvernightMinutes(
-    start,
-    origEnd,
-    start,
-  );
-  const { normalizedEnd: normalizedNew } = normalizeOvernightMinutes(
-    start,
-    newEnd,
-    start,
-  );
+  // end < start 일 때만 다음날로 정규화. end == start 는 같은 날 0분 근무로
+  // 취급해야 origEnd == start 인 경우에도 newEnd 와 같은 정규화 축에서 비교됨.
+  const normalizedOrig = origEnd < start ? origEnd + 24 * 60 : origEnd;
+  const normalizedNew = newEnd < start ? newEnd + 24 * 60 : newEnd;
+
   return normalizedNew > normalizedOrig;
 }
 
