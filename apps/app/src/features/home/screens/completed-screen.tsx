@@ -48,7 +48,7 @@ export function CompletedScreen({
       />
       <InfoCard>
         <InfoCardRow
-          label="이번달 누적 월급"
+          label="누적 월급"
           value={formatCurrency(salaryInfo.accumulatedEarnings)}
         />
         <InfoCardDivider />
