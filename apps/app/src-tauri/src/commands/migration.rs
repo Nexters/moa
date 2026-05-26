@@ -115,21 +115,22 @@ pub fn migrate_legacy_workday_files(app: &AppHandle) -> Result<(), String> {
     match build_cache_from_legacy(status, schedule, vacation) {
         Some(cache) => {
             save_workday_cache(app, &cache)?;
+            crate::commands::workday::enqueue_sync_failure(app, &cache, "legacy-migration")?;
             log::info!(
                 "workday cache 마이그레이션 완료: date={}, kind={:?}",
                 cache.date,
                 cache.kind
             );
+
+            // 구 파일 삭제 (실패해도 진행 — 다음 부팅에서 재시도)
+            let _ = std::fs::remove_file(&status_path);
+            let _ = std::fs::remove_file(&schedule_path);
+            let _ = std::fs::remove_file(&vacation_path);
         }
         None => {
-            log::warn!("migrate: 구 파일 파싱 실패 — 변환 없이 정리");
+            log::warn!("migrate: 구 파일 파싱 실패 — 원본 파일 보존");
         }
     }
-
-    // 구 파일 삭제 (실패해도 진행 — 다음 부팅에서 재시도)
-    let _ = std::fs::remove_file(&status_path);
-    let _ = std::fs::remove_file(&schedule_path);
-    let _ = std::fs::remove_file(&vacation_path);
 
     Ok(())
 }
