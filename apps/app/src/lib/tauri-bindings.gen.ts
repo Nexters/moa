@@ -358,6 +358,23 @@ async setTrayTitle(title: string | null) : Promise<Result<null, string>> {
 },
 async notifySettingsChanged() : Promise<void> {
     await TAURI_INVOKE("notify_settings_changed");
+},
+/**
+ * 서버 GET → 로컬 캐시 hydrate.
+ * 
+ * 흐름:
+ * 1. 비로그인 → 로컬 캐시 그대로 반환
+ * 2. 서버 GET 실패(401/네트워크) → 로컬 캐시 fallback
+ * 3. 로컬 `is_dirty=true` → 서버 응답 무시
+ * 4. 그 외 → 서버 응답으로 덮어쓰기 + `workday-changed` emit + ticker 재로드 신호
+ */
+async fetchWorkday(date: string) : Promise<Result<WorkdayCache, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("fetch_workday", { date }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -491,6 +508,15 @@ menubarDisplayMode?: MenubarDisplayMode;
  * Menubar icon theme: light (white) or dark (black)
  */
 menubarIconTheme?: MenubarIconTheme }
+/**
+ * 서버↔로컬 workday 동기화 캐시. 기존 `today-work-status.json` +
+ * `today-work-schedule.json` 두 파일을 대체한다.
+ * 
+ * `is_dirty=true`이면 미동기 로컬 변경이 있어 서버 폴링이 덮어쓸 수 없음.
+ */
+export type WorkdayCache = { date: string; kind: WorkdayKind; clockInTime?: string | null; clockOutTime?: string | null; completed?: boolean; events?: WorkdayCacheEvent[]; isDirty?: boolean }
+export type WorkdayCacheEvent = "PAYDAY" | "PUBLIC_HOLIDAY"
+export type WorkdayKind = "work" | "annual-leave" | "day-off" | "public-holiday"
 
 /** tauri-specta globals **/
 
