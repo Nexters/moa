@@ -12,3 +12,4 @@ pub mod preferences;
 pub mod recovery;
 pub mod terms;
 pub mod user_settings;
+pub mod workday;
