@@ -7,6 +7,7 @@ pub mod app;
 pub mod auth;
 pub mod confetti;
 pub mod menubar;
+pub mod migration;
 pub mod notifications;
 pub mod preferences;
 pub mod recovery;
