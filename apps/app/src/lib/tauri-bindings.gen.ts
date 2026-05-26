@@ -377,6 +377,19 @@ async fetchWorkday(date: string) : Promise<Result<WorkdayCache, string>> {
 }
 },
 /**
+ * 오늘 일정 override 제거.
+ * 설정의 기본 출퇴근 시간이 바뀌면 workday 캐시에 남은 임시 clockIn/Out이
+ * 기본값 적용을 막을 수 있으므로 명시적으로 비운다.
+ */
+async clearWorkdayScheduleOverride(date: string) : Promise<Result<WorkdayCache | null, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("clear_workday_schedule_override", { date }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
  * 사용자 액션 → 로컬 즉시 update + 서버 PUT.
  * 
  * 흐름:

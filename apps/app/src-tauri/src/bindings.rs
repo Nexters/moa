@@ -54,6 +54,7 @@ pub fn generate_bindings() -> Builder<tauri::Wry> {
         salary::notify_settings_changed,
         // Workday sync
         workday::fetch_workday,
+        workday::clear_workday_schedule_override,
         workday::mutate_workday,
     ])
 }

@@ -4,10 +4,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import { MAX_SALARY_AMOUNT } from '~/lib/constants';
 import {
   commands,
+  unwrapResult,
   type SalaryType,
   type UserSettings,
 } from '~/lib/tauri-bindings';
-import { userSettingsQuery } from '~/queries';
+import { getTodayString } from '~/lib/time';
+import { userSettingsQuery, workdayQuery } from '~/queries';
 
 export const SALARY_TYPE_OPTIONS = [
   { value: 'monthly', label: '월급' },
@@ -77,6 +79,10 @@ export function useSettingsForm({
       },
     },
     onSubmit: async ({ value }) => {
+      const scheduleChanged =
+        settings.workStartTime !== value.workStartTime ||
+        settings.workEndTime !== value.workEndTime;
+
       const result = await commands.saveUserSettings({
         ...settings,
         salaryType: value.salaryType,
@@ -94,9 +100,18 @@ export function useSettingsForm({
       await queryClient.invalidateQueries({
         queryKey: userSettingsQuery.all(),
       });
-      // 기존 today-work-schedule.json은 마이그레이션으로 사라졌고,
-      // 새 schedule 정보는 workday/{date}.json에서 관리된다.
-      // settings 변경 후 임시 schedule override 무효화는 다음 fetch_workday가 정렬한다.
+      if (scheduleChanged) {
+        const today = getTodayString();
+        const cleared = unwrapResult(
+          await commands.clearWorkdayScheduleOverride(today),
+        );
+        if (cleared) {
+          queryClient.setQueryData(workdayQuery.byDate(today), cleared);
+        }
+        await queryClient.invalidateQueries({
+          queryKey: workdayQuery.byDate(today),
+        });
+      }
       void commands.notifySettingsChanged();
       void commands.syncSettingsToServer(); // fire-and-forget
       onSuccess?.();

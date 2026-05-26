@@ -1,6 +1,6 @@
 //! MOA 서버 API 클라이언트.
 
-use reqwest::Client;
+use reqwest::{Client, Response};
 use serde::{Deserialize, Serialize};
 
 /// 서버 공통 응답 구조
@@ -18,7 +18,7 @@ pub enum ApiError {
     /// 401 — 토큰 만료 또는 미인증
     Unauthorized,
     /// 기타 서버 에러
-    Server(String),
+    Server { status: u16, message: String },
     /// 네트워크 에러
     Network(String),
 }
@@ -27,9 +27,31 @@ impl std::fmt::Display for ApiError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             ApiError::Unauthorized => write!(f, "인증 만료"),
-            ApiError::Server(msg) => write!(f, "서버 에러: {msg}"),
+            ApiError::Server { status, message } => {
+                write!(f, "서버 에러({status}): {message}")
+            }
             ApiError::Network(msg) => write!(f, "네트워크 에러: {msg}"),
         }
+    }
+}
+
+async fn response_error(resp: Response) -> ApiError {
+    let status = resp.status();
+    if status == 401 {
+        return ApiError::Unauthorized;
+    }
+
+    let message = resp.text().await.unwrap_or_default();
+    ApiError::Server {
+        status: status.as_u16(),
+        message,
+    }
+}
+
+fn missing_content_error(message: &str) -> ApiError {
+    ApiError::Server {
+        status: 200,
+        message: message.to_string(),
     }
 }
 
@@ -329,12 +351,8 @@ impl ApiClient {
             .await
             .map_err(|e| ApiError::Network(e.to_string()))?;
 
-        if resp.status() == 401 {
-            return Err(ApiError::Unauthorized);
-        }
         if !resp.status().is_success() {
-            let text = resp.text().await.unwrap_or_default();
-            return Err(ApiError::Server(text));
+            return Err(response_error(resp).await);
         }
 
         let api_resp: ApiResponse<AuthTokenResponse> = resp
@@ -345,7 +363,7 @@ impl ApiClient {
         api_resp
             .content
             .map(|c| c.access_token)
-            .ok_or_else(|| ApiError::Server("응답에 accessToken 없음".into()))
+            .ok_or_else(|| missing_content_error("응답에 accessToken 없음"))
     }
 
     /// GET /api/v1/onboarding/status
@@ -511,12 +529,8 @@ impl ApiClient {
             .await
             .map_err(|e| ApiError::Network(e.to_string()))?;
 
-        if resp.status() == 401 {
-            return Err(ApiError::Unauthorized);
-        }
         if !resp.status().is_success() {
-            let text = resp.text().await.unwrap_or_default();
-            return Err(ApiError::Server(text));
+            return Err(response_error(resp).await);
         }
 
         let api_resp: ApiResponse<T> = resp
@@ -526,7 +540,7 @@ impl ApiClient {
 
         api_resp
             .content
-            .ok_or_else(|| ApiError::Server("응답에 content 없음".into()))
+            .ok_or_else(|| missing_content_error("응답에 content 없음"))
     }
 
     async fn patch<B: Serialize>(&self, path: &str, token: &str, body: &B) -> Result<(), ApiError> {
@@ -540,12 +554,8 @@ impl ApiClient {
             .await
             .map_err(|e| ApiError::Network(e.to_string()))?;
 
-        if resp.status() == 401 {
-            return Err(ApiError::Unauthorized);
-        }
         if !resp.status().is_success() {
-            let text = resp.text().await.unwrap_or_default();
-            return Err(ApiError::Server(text));
+            return Err(response_error(resp).await);
         }
 
         Ok(())
@@ -567,12 +577,8 @@ impl ApiClient {
             .await
             .map_err(|e| ApiError::Network(e.to_string()))?;
 
-        if resp.status() == 401 {
-            return Err(ApiError::Unauthorized);
-        }
         if !resp.status().is_success() {
-            let text = resp.text().await.unwrap_or_default();
-            return Err(ApiError::Server(text));
+            return Err(response_error(resp).await);
         }
 
         let api_resp: ApiResponse<T> = resp
@@ -582,7 +588,7 @@ impl ApiClient {
 
         api_resp
             .content
-            .ok_or_else(|| ApiError::Server("응답에 content 없음".into()))
+            .ok_or_else(|| missing_content_error("응답에 content 없음"))
     }
 
     async fn post_unit<B: Serialize>(
@@ -601,12 +607,8 @@ impl ApiClient {
             .await
             .map_err(|e| ApiError::Network(e.to_string()))?;
 
-        if resp.status() == 401 {
-            return Err(ApiError::Unauthorized);
-        }
         if !resp.status().is_success() {
-            let text = resp.text().await.unwrap_or_default();
-            return Err(ApiError::Server(text));
+            return Err(response_error(resp).await);
         }
 
         Ok(())
@@ -628,12 +630,8 @@ impl ApiClient {
             .await
             .map_err(|e| ApiError::Network(e.to_string()))?;
 
-        if resp.status() == 401 {
-            return Err(ApiError::Unauthorized);
-        }
         if !resp.status().is_success() {
-            let text = resp.text().await.unwrap_or_default();
-            return Err(ApiError::Server(text));
+            return Err(response_error(resp).await);
         }
 
         Ok(())
@@ -659,12 +657,8 @@ impl ApiClient {
             .await
             .map_err(|e| ApiError::Network(e.to_string()))?;
 
-        if resp.status() == 401 {
-            return Err(ApiError::Unauthorized);
-        }
         if !resp.status().is_success() {
-            let text = resp.text().await.unwrap_or_default();
-            return Err(ApiError::Server(text));
+            return Err(response_error(resp).await);
         }
 
         let api_resp: ApiResponse<T> = resp
@@ -674,7 +668,7 @@ impl ApiClient {
 
         api_resp
             .content
-            .ok_or_else(|| ApiError::Server("응답에 content 없음".into()))
+            .ok_or_else(|| missing_content_error("응답에 content 없음"))
     }
 }
 

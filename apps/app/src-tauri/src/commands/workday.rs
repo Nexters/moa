@@ -233,7 +233,11 @@ fn generate_id() -> String {
 }
 
 /// 큐에 항목 추가. 같은 날짜 항목이 있으면 교체(attempts 누적).
-fn enqueue_sync_failure(app: &AppHandle, cache: &WorkdayCache, error: &str) -> Result<(), String> {
+pub(crate) fn enqueue_sync_failure(
+    app: &AppHandle,
+    cache: &WorkdayCache,
+    error: &str,
+) -> Result<(), String> {
     let mut queue = load_sync_queue(app);
     let existing_attempts = queue
         .iter()
@@ -253,6 +257,67 @@ fn enqueue_sync_failure(app: &AppHandle, cache: &WorkdayCache, error: &str) -> R
     });
 
     save_sync_queue(app, &queue)
+}
+
+fn is_retryable_server_error(status: u16) -> bool {
+    status >= 500
+}
+
+async fn sync_dirty_workday_cache(
+    app: &AppHandle,
+    date: &str,
+    cache: &mut WorkdayCache,
+) -> Result<(), String> {
+    let token = match auth::get_access_token(app) {
+        Some(t) => t,
+        None => {
+            log::info!("sync_dirty_workday_cache: 비로그인 ({date}) — 큐 적재");
+            enqueue_sync_failure(app, cache, "no-token")?;
+            return Ok(());
+        }
+    };
+
+    let base_url = std::env::var("MOA_API_BASE_URL")
+        .unwrap_or_else(|_| "https://www.moa-official.kr".to_string());
+    let api = ApiClient::new(&base_url);
+    let req = cache_to_upsert(cache);
+
+    match api.put_workday(&token, date, &req).await {
+        Ok(()) => {
+            cache.is_dirty = false;
+            save_workday_cache(app, cache)?;
+            log::debug!("sync_dirty_workday_cache 성공 ({date})");
+        }
+        Err(ApiError::Unauthorized) => {
+            log::info!("sync_dirty_workday_cache: 401 ({date}) — 토큰 clear + 큐 적재");
+            auth::clear_auth_token(app);
+            enqueue_sync_failure(app, cache, "unauthorized")?;
+        }
+        Err(ApiError::Server { status, message }) if !is_retryable_server_error(status) => {
+            log::warn!("sync_dirty_workday_cache: 서버 4xx ({date}) — 서버 상태로 복원: {message}");
+            match api.get_workday(&token, date).await {
+                Ok(response) => {
+                    *cache = response_to_cache(response);
+                    save_workday_cache(app, cache)?;
+                    salary::notify_settings_changed();
+                    let _ = app.emit("workday-changed", date);
+                }
+                Err(e) => {
+                    log::warn!(
+                        "sync_dirty_workday_cache: 4xx 복원 GET 실패 ({date}) — 다음 polling에 위임: {e}"
+                    );
+                    cache.is_dirty = false;
+                    save_workday_cache(app, cache)?;
+                }
+            }
+        }
+        Err(e) => {
+            log::warn!("sync_dirty_workday_cache: 네트워크/5xx ({date}) — 큐 적재: {e}");
+            enqueue_sync_failure(app, cache, &format!("{e}"))?;
+        }
+    }
+
+    Ok(())
 }
 
 /// 큐의 모든 항목 재전송 시도.
@@ -383,19 +448,52 @@ pub async fn fetch_workday(app: AppHandle, date: String) -> Result<WorkdayCache,
     };
 
     let server_cache = response_to_cache(response);
+    let local_cache = load_workday_cache(&app, &date)?;
 
-    if let Some(local) = load_workday_cache(&app, &date)? {
+    if let Some(local) = &local_cache {
         if local.is_dirty {
             log::info!("fetch_workday: 로컬 dirty ({date}) — 서버 응답 무시");
-            return Ok(local);
+            return Ok(local.clone());
         }
     }
 
-    save_workday_cache(&app, &server_cache)?;
-    let _ = app.emit("workday-changed", &date);
-    salary::notify_settings_changed();
+    let changed = local_cache.as_ref() != Some(&server_cache);
+    if changed {
+        save_workday_cache(&app, &server_cache)?;
+        let _ = app.emit("workday-changed", &date);
+        salary::notify_settings_changed();
+    }
 
     Ok(server_cache)
+}
+
+/// 오늘 일정 override 제거.
+/// 설정의 기본 출퇴근 시간이 바뀌면 workday 캐시에 남은 임시 clockIn/Out이
+/// 기본값 적용을 막을 수 있으므로 명시적으로 비운다.
+#[tauri::command]
+#[specta::specta]
+pub async fn clear_workday_schedule_override(
+    app: AppHandle,
+    date: String,
+) -> Result<Option<WorkdayCache>, String> {
+    let Some(mut cache) = load_workday_cache(&app, &date)? else {
+        return Ok(None);
+    };
+
+    if cache.clock_in_time.is_none() && cache.clock_out_time.is_none() {
+        return Ok(Some(cache));
+    }
+
+    cache.clock_in_time = None;
+    cache.clock_out_time = None;
+    cache.is_dirty = true;
+    save_workday_cache(&app, &cache)?;
+    salary::notify_settings_changed();
+    let _ = app.emit("workday-changed", &date);
+
+    sync_dirty_workday_cache(&app, &date, &mut cache).await?;
+
+    Ok(Some(cache))
 }
 
 /// 사용자 액션 → 로컬 즉시 update + 서버 PUT.
@@ -440,40 +538,7 @@ pub async fn mutate_workday(
     let _ = app.emit("workday-changed", &date);
 
     // 2. 서버 PUT
-    let token = match auth::get_access_token(&app) {
-        Some(t) => t,
-        None => {
-            log::info!("mutate_workday: 비로그인 ({date}) — 큐 적재 후 다음 로그인 후 재시도");
-            let _ = enqueue_sync_failure(&app, &cache, "no-token");
-            return Ok(cache);
-        }
-    };
-
-    let base_url = std::env::var("MOA_API_BASE_URL")
-        .unwrap_or_else(|_| "https://www.moa-official.kr".to_string());
-    let api = ApiClient::new(&base_url);
-    let req = cache_to_upsert(&cache);
-
-    match api.put_workday(&token, &date, &req).await {
-        Ok(()) => {
-            cache.is_dirty = false;
-            save_workday_cache(&app, &cache)?;
-            log::debug!("mutate_workday 성공 ({date})");
-        }
-        Err(ApiError::Unauthorized) => {
-            log::info!("mutate_workday: 401 ({date}) — 토큰 clear + 큐 적재");
-            auth::clear_auth_token(&app);
-            let _ = enqueue_sync_failure(&app, &cache, "unauthorized");
-        }
-        Err(ApiError::Server(msg)) => {
-            log::warn!("mutate_workday: 서버 4xx ({date}) — 다음 polling이 GET으로 복원: {msg}");
-            // 4xx는 큐 적재하지 않음 — 재시도해도 동일 에러. 다음 GET이 정렬.
-        }
-        Err(e) => {
-            log::warn!("mutate_workday: 네트워크/5xx ({date}) — 큐 적재: {e}");
-            let _ = enqueue_sync_failure(&app, &cache, &format!("{e}"));
-        }
-    }
+    sync_dirty_workday_cache(&app, &date, &mut cache).await?;
 
     Ok(cache)
 }
