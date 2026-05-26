@@ -244,6 +244,11 @@ pub struct WorkdayUpsertRequest {
     pub clock_out_time: Option<String>,
 }
 
+/// PATCH /workdays/{date} 전용 — 조퇴/연장 시 clockOutTime만 수정.
+///
+/// 현재 mutate_workday는 일관성을 위해 PUT만 사용한다. PATCH는 향후 효율 최적화나
+/// 별도 액션(조퇴 전용 UI 등)을 위해 유지된다.
+#[allow(dead_code)]
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WorkdayEditRequest {
@@ -479,6 +484,7 @@ impl ApiClient {
     }
 
     /// PATCH /api/v1/workdays/{date} — 퇴근시간만 수정 (조퇴/연장)
+    #[allow(dead_code)]
     pub async fn patch_workday(
         &self,
         token: &str,

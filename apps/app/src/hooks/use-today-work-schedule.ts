@@ -1,81 +1,24 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useWorkday } from './use-workday';
 
-import { commands, unwrapResult } from '~/lib/tauri-bindings';
-import { getTodayString } from '~/lib/time';
-import { emergencyDataQuery, emergencyDataQueryOptions } from '~/queries';
-
-const SCHEDULE_FILENAME = 'today-work-schedule';
-
-interface TodayWorkScheduleData {
-  date: string;
-  workStartTime: string;
-  workEndTime: string;
-}
-
+/**
+ * @deprecated 새 코드는 `useWorkday`를 직접 사용하세요.
+ * 이 hook은 기존 호출처 호환을 위한 adapter이며 내부적으로 `useWorkday`를 호출합니다.
+ *
+ * See: apps/app/docs/patterns/server-sync.md
+ */
 export interface TodayWorkSchedule {
   workStartTime: string;
   workEndTime: string;
 }
 
 export function useTodayWorkSchedule() {
-  const queryClient = useQueryClient();
-  const today = getTodayString();
-
-  const { data: rawData, isLoading } = useQuery(
-    emergencyDataQueryOptions.file<TodayWorkScheduleData>(SCHEDULE_FILENAME),
-  );
-
-  const schedule: TodayWorkSchedule | null =
-    rawData && rawData.date === today
-      ? {
-          workStartTime: rawData.workStartTime,
-          workEndTime: rawData.workEndTime,
-        }
-      : null;
-
-  const saveMutation = useMutation({
-    mutationFn: async ({
-      startTime,
-      endTime,
-    }: {
-      startTime: string;
-      endTime: string;
-    }) => {
-      const today = getTodayString();
-      unwrapResult(
-        await commands.saveEmergencyData(SCHEDULE_FILENAME, {
-          date: today,
-          workStartTime: startTime,
-          workEndTime: endTime,
-        }),
-      );
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: emergencyDataQuery.file(SCHEDULE_FILENAME),
-      });
-      void commands.notifySettingsChanged();
-    },
-  });
-
-  const clearMutation = useMutation({
-    mutationFn: async () => {
-      unwrapResult(await commands.saveEmergencyData(SCHEDULE_FILENAME, null));
-    },
-    onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: emergencyDataQuery.file(SCHEDULE_FILENAME),
-      });
-      void commands.notifySettingsChanged();
-    },
-  });
-
+  const { schedule, isLoading, isSaving, saveSchedule, clearSchedule } =
+    useWorkday();
   return {
     schedule,
     isLoading,
-    isSaving: saveMutation.isPending,
-    saveSchedule: (startTime: string, endTime: string) =>
-      saveMutation.mutateAsync({ startTime, endTime }),
-    clearSchedule: () => clearMutation.mutateAsync(),
+    isSaving,
+    saveSchedule,
+    clearSchedule,
   };
 }

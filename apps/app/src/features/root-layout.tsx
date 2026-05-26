@@ -5,7 +5,7 @@ import { useEffect, useRef } from 'react';
 
 import { UpdateAlertDialog } from '~/lib/check-for-updates';
 import { commands, unwrapResult } from '~/lib/tauri-bindings';
-import { userSettingsQuery } from '~/queries';
+import { userSettingsQuery, workdayQuery } from '~/queries';
 import { router } from '~/router';
 import { AppToaster } from '~/ui';
 
@@ -72,6 +72,19 @@ export function RootLayout() {
     const unlisten = listen('user-settings-changed', () => {
       void queryClient.invalidateQueries({
         queryKey: userSettingsQuery.all(),
+      });
+    });
+    return () => {
+      void unlisten.then((fn) => fn());
+    };
+  }, [queryClient]);
+
+  // Workday cache 변경 알림 (mutate_workday 또는 fetch_workday 후 emit)
+  useEffect(() => {
+    const unlisten = listen<string>('workday-changed', (event) => {
+      const date = event.payload;
+      void queryClient.invalidateQueries({
+        queryKey: workdayQuery.byDate(date),
       });
     });
     return () => {
