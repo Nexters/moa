@@ -801,6 +801,12 @@ pub async fn sync_from_server(app: AppHandle) -> Result<(), String> {
         log::debug!("서버 → 로컬 sync: 변경 없음");
     }
 
+    // workday 동기화 (실패해도 다른 sync 진행 — fetch_workday가 내부 fallback 처리)
+    let today = chrono::Local::now().format("%Y-%m-%d").to_string();
+    if let Err(e) = crate::commands::workday::fetch_workday(app.clone(), today).await {
+        log::warn!("fetch_workday 실패 — 다른 sync는 정상 진행: {e}");
+    }
+
     Ok(())
 }
 

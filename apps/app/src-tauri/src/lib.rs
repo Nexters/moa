@@ -126,6 +126,12 @@ pub fn run() {
                 app.package_info().name
             );
 
+            // Legacy recovery 파일 → workday/{date}.json 1회 마이그레이션
+            // 실패해도 앱 시작은 진행 (다음 부팅에서 재시도)
+            if let Err(e) = commands::migration::migrate_legacy_workday_files(app.handle()) {
+                log::warn!("workday 마이그레이션 실패: {e}");
+            }
+
             // 저장된 인증 토큰 복원
             if let Some(state) = auth::load_auth_token(app.handle()) {
                 let store = app.state::<auth::AuthStore>();
