@@ -176,6 +176,82 @@ pub async fn fetch_workday(app: AppHandle, date: String) -> Result<WorkdayCache,
     Ok(server_cache)
 }
 
+/// 사용자 액션 → 로컬 즉시 update + 서버 PUT.
+///
+/// 흐름:
+/// 1. 로컬 cache 즉시 write + `is_dirty=true` (낙관적)
+/// 2. `notify_settings_changed` + `workday-changed` emit (ticker/UI 즉시 반영)
+/// 3. 서버 PUT
+///    - 성공 → `is_dirty=false`
+///    - 4xx → 로컬 dirty 유지 (다음 polling이 GET으로 복원)
+///    - 5xx/네트워크 → 큐 적재 (Task: retry queue 단계에서 구현)
+///
+/// `events`는 변경 안 함 — 기존 cache의 events를 보존. 서버가 자동 관리하는
+/// PUBLIC_HOLIDAY/PAYDAY 등은 다음 polling으로 정렬된다.
+#[tauri::command]
+#[specta::specta]
+pub async fn mutate_workday(
+    app: AppHandle,
+    date: String,
+    kind: WorkdayKind,
+    clock_in_time: Option<String>,
+    clock_out_time: Option<String>,
+    completed: bool,
+) -> Result<WorkdayCache, String> {
+    // 기존 events 보존
+    let prior_events = load_workday_cache(&app, &date)?
+        .map(|c| c.events)
+        .unwrap_or_default();
+
+    // 1. 낙관적 local write
+    let mut cache = WorkdayCache {
+        date: date.clone(),
+        kind,
+        clock_in_time,
+        clock_out_time,
+        completed,
+        events: prior_events,
+        is_dirty: true,
+    };
+    save_workday_cache(&app, &cache)?;
+    salary::notify_settings_changed();
+    let _ = app.emit("workday-changed", &date);
+
+    // 2. 서버 PUT
+    let token = match auth::get_access_token(&app) {
+        Some(t) => t,
+        None => {
+            log::info!("mutate_workday: 비로그인 — 큐 적재 보류 (retry queue 단계에서 구현)");
+            return Ok(cache);
+        }
+    };
+
+    let base_url = std::env::var("MOA_API_BASE_URL")
+        .unwrap_or_else(|_| "https://www.moa-official.kr".to_string());
+    let api = ApiClient::new(&base_url);
+    let req = cache_to_upsert(&cache);
+
+    match api.put_workday(&token, &date, &req).await {
+        Ok(()) => {
+            cache.is_dirty = false;
+            save_workday_cache(&app, &cache)?;
+            log::debug!("mutate_workday 성공 ({date})");
+        }
+        Err(ApiError::Unauthorized) => {
+            log::info!("mutate_workday: 401 — 토큰 clear + 큐 적재 보류");
+            auth::clear_auth_token(&app);
+        }
+        Err(ApiError::Server(msg)) => {
+            log::warn!("mutate_workday: 서버 4xx ({date}) — 다음 polling이 GET으로 복원: {msg}");
+        }
+        Err(e) => {
+            log::warn!("mutate_workday: 네트워크/5xx ({date}) — 큐 적재 보류: {e}");
+        }
+    }
+
+    Ok(cache)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -375,6 +375,28 @@ async fetchWorkday(date: string) : Promise<Result<WorkdayCache, string>> {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+/**
+ * 사용자 액션 → 로컬 즉시 update + 서버 PUT.
+ * 
+ * 흐름:
+ * 1. 로컬 cache 즉시 write + `is_dirty=true` (낙관적)
+ * 2. `notify_settings_changed` + `workday-changed` emit (ticker/UI 즉시 반영)
+ * 3. 서버 PUT
+ * - 성공 → `is_dirty=false`
+ * - 4xx → 로컬 dirty 유지 (다음 polling이 GET으로 복원)
+ * - 5xx/네트워크 → 큐 적재 (Task: retry queue 단계에서 구현)
+ * 
+ * `events`는 변경 안 함 — 기존 cache의 events를 보존. 서버가 자동 관리하는
+ * PUBLIC_HOLIDAY/PAYDAY 등은 다음 polling으로 정렬된다.
+ */
+async mutateWorkday(date: string, kind: WorkdayKind, clockInTime: string | null, clockOutTime: string | null, completed: boolean) : Promise<Result<WorkdayCache, string>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("mutate_workday", { date, kind, clockInTime, clockOutTime, completed }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
