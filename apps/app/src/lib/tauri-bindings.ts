@@ -35,6 +35,9 @@ export type {
   TermAgreementInput,
   TermItem,
   UserSettings,
+  WorkdayCache,
+  WorkdayCacheEvent,
+  WorkdayKind,
 } from './tauri-bindings.gen';
 
 /**
