@@ -472,12 +472,12 @@ pub async fn cancel_social_login() -> Result<(), String> {
 #[tauri::command]
 #[specta::specta]
 pub async fn logout(app: AppHandle) -> Result<(), String> {
-    auth::clear_auth_token(&app);
     // 다른 사용자가 같은 디바이스에 로그인했을 때 이전 사용자의 미동기 액션이
     // 전송되지 않도록 큐 클리어
     if let Err(e) = crate::commands::workday::clear_sync_queue(&app) {
         log::warn!("로그아웃 시 sync queue 클리어 실패: {e}");
     }
+    auth::clear_auth_token(&app);
     log::info!("로그아웃 완료");
     Ok(())
 }
