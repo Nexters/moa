@@ -319,9 +319,7 @@ fn is_non_working_status(work_status: &WorkStatus) -> bool {
 /// `kind=Work` → status=None (정상 근무 경로). 그 외 → 해당 status.
 /// `clock_in_time`/`clock_out_time`이 둘 다 있으면 schedule override.
 fn load_workday_overrides(recovery_dir: &Path, today: &str) -> Option<TickerOverrides> {
-    let path = recovery_dir
-        .join("workday")
-        .join(format!("{today}.json"));
+    let path = recovery_dir.join("workday").join(format!("{today}.json"));
     let contents = std::fs::read_to_string(path).ok()?;
     let cache: crate::types::WorkdayCache = serde_json::from_str(&contents).ok()?;
 
@@ -480,7 +478,6 @@ fn load_settings(app: &AppHandle) -> Option<UserSettings> {
     let contents = std::fs::read_to_string(&path).ok()?;
     serde_json::from_str(&contents).ok()
 }
-
 
 // ============================================================================
 // Tests

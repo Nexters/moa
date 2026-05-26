@@ -530,7 +530,11 @@ mod tests {
 
     #[test]
     fn status_completed_sets_completed_flag() {
-        let c = response_to_cache(response(WorkdayType::Work, WorkdayStatus::Completed, vec![]));
+        let c = response_to_cache(response(
+            WorkdayType::Work,
+            WorkdayStatus::Completed,
+            vec![],
+        ));
         assert!(c.completed);
     }
 

@@ -798,7 +798,8 @@ mod tests {
             clock_in_time: Some("09:00".into()),
             clock_out_time: Some("18:00".into()),
         };
-        let parsed: serde_json::Value = serde_json::from_str(&serde_json::to_string(&req).unwrap()).unwrap();
+        let parsed: serde_json::Value =
+            serde_json::from_str(&serde_json::to_string(&req).unwrap()).unwrap();
         assert_eq!(parsed["type"], "WORK");
         assert_eq!(parsed["clockInTime"], "09:00");
         assert_eq!(parsed["clockOutTime"], "18:00");

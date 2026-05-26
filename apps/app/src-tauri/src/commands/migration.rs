@@ -200,8 +200,7 @@ mod tests {
 
     #[test]
     fn schedule_only_falls_back_to_work_kind() {
-        let cache =
-            build_cache_from_legacy(None, Some(schedule("2026-05-25")), None).unwrap();
+        let cache = build_cache_from_legacy(None, Some(schedule("2026-05-25")), None).unwrap();
         assert_eq!(cache.kind, WorkdayKind::Work);
         assert_eq!(cache.clock_in_time.as_deref(), Some("09:00"));
     }

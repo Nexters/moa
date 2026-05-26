@@ -20,10 +20,7 @@ export interface UseWorkdayResult {
   isSaving: boolean;
   saveStatus: (status: WorkdayStatus) => Promise<WorkdayCache>;
   clearStatus: () => Promise<WorkdayCache>;
-  saveSchedule: (
-    startTime: string,
-    endTime: string,
-  ) => Promise<WorkdayCache>;
+  saveSchedule: (startTime: string, endTime: string) => Promise<WorkdayCache>;
   clearSchedule: () => Promise<WorkdayCache>;
   setCompleted: (completed: boolean) => Promise<WorkdayCache>;
 }
@@ -73,7 +70,10 @@ export function useWorkday(): UseWorkdayResult {
 
   const schedule =
     workday?.clockInTime != null && workday?.clockOutTime != null
-      ? { workStartTime: workday.clockInTime, workEndTime: workday.clockOutTime }
+      ? {
+          workStartTime: workday.clockInTime,
+          workEndTime: workday.clockOutTime,
+        }
       : null;
 
   const completed = workday?.completed ?? false;
