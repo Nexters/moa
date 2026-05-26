@@ -10,7 +10,10 @@
 //! Write sync(`mutate_workday`)와 retry queue는 후속 단계에서 추가된다.
 
 use std::path::PathBuf;
+use std::time::{SystemTime, UNIX_EPOCH};
 
+use serde::{Deserialize, Serialize};
+use specta::Type;
 use tauri::{AppHandle, Emitter, Manager};
 
 use crate::api_client::{
@@ -20,6 +23,75 @@ use crate::api_client::{
 use crate::auth;
 use crate::salary;
 use crate::types::{WorkdayCache, WorkdayCacheEvent, WorkdayKind};
+
+const SYNC_QUEUE_FILENAME: &str = "sync-queue.json";
+const MAX_RETRIES: u32 = 5;
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "kebab-case")]
+pub enum SyncQueueKind {
+    PutWorkday,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct SyncQueueEntry {
+    pub id: String,
+    pub kind: SyncQueueKind,
+    pub date: String,
+    pub payload: SerializedUpsert,
+    pub attempts: u32,
+    pub last_error: Option<String>,
+}
+
+/// `WorkdayUpsertRequest`의 직렬화 가능 미러.
+/// (api_client::WorkdayUpsertRequest는 Serialize만 derive해 큐 저장 불가)
+#[derive(Debug, Clone, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct SerializedUpsert {
+    #[serde(rename = "type")]
+    pub workday_type: WorkdayTypeMirror,
+    pub clock_in_time: Option<String>,
+    pub clock_out_time: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type, PartialEq)]
+#[serde(rename_all = "UPPERCASE")]
+pub enum WorkdayTypeMirror {
+    Work,
+    Vacation,
+    None,
+}
+
+impl From<&WorkdayUpsertRequest> for SerializedUpsert {
+    fn from(req: &WorkdayUpsertRequest) -> Self {
+        let workday_type = match req.workday_type {
+            WorkdayType::Work => WorkdayTypeMirror::Work,
+            WorkdayType::Vacation => WorkdayTypeMirror::Vacation,
+            WorkdayType::None => WorkdayTypeMirror::None,
+        };
+        Self {
+            workday_type,
+            clock_in_time: req.clock_in_time.clone(),
+            clock_out_time: req.clock_out_time.clone(),
+        }
+    }
+}
+
+impl SerializedUpsert {
+    fn to_request(&self) -> WorkdayUpsertRequest {
+        let workday_type = match self.workday_type {
+            WorkdayTypeMirror::Work => WorkdayType::Work,
+            WorkdayTypeMirror::Vacation => WorkdayType::Vacation,
+            WorkdayTypeMirror::None => WorkdayType::None,
+        };
+        WorkdayUpsertRequest {
+            workday_type,
+            clock_in_time: self.clock_in_time.clone(),
+            clock_out_time: self.clock_out_time.clone(),
+        }
+    }
+}
 
 fn workday_dir(app: &AppHandle) -> Result<PathBuf, String> {
     let app_data_dir = app
@@ -111,6 +183,156 @@ pub fn cache_to_upsert(cache: &WorkdayCache) -> WorkdayUpsertRequest {
         clock_in_time: cache.clock_in_time.clone(),
         clock_out_time: cache.clock_out_time.clone(),
     }
+}
+
+// ============================================================================
+// Retry queue
+// ============================================================================
+
+fn sync_queue_path(app: &AppHandle) -> Result<PathBuf, String> {
+    let dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("app data dir 조회 실패: {e}"))?
+        .join("recovery");
+    std::fs::create_dir_all(&dir).map_err(|e| format!("recovery dir 생성 실패: {e}"))?;
+    Ok(dir.join(SYNC_QUEUE_FILENAME))
+}
+
+fn load_sync_queue(app: &AppHandle) -> Vec<SyncQueueEntry> {
+    let Ok(path) = sync_queue_path(app) else {
+        return vec![];
+    };
+    if !path.exists() {
+        return vec![];
+    }
+    std::fs::read_to_string(&path)
+        .ok()
+        .and_then(|s| serde_json::from_str(&s).ok())
+        .unwrap_or_default()
+}
+
+fn save_sync_queue(app: &AppHandle, queue: &[SyncQueueEntry]) -> Result<(), String> {
+    let path = sync_queue_path(app)?;
+    let content =
+        serde_json::to_string_pretty(queue).map_err(|e| format!("큐 직렬화 실패: {e}"))?;
+    let temp = path.with_extension("tmp");
+    std::fs::write(&temp, content).map_err(|e| format!("큐 임시 write 실패: {e}"))?;
+    std::fs::rename(&temp, &path).map_err(|e| {
+        let _ = std::fs::remove_file(&temp);
+        format!("큐 rename 실패: {e}")
+    })?;
+    Ok(())
+}
+
+fn generate_id() -> String {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|d| format!("{}", d.as_nanos()))
+        .unwrap_or_else(|_| "unknown".to_string())
+}
+
+/// 큐에 항목 추가. 같은 날짜 항목이 있으면 교체(attempts 누적).
+fn enqueue_sync_failure(app: &AppHandle, cache: &WorkdayCache, error: &str) -> Result<(), String> {
+    let mut queue = load_sync_queue(app);
+    let existing_attempts = queue
+        .iter()
+        .find(|e| e.date == cache.date)
+        .map(|e| e.attempts)
+        .unwrap_or(0);
+    queue.retain(|e| e.date != cache.date);
+
+    let payload = SerializedUpsert::from(&cache_to_upsert(cache));
+    queue.push(SyncQueueEntry {
+        id: generate_id(),
+        kind: SyncQueueKind::PutWorkday,
+        date: cache.date.clone(),
+        payload,
+        attempts: existing_attempts,
+        last_error: Some(error.to_string()),
+    });
+
+    save_sync_queue(app, &queue)
+}
+
+/// 큐의 모든 항목 재전송 시도.
+/// - 성공 → 큐에서 제거 + 해당 cache `is_dirty=false`
+/// - 401 → 큐 보존, 다음 로그인 후 재시도
+/// - 최대 시도(`MAX_RETRIES`) 초과 → 큐에서 제거 (사용자 알림은 후속 PR)
+pub async fn flush_sync_queue(app: &AppHandle) -> Result<(), String> {
+    let token = match auth::get_access_token(app) {
+        Some(t) => t,
+        None => {
+            log::debug!("flush_sync_queue: 비로그인 — skip");
+            return Ok(());
+        }
+    };
+
+    let queue = load_sync_queue(app);
+    if queue.is_empty() {
+        return Ok(());
+    }
+    log::info!("flush_sync_queue: {} entries", queue.len());
+
+    let base_url = std::env::var("MOA_API_BASE_URL")
+        .unwrap_or_else(|_| "https://www.moa-official.kr".to_string());
+    let api = ApiClient::new(&base_url);
+
+    let mut remaining: Vec<SyncQueueEntry> = Vec::new();
+    let mut auth_failure = false;
+    for mut entry in queue {
+        if auth_failure {
+            remaining.push(entry);
+            continue;
+        }
+        let request = entry.payload.to_request();
+        match api.put_workday(&token, &entry.date, &request).await {
+            Ok(()) => {
+                log::info!("flush_sync_queue: PUT {} 성공", entry.date);
+                if let Ok(Some(mut cache)) = load_workday_cache(app, &entry.date) {
+                    cache.is_dirty = false;
+                    let _ = save_workday_cache(app, &cache);
+                }
+            }
+            Err(ApiError::Unauthorized) => {
+                log::info!("flush_sync_queue: 401 — 토큰 clear, 큐 보존");
+                auth::clear_auth_token(app);
+                auth_failure = true;
+                remaining.push(entry);
+            }
+            Err(e) => {
+                entry.attempts += 1;
+                entry.last_error = Some(format!("{e}"));
+                if entry.attempts >= MAX_RETRIES {
+                    log::warn!(
+                        "flush_sync_queue: {} 최대 시도({}) 초과 — 큐에서 제거",
+                        entry.date,
+                        MAX_RETRIES
+                    );
+                } else {
+                    log::warn!(
+                        "flush_sync_queue: {} 실패 ({}/{}회): {e}",
+                        entry.date,
+                        entry.attempts,
+                        MAX_RETRIES
+                    );
+                    remaining.push(entry);
+                }
+            }
+        }
+    }
+
+    save_sync_queue(app, &remaining)
+}
+
+/// 로그아웃 시 큐 클리어 — 다른 사용자가 같은 디바이스에 로그인했을 때
+/// 이전 사용자의 미동기 액션이 전송되지 않도록.
+pub fn clear_sync_queue(app: &AppHandle) -> Result<(), String> {
+    let path = sync_queue_path(app)?;
+    if path.exists() {
+        std::fs::remove_file(&path).map_err(|e| format!("큐 삭제 실패: {e}"))?;
+    }
+    Ok(())
 }
 
 fn empty_cache(date: &str) -> WorkdayCache {
@@ -221,7 +443,8 @@ pub async fn mutate_workday(
     let token = match auth::get_access_token(&app) {
         Some(t) => t,
         None => {
-            log::info!("mutate_workday: 비로그인 — 큐 적재 보류 (retry queue 단계에서 구현)");
+            log::info!("mutate_workday: 비로그인 ({date}) — 큐 적재 후 다음 로그인 후 재시도");
+            let _ = enqueue_sync_failure(&app, &cache, "no-token");
             return Ok(cache);
         }
     };
@@ -238,14 +461,17 @@ pub async fn mutate_workday(
             log::debug!("mutate_workday 성공 ({date})");
         }
         Err(ApiError::Unauthorized) => {
-            log::info!("mutate_workday: 401 — 토큰 clear + 큐 적재 보류");
+            log::info!("mutate_workday: 401 ({date}) — 토큰 clear + 큐 적재");
             auth::clear_auth_token(&app);
+            let _ = enqueue_sync_failure(&app, &cache, "unauthorized");
         }
         Err(ApiError::Server(msg)) => {
             log::warn!("mutate_workday: 서버 4xx ({date}) — 다음 polling이 GET으로 복원: {msg}");
+            // 4xx는 큐 적재하지 않음 — 재시도해도 동일 에러. 다음 GET이 정렬.
         }
         Err(e) => {
-            log::warn!("mutate_workday: 네트워크/5xx ({date}) — 큐 적재 보류: {e}");
+            log::warn!("mutate_workday: 네트워크/5xx ({date}) — 큐 적재: {e}");
+            let _ = enqueue_sync_failure(&app, &cache, &format!("{e}"));
         }
     }
 
