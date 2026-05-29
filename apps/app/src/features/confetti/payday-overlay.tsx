@@ -85,7 +85,7 @@ export function PaydayOverlay({
         </p>
 
         <p className="c1-400 text-text-low mt-2 text-center">
-          누적 금액은 입력한 월급/연봉을 기준으로 계산돼요.
+          월급액은 입력한 월급/연봉을 기준으로 계산돼요.
         </p>
       </div>
     </div>
