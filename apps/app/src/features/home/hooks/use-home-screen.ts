@@ -68,6 +68,7 @@ export type HomeMainScreen =
       settings: OnboardedUserSettings;
       salaryInfo: SalaryInfo;
       todaySchedule: TodayWorkSchedule | null;
+      onAdjustSchedule: (startTime: string, endTime: string) => Promise<void>;
       onStillWorking?: () => void;
     };
 
@@ -525,6 +526,7 @@ function resolveMainScreen(params: ResolveParams): HomeMainScreen {
           settings,
           salaryInfo,
           todaySchedule,
+          onAdjustSchedule: onAdjustScheduleFromCompleted,
           ...(isBeforeOriginalEnd && { onStillWorking }),
         };
       }

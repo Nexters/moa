@@ -19,7 +19,12 @@ import { ExtendWorkScreen } from './screens/extend-work-screen';
 import { PostCompletedScreen } from './screens/post-completed-screen';
 import { WorkingScreen } from './screens/working-screen';
 
-type AdjustMode = null | 'before-work' | 'working' | 'completed';
+type AdjustMode =
+  | null
+  | 'before-work'
+  | 'working'
+  | 'completed'
+  | 'post-completed';
 
 export function Home() {
   const navigate = useNavigate();
@@ -38,6 +43,12 @@ export function Home() {
       setAdjustMode(null);
     }
     if (adjustMode === 'completed' && mainScreen.screen !== 'completed') {
+      setAdjustMode(null);
+    }
+    if (
+      adjustMode === 'post-completed' &&
+      mainScreen.screen !== 'post-completed'
+    ) {
       setAdjustMode(null);
     }
     if (isExtendingWork && mainScreen.screen !== 'completed') {
@@ -99,6 +110,20 @@ export function Home() {
     );
   }
 
+  if (
+    adjustMode === 'post-completed' &&
+    mainScreen.screen === 'post-completed'
+  ) {
+    return (
+      <AdjustTodayScheduleScreen
+        settings={mainScreen.settings}
+        todaySchedule={mainScreen.todaySchedule}
+        onBack={() => setAdjustMode(null)}
+        onSave={mainScreen.onAdjustSchedule}
+      />
+    );
+  }
+
   if (isExtendingWork && mainScreen.screen === 'completed') {
     return (
       <ExtendWorkScreen
@@ -146,7 +171,10 @@ export function Home() {
           />
         )}
         {mainScreen.screen === 'post-completed' && (
-          <PostCompletedScreen {...mainScreen} />
+          <PostCompletedScreen
+            {...mainScreen}
+            onAdjustWorkTime={() => setAdjustMode('post-completed')}
+          />
         )}
       </div>
     </main>
