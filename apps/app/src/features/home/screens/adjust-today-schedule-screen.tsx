@@ -1,14 +1,11 @@
 import { useState } from 'react';
 
-import type { TodayWorkSchedule } from '~/hooks/use-today-work-schedule';
-import type { TodayWorkStatus } from '~/hooks/use-today-work-status';
+import type { WorkdaySchedule, WorkdayStatus } from '~/hooks/use-workday';
 import type { OnboardedUserSettings } from '~/lib/tauri-bindings';
 import { AppBar, AppFooter, Button, Field, ToggleInput } from '~/ui';
 import { TimePeriodInput, type TimePeriodValue } from '~/ui/time-period-input';
 
-type ScheduleType =
-  | 'work'
-  | Extract<TodayWorkStatus, 'annual-leave' | 'day-off'>;
+type ScheduleType = 'work' | Extract<WorkdayStatus, 'annual-leave' | 'day-off'>;
 
 const SCHEDULE_TYPE_OPTIONS = [
   { value: 'work', label: '근무' },
@@ -18,12 +15,12 @@ const SCHEDULE_TYPE_OPTIONS = [
 
 interface AdjustTodayScheduleScreenProps {
   settings: OnboardedUserSettings;
-  todaySchedule: TodayWorkSchedule | null;
+  todaySchedule: WorkdaySchedule | null;
   isPending?: boolean;
   showStatusOptions?: boolean;
   onBack: () => void;
   onSave: (startTime: string, endTime: string) => Promise<void> | void;
-  onSaveStatus?: (status: TodayWorkStatus) => Promise<void> | void;
+  onSaveStatus?: (status: WorkdayStatus) => Promise<void> | void;
 }
 
 export function AdjustTodayScheduleScreen({

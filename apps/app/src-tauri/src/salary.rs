@@ -11,7 +11,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::Duration;
 
 use chrono::{Datelike, Local, NaiveDate, Timelike};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use specta::Type;
 use tauri::{AppHandle, Emitter, Manager};
 
@@ -31,34 +31,22 @@ pub struct SalaryTickPayload {
     pub worked_days: u32,
 }
 
-/// Vacation state stored in recovery/vacation-state.json
-#[derive(Deserialize)]
-struct VacationState {
-    date: String,
-}
-
-/// Today work status stored in recovery/today-work-status.json
-#[derive(Debug, Clone, Copy, Deserialize, PartialEq)]
-#[serde(rename_all = "kebab-case")]
+/// 내부 ticker용 status enum.
+///
+/// `WorkdayCache.kind`에서 도출되며, `kind=Work`는 None으로 매핑되어
+/// 일반 근무일 계산 경로를 탄다.
+#[derive(Debug, Clone, Copy, PartialEq)]
 enum TodayWorkStatus {
     AnnualLeave,
     DayOff,
     PublicHoliday,
 }
 
-#[derive(Deserialize)]
-struct TodayWorkStatusState {
-    date: String,
-    status: TodayWorkStatus,
-}
-
-/// Today work schedule stored in recovery/today-work-schedule.json
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct TodayWorkSchedule {
-    date: String,
-    work_start_time: String,
-    work_end_time: String,
+/// `WorkdayCache`에서 추출한 ticker용 override 정보.
+struct TickerOverrides {
+    status: Option<TodayWorkStatus>,
+    schedule: Option<(String, String)>,
+    completed: bool,
 }
 
 // ============================================================================
@@ -127,18 +115,12 @@ pub fn start_salary_ticker(app_handle: AppHandle) {
             let now = Local::now();
             let today_str = now.format("%Y-%m-%d").to_string();
 
-            let today_status_override = resolve_today_status_override(&recovery_dir, &today_str);
+            let overrides = load_workday_overrides(&recovery_dir, &today_str);
+            let today_status_override = overrides.as_ref().and_then(|o| o.status);
+            let today_override = overrides.as_ref().and_then(|o| o.schedule.clone());
+            let completed_override = overrides.as_ref().is_some_and(|o| o.completed);
 
-            let today_override =
-                load_today_schedule(&recovery_dir).and_then(|(date, start, end)| {
-                    if date == today_str {
-                        Some((start, end))
-                    } else {
-                        None
-                    }
-                });
-
-            let Some(payload) = calculate_salary(
+            let Some(mut payload) = calculate_salary(
                 s,
                 today_status_override,
                 today_override
@@ -149,6 +131,16 @@ pub fn start_salary_ticker(app_handle: AppHandle) {
                 std::thread::sleep(Duration::from_secs(1));
                 continue;
             };
+
+            // 서버가 명시적으로 status=COMPLETED → ticker도 강제 정지
+            if completed_override
+                && !matches!(
+                    payload.work_status,
+                    WorkStatus::AnnualLeave | WorkStatus::DayOff | WorkStatus::PublicHoliday
+                )
+            {
+                payload.work_status = WorkStatus::Completed;
+            }
 
             // Update tray title
             let new_title = match s.menubar_display_mode {
@@ -322,14 +314,36 @@ fn is_non_working_status(work_status: &WorkStatus) -> bool {
     )
 }
 
-fn resolve_today_status_override(recovery_dir: &Path, today: &str) -> Option<TodayWorkStatus> {
-    load_today_work_status(recovery_dir)
-        .and_then(|(date, status)| (date == today).then_some(status))
-        .or_else(|| {
-            load_vacation_state(recovery_dir)
-                .is_some_and(|date| date == today)
-                .then_some(TodayWorkStatus::AnnualLeave)
-        })
+/// `recovery/workday/{today}.json`에서 ticker용 override 추출.
+///
+/// `kind=Work` → status=None (정상 근무 경로). 그 외 → 해당 status.
+/// `clock_in_time`/`clock_out_time`이 둘 다 있으면 schedule override.
+fn load_workday_overrides(recovery_dir: &Path, today: &str) -> Option<TickerOverrides> {
+    let path = recovery_dir.join("workday").join(format!("{today}.json"));
+    let contents = std::fs::read_to_string(path).ok()?;
+    let cache: crate::types::WorkdayCache = serde_json::from_str(&contents).ok()?;
+
+    if cache.date != today {
+        return None;
+    }
+
+    let status = match cache.kind {
+        crate::types::WorkdayKind::Work => None,
+        crate::types::WorkdayKind::AnnualLeave => Some(TodayWorkStatus::AnnualLeave),
+        crate::types::WorkdayKind::DayOff => Some(TodayWorkStatus::DayOff),
+        crate::types::WorkdayKind::PublicHoliday => Some(TodayWorkStatus::PublicHoliday),
+    };
+
+    let schedule = match (cache.clock_in_time, cache.clock_out_time) {
+        (Some(start), Some(end)) => Some((start, end)),
+        _ => None,
+    };
+
+    Some(TickerOverrides {
+        status,
+        schedule,
+        completed: cache.completed,
+    })
 }
 
 /// Parse "HH:MM" to minutes since midnight.
@@ -465,31 +479,6 @@ fn load_settings(app: &AppHandle) -> Option<UserSettings> {
     serde_json::from_str(&contents).ok()
 }
 
-fn load_vacation_state(recovery_dir: &Path) -> Option<String> {
-    let path = recovery_dir.join("vacation-state.json");
-    let contents = std::fs::read_to_string(path).ok()?;
-    let state: VacationState = serde_json::from_str(&contents).ok()?;
-    Some(state.date)
-}
-
-fn load_today_work_status(recovery_dir: &Path) -> Option<(String, TodayWorkStatus)> {
-    let path = recovery_dir.join("today-work-status.json");
-    let contents = std::fs::read_to_string(path).ok()?;
-    let state: TodayWorkStatusState = serde_json::from_str(&contents).ok()?;
-    Some((state.date, state.status))
-}
-
-fn load_today_schedule(recovery_dir: &Path) -> Option<(String, String, String)> {
-    let path = recovery_dir.join("today-work-schedule.json");
-    let contents = std::fs::read_to_string(path).ok()?;
-    let schedule: TodayWorkSchedule = serde_json::from_str(&contents).ok()?;
-    Some((
-        schedule.date,
-        schedule.work_start_time,
-        schedule.work_end_time,
-    ))
-}
-
 // ============================================================================
 // Tests
 // ============================================================================
@@ -621,13 +610,88 @@ mod tests {
     }
 
     #[test]
-    fn test_legacy_vacation_state_falls_back_to_annual_leave() {
-        let dir = make_temp_dir("legacy-vacation");
-        std::fs::write(dir.join("vacation-state.json"), r#"{"date":"2025-02-10"}"#).unwrap();
+    fn test_workday_overrides_returns_status_for_day_off() {
+        use crate::types::{WorkdayCache, WorkdayKind};
+        let dir = make_temp_dir("workday-overrides");
+        let workday_dir = dir.join("workday");
+        std::fs::create_dir_all(&workday_dir).unwrap();
+        let cache = WorkdayCache {
+            date: "2025-02-10".into(),
+            kind: WorkdayKind::DayOff,
+            clock_in_time: None,
+            clock_out_time: None,
+            completed: false,
+            events: vec![],
+            is_dirty: false,
+        };
+        std::fs::write(
+            workday_dir.join("2025-02-10.json"),
+            serde_json::to_string(&cache).unwrap(),
+        )
+        .unwrap();
 
-        let status = resolve_today_status_override(&dir, "2025-02-10");
+        let overrides = load_workday_overrides(&dir, "2025-02-10").unwrap();
+        assert_eq!(overrides.status, Some(TodayWorkStatus::DayOff));
+        assert!(overrides.schedule.is_none());
+        assert!(!overrides.completed);
+        let _ = std::fs::remove_dir_all(dir);
+    }
 
-        assert_eq!(status, Some(TodayWorkStatus::AnnualLeave));
+    #[test]
+    fn test_workday_overrides_extracts_schedule_when_both_times_present() {
+        use crate::types::{WorkdayCache, WorkdayKind};
+        let dir = make_temp_dir("workday-schedule");
+        let workday_dir = dir.join("workday");
+        std::fs::create_dir_all(&workday_dir).unwrap();
+        let cache = WorkdayCache {
+            date: "2025-02-10".into(),
+            kind: WorkdayKind::Work,
+            clock_in_time: Some("10:00".into()),
+            clock_out_time: Some("19:00".into()),
+            completed: true,
+            events: vec![],
+            is_dirty: false,
+        };
+        std::fs::write(
+            workday_dir.join("2025-02-10.json"),
+            serde_json::to_string(&cache).unwrap(),
+        )
+        .unwrap();
+
+        let overrides = load_workday_overrides(&dir, "2025-02-10").unwrap();
+        assert!(overrides.status.is_none()); // Work → no status override
+        assert_eq!(
+            overrides.schedule,
+            Some(("10:00".to_string(), "19:00".to_string()))
+        );
+        assert!(overrides.completed);
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn test_workday_overrides_ignores_mismatched_date() {
+        use crate::types::{WorkdayCache, WorkdayKind};
+        let dir = make_temp_dir("workday-mismatch");
+        let workday_dir = dir.join("workday");
+        std::fs::create_dir_all(&workday_dir).unwrap();
+        let cache = WorkdayCache {
+            date: "2025-02-09".into(), // 다른 날짜
+            kind: WorkdayKind::AnnualLeave,
+            clock_in_time: None,
+            clock_out_time: None,
+            completed: false,
+            events: vec![],
+            is_dirty: false,
+        };
+        std::fs::write(
+            workday_dir.join("2025-02-09.json"),
+            serde_json::to_string(&cache).unwrap(),
+        )
+        .unwrap();
+
+        // today=2025-02-10이지만 파일은 2025-02-09
+        let overrides = load_workday_overrides(&dir, "2025-02-10");
+        assert!(overrides.is_none());
         let _ = std::fs::remove_dir_all(dir);
     }
 

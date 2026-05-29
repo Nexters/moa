@@ -3,3 +3,4 @@ export * from './user-settings';
 export * from './app';
 export * from './emergency-data';
 export * from './onboarding-terms';
+export * from './workday';

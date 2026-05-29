@@ -130,6 +130,49 @@ pub enum WorkStatus {
 }
 
 // ============================================================================
+// Workday Cache (서버 동기화 로컬 표현)
+// ============================================================================
+//
+// See: apps/app/docs/patterns/server-sync.md
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type, PartialEq)]
+#[serde(rename_all = "kebab-case")]
+pub enum WorkdayKind {
+    Work,
+    AnnualLeave,
+    DayOff,
+    PublicHoliday,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Type, PartialEq)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum WorkdayCacheEvent {
+    Payday,
+    PublicHoliday,
+}
+
+/// 서버↔로컬 workday 동기화 캐시. 기존 `today-work-status.json` +
+/// `today-work-schedule.json` 두 파일을 대체한다.
+///
+/// `is_dirty=true`이면 미동기 로컬 변경이 있어 서버 폴링이 덮어쓸 수 없음.
+#[derive(Debug, Clone, Serialize, Deserialize, Type, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkdayCache {
+    pub date: String,
+    pub kind: WorkdayKind,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub clock_in_time: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub clock_out_time: Option<String>,
+    #[serde(default)]
+    pub completed: bool,
+    #[serde(default)]
+    pub events: Vec<WorkdayCacheEvent>,
+    #[serde(default)]
+    pub is_dirty: bool,
+}
+
+// ============================================================================
 // User Settings (MVP)
 // ============================================================================
 

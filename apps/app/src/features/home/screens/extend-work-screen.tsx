@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import type { TodayWorkSchedule } from '~/hooks/use-today-work-schedule';
+import type { WorkdaySchedule } from '~/hooks/use-workday';
 import type { OnboardedUserSettings } from '~/lib/tauri-bindings';
 import { timeToMinutes } from '~/lib/time';
 import { AppBar, AppFooter, Button, Field } from '~/ui';
@@ -8,7 +8,7 @@ import { TimePeriodInput, type TimePeriodValue } from '~/ui/time-period-input';
 
 interface ExtendWorkScreenProps {
   settings: OnboardedUserSettings;
-  todaySchedule: TodayWorkSchedule | null;
+  todaySchedule: WorkdaySchedule | null;
   isPending?: boolean;
   onBack: () => void;
   onSubmit: (newEndTime: string) => Promise<void> | void;

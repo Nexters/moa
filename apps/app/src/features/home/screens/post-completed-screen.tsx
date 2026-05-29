@@ -1,5 +1,11 @@
 import { formatCurrency, formatMonth } from '~/lib/format';
-import { Button, InfoCard, InfoCardDivider, InfoCardRow } from '~/ui';
+import {
+  Button,
+  InfoCard,
+  InfoCardButtonRow,
+  InfoCardDivider,
+  InfoCardRow,
+} from '~/ui';
 
 import { HeroSection } from '../components/hero-section';
 import type { HomeMainScreen } from '../hooks/use-home-screen';
@@ -8,8 +14,11 @@ export function PostCompletedScreen({
   settings,
   salaryInfo,
   todaySchedule,
+  onAdjustWorkTime,
   onStillWorking,
-}: Extract<HomeMainScreen, { screen: 'post-completed' }>) {
+}: Extract<HomeMainScreen, { screen: 'post-completed' }> & {
+  onAdjustWorkTime: () => void;
+}) {
   const workStart = todaySchedule?.workStartTime ?? settings.workStartTime;
   const workEnd = todaySchedule?.workEndTime ?? settings.workEndTime;
 
@@ -24,10 +33,15 @@ export function PostCompletedScreen({
       <InfoCard>
         <InfoCardRow
           label="오늘 일급"
-          value={`+ ${formatCurrency(salaryInfo.todayEarnings)}`}
+          value={formatCurrency(salaryInfo.todayEarnings)}
         />
         <InfoCardDivider />
-        <InfoCardRow label="근무 시간" value={`${workStart} - ${workEnd}`} />
+        <InfoCardButtonRow
+          label="근무 시간"
+          detail={`${workStart} - ${workEnd}`}
+          ariaLabel="근무시간 조정"
+          onClick={onAdjustWorkTime}
+        />
       </InfoCard>
       {onStillWorking && (
         <Button

@@ -1,6 +1,6 @@
 //! MOA 서버 API 클라이언트.
 
-use reqwest::Client;
+use reqwest::{Client, Response};
 use serde::{Deserialize, Serialize};
 
 /// 서버 공통 응답 구조
@@ -18,7 +18,7 @@ pub enum ApiError {
     /// 401 — 토큰 만료 또는 미인증
     Unauthorized,
     /// 기타 서버 에러
-    Server(String),
+    Server { status: u16, message: String },
     /// 네트워크 에러
     Network(String),
 }
@@ -27,9 +27,31 @@ impl std::fmt::Display for ApiError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             ApiError::Unauthorized => write!(f, "인증 만료"),
-            ApiError::Server(msg) => write!(f, "서버 에러: {msg}"),
+            ApiError::Server { status, message } => {
+                write!(f, "서버 에러({status}): {message}")
+            }
             ApiError::Network(msg) => write!(f, "네트워크 에러: {msg}"),
         }
+    }
+}
+
+async fn response_error(resp: Response) -> ApiError {
+    let status = resp.status();
+    if status == 401 {
+        return ApiError::Unauthorized;
+    }
+
+    let message = resp.text().await.unwrap_or_default();
+    ApiError::Server {
+        status: status.as_u16(),
+        message,
+    }
+}
+
+fn missing_content_error(message: &str) -> ApiError {
+    ApiError::Server {
+        status: 200,
+        message: message.to_string(),
     }
 }
 
@@ -194,6 +216,68 @@ pub struct TermsAgreementsResponse {
 }
 
 // ============================================================================
+// Workday
+// ============================================================================
+
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[serde(rename_all = "UPPERCASE")]
+pub enum WorkdayType {
+    Work,
+    Vacation,
+    None,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[serde(rename_all = "UPPERCASE")]
+pub enum WorkdayStatus {
+    None,
+    Scheduled,
+    Completed,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum WorkdayEvent {
+    Payday,
+    PublicHoliday,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkdayResponse {
+    pub date: String,
+    #[serde(rename = "type")]
+    pub workday_type: WorkdayType,
+    pub status: WorkdayStatus,
+    pub events: Vec<WorkdayEvent>,
+    pub daily_pay: i32,
+    pub clock_in_time: Option<String>,
+    pub clock_out_time: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkdayUpsertRequest {
+    #[serde(rename = "type")]
+    pub workday_type: WorkdayType,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub clock_in_time: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub clock_out_time: Option<String>,
+}
+
+/// PATCH /workdays/{date} 전용 — 조퇴/연장 시 clockOutTime만 수정.
+///
+/// 현재 mutate_workday는 일관성을 위해 PUT만 사용한다. PATCH는 향후 효율 최적화나
+/// 별도 액션(조퇴 전용 UI 등)을 위해 유지된다.
+#[allow(dead_code)]
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkdayEditRequest {
+    pub clock_out_time: String,
+}
+
+// ============================================================================
 // Patch requests
 // ============================================================================
 
@@ -267,12 +351,8 @@ impl ApiClient {
             .await
             .map_err(|e| ApiError::Network(e.to_string()))?;
 
-        if resp.status() == 401 {
-            return Err(ApiError::Unauthorized);
-        }
         if !resp.status().is_success() {
-            let text = resp.text().await.unwrap_or_default();
-            return Err(ApiError::Server(text));
+            return Err(response_error(resp).await);
         }
 
         let api_resp: ApiResponse<AuthTokenResponse> = resp
@@ -283,7 +363,7 @@ impl ApiClient {
         api_resp
             .content
             .map(|c| c.access_token)
-            .ok_or_else(|| ApiError::Server("응답에 accessToken 없음".into()))
+            .ok_or_else(|| missing_content_error("응답에 accessToken 없음"))
     }
 
     /// GET /api/v1/onboarding/status
@@ -405,6 +485,34 @@ impl ApiClient {
         self.patch("/api/v1/onboarding/profile", token, req).await
     }
 
+    /// GET /api/v1/workdays/{date}
+    pub async fn get_workday(&self, token: &str, date: &str) -> Result<WorkdayResponse, ApiError> {
+        self.get(&format!("/api/v1/workdays/{date}"), token).await
+    }
+
+    /// PUT /api/v1/workdays/{date} — 전체 upsert
+    pub async fn put_workday(
+        &self,
+        token: &str,
+        date: &str,
+        req: &WorkdayUpsertRequest,
+    ) -> Result<(), ApiError> {
+        self.put_unit(&format!("/api/v1/workdays/{date}"), token, req)
+            .await
+    }
+
+    /// PATCH /api/v1/workdays/{date} — 퇴근시간만 수정 (조퇴/연장)
+    #[allow(dead_code)]
+    pub async fn patch_workday(
+        &self,
+        token: &str,
+        date: &str,
+        req: &WorkdayEditRequest,
+    ) -> Result<(), ApiError> {
+        self.patch(&format!("/api/v1/workdays/{date}"), token, req)
+            .await
+    }
+
     // -- helpers --
 
     async fn get<T: serde::de::DeserializeOwned>(
@@ -421,12 +529,8 @@ impl ApiClient {
             .await
             .map_err(|e| ApiError::Network(e.to_string()))?;
 
-        if resp.status() == 401 {
-            return Err(ApiError::Unauthorized);
-        }
         if !resp.status().is_success() {
-            let text = resp.text().await.unwrap_or_default();
-            return Err(ApiError::Server(text));
+            return Err(response_error(resp).await);
         }
 
         let api_resp: ApiResponse<T> = resp
@@ -436,7 +540,7 @@ impl ApiClient {
 
         api_resp
             .content
-            .ok_or_else(|| ApiError::Server("응답에 content 없음".into()))
+            .ok_or_else(|| missing_content_error("응답에 content 없음"))
     }
 
     async fn patch<B: Serialize>(&self, path: &str, token: &str, body: &B) -> Result<(), ApiError> {
@@ -450,12 +554,8 @@ impl ApiClient {
             .await
             .map_err(|e| ApiError::Network(e.to_string()))?;
 
-        if resp.status() == 401 {
-            return Err(ApiError::Unauthorized);
-        }
         if !resp.status().is_success() {
-            let text = resp.text().await.unwrap_or_default();
-            return Err(ApiError::Server(text));
+            return Err(response_error(resp).await);
         }
 
         Ok(())
@@ -477,12 +577,8 @@ impl ApiClient {
             .await
             .map_err(|e| ApiError::Network(e.to_string()))?;
 
-        if resp.status() == 401 {
-            return Err(ApiError::Unauthorized);
-        }
         if !resp.status().is_success() {
-            let text = resp.text().await.unwrap_or_default();
-            return Err(ApiError::Server(text));
+            return Err(response_error(resp).await);
         }
 
         let api_resp: ApiResponse<T> = resp
@@ -492,7 +588,7 @@ impl ApiClient {
 
         api_resp
             .content
-            .ok_or_else(|| ApiError::Server("응답에 content 없음".into()))
+            .ok_or_else(|| missing_content_error("응답에 content 없음"))
     }
 
     async fn post_unit<B: Serialize>(
@@ -511,12 +607,31 @@ impl ApiClient {
             .await
             .map_err(|e| ApiError::Network(e.to_string()))?;
 
-        if resp.status() == 401 {
-            return Err(ApiError::Unauthorized);
-        }
         if !resp.status().is_success() {
-            let text = resp.text().await.unwrap_or_default();
-            return Err(ApiError::Server(text));
+            return Err(response_error(resp).await);
+        }
+
+        Ok(())
+    }
+
+    async fn put_unit<B: Serialize>(
+        &self,
+        path: &str,
+        token: &str,
+        body: &B,
+    ) -> Result<(), ApiError> {
+        let url = format!("{}{}", self.base_url, path);
+        let resp = self
+            .http
+            .put(&url)
+            .bearer_auth(token)
+            .json(body)
+            .send()
+            .await
+            .map_err(|e| ApiError::Network(e.to_string()))?;
+
+        if !resp.status().is_success() {
+            return Err(response_error(resp).await);
         }
 
         Ok(())
@@ -542,12 +657,8 @@ impl ApiClient {
             .await
             .map_err(|e| ApiError::Network(e.to_string()))?;
 
-        if resp.status() == 401 {
-            return Err(ApiError::Unauthorized);
-        }
         if !resp.status().is_success() {
-            let text = resp.text().await.unwrap_or_default();
-            return Err(ApiError::Server(text));
+            return Err(response_error(resp).await);
         }
 
         let api_resp: ApiResponse<T> = resp
@@ -557,6 +668,145 @@ impl ApiClient {
 
         api_resp
             .content
-            .ok_or_else(|| ApiError::Server("응답에 content 없음".into()))
+            .ok_or_else(|| missing_content_error("응답에 content 없음"))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn workday_type_serializes_as_uppercase() {
+        assert_eq!(
+            serde_json::to_string(&WorkdayType::Work).unwrap(),
+            "\"WORK\""
+        );
+        assert_eq!(
+            serde_json::to_string(&WorkdayType::Vacation).unwrap(),
+            "\"VACATION\""
+        );
+        assert_eq!(
+            serde_json::to_string(&WorkdayType::None).unwrap(),
+            "\"NONE\""
+        );
+    }
+
+    #[test]
+    fn workday_type_deserializes_uppercase() {
+        assert_eq!(
+            serde_json::from_str::<WorkdayType>("\"WORK\"").unwrap(),
+            WorkdayType::Work
+        );
+        assert_eq!(
+            serde_json::from_str::<WorkdayType>("\"NONE\"").unwrap(),
+            WorkdayType::None
+        );
+    }
+
+    #[test]
+    fn workday_status_serde_round_trip() {
+        for status in [
+            WorkdayStatus::None,
+            WorkdayStatus::Scheduled,
+            WorkdayStatus::Completed,
+        ] {
+            let s = serde_json::to_string(&status).unwrap();
+            let back: WorkdayStatus = serde_json::from_str(&s).unwrap();
+            assert_eq!(status, back);
+        }
+        assert_eq!(
+            serde_json::to_string(&WorkdayStatus::Completed).unwrap(),
+            "\"COMPLETED\""
+        );
+    }
+
+    #[test]
+    fn workday_event_screaming_snake_case() {
+        assert_eq!(
+            serde_json::to_string(&WorkdayEvent::Payday).unwrap(),
+            "\"PAYDAY\""
+        );
+        assert_eq!(
+            serde_json::to_string(&WorkdayEvent::PublicHoliday).unwrap(),
+            "\"PUBLIC_HOLIDAY\""
+        );
+        assert_eq!(
+            serde_json::from_str::<WorkdayEvent>("\"PUBLIC_HOLIDAY\"").unwrap(),
+            WorkdayEvent::PublicHoliday
+        );
+    }
+
+    #[test]
+    fn workday_response_deserializes_camel_case() {
+        let json = r#"{
+            "date": "2026-05-25",
+            "type": "VACATION",
+            "status": "COMPLETED",
+            "events": ["PUBLIC_HOLIDAY"],
+            "dailyPay": 100000,
+            "clockInTime": "09:00",
+            "clockOutTime": "18:00"
+        }"#;
+        let parsed: WorkdayResponse = serde_json::from_str(json).unwrap();
+        assert_eq!(parsed.date, "2026-05-25");
+        assert_eq!(parsed.workday_type, WorkdayType::Vacation);
+        assert_eq!(parsed.status, WorkdayStatus::Completed);
+        assert_eq!(parsed.events, vec![WorkdayEvent::PublicHoliday]);
+        assert_eq!(parsed.daily_pay, 100000);
+        assert_eq!(parsed.clock_in_time.as_deref(), Some("09:00"));
+        assert_eq!(parsed.clock_out_time.as_deref(), Some("18:00"));
+    }
+
+    #[test]
+    fn workday_response_handles_missing_optional_times() {
+        let json = r#"{
+            "date": "2026-05-25",
+            "type": "NONE",
+            "status": "NONE",
+            "events": [],
+            "dailyPay": 0
+        }"#;
+        let parsed: WorkdayResponse = serde_json::from_str(json).unwrap();
+        assert_eq!(parsed.workday_type, WorkdayType::None);
+        assert!(parsed.clock_in_time.is_none());
+        assert!(parsed.clock_out_time.is_none());
+        assert!(parsed.events.is_empty());
+    }
+
+    #[test]
+    fn workday_upsert_request_serializes_type_field_and_omits_none_times() {
+        let req = WorkdayUpsertRequest {
+            workday_type: WorkdayType::Vacation,
+            clock_in_time: None,
+            clock_out_time: None,
+        };
+        let s = serde_json::to_string(&req).unwrap();
+        assert_eq!(s, r#"{"type":"VACATION"}"#);
+    }
+
+    #[test]
+    fn workday_upsert_request_includes_times_when_present() {
+        let req = WorkdayUpsertRequest {
+            workday_type: WorkdayType::Work,
+            clock_in_time: Some("09:00".into()),
+            clock_out_time: Some("18:00".into()),
+        };
+        let parsed: serde_json::Value =
+            serde_json::from_str(&serde_json::to_string(&req).unwrap()).unwrap();
+        assert_eq!(parsed["type"], "WORK");
+        assert_eq!(parsed["clockInTime"], "09:00");
+        assert_eq!(parsed["clockOutTime"], "18:00");
+    }
+
+    #[test]
+    fn workday_edit_request_serializes_clock_out_time() {
+        let req = WorkdayEditRequest {
+            clock_out_time: "20:30".into(),
+        };
+        assert_eq!(
+            serde_json::to_string(&req).unwrap(),
+            r#"{"clockOutTime":"20:30"}"#
+        );
     }
 }

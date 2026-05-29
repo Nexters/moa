@@ -472,6 +472,11 @@ pub async fn cancel_social_login() -> Result<(), String> {
 #[tauri::command]
 #[specta::specta]
 pub async fn logout(app: AppHandle) -> Result<(), String> {
+    // 다른 사용자가 같은 디바이스에 로그인했을 때 이전 사용자의 미동기 액션이
+    // 전송되지 않도록 큐 클리어
+    if let Err(e) = crate::commands::workday::clear_sync_queue(&app) {
+        log::warn!("로그아웃 시 sync queue 클리어 실패: {e}");
+    }
     auth::clear_auth_token(&app);
     log::info!("로그아웃 완료");
     Ok(())
@@ -799,6 +804,17 @@ pub async fn sync_from_server(app: AppHandle) -> Result<(), String> {
         log::info!("서버 → 로컬 sync 완료 (변경 있음)");
     } else {
         log::debug!("서버 → 로컬 sync: 변경 없음");
+    }
+
+    // 미동기 변경 사항 먼저 flush — 그 결과를 다음 GET이 정렬
+    if let Err(e) = crate::commands::workday::flush_sync_queue(&app).await {
+        log::warn!("flush_sync_queue 실패 — 다른 sync는 진행: {e}");
+    }
+
+    // workday 동기화 (실패해도 다른 sync 진행 — fetch_workday가 내부 fallback 처리)
+    let today = chrono::Local::now().format("%Y-%m-%d").to_string();
+    if let Err(e) = crate::commands::workday::fetch_workday(app.clone(), today).await {
+        log::warn!("fetch_workday 실패 — 다른 sync는 정상 진행: {e}");
     }
 
     Ok(())

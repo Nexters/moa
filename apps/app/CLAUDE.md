@@ -113,6 +113,7 @@ For in-depth topics, see `docs/`:
 | `patterns/tauri.md`               | Tauri command patterns        |
 | `patterns/zustand.md`             | Zustand usage rules           |
 | `patterns/ui.md`                  | UI, CSS, semantic colors      |
+| `patterns/server-sync.md`         | 서버↔로컬 동기화 (dirty flag) |
 | `tooling/static-analysis.md`      | oxlint, oxfmt, Rust tooling   |
 | `tooling/logging.md`              | Rust and TypeScript logging   |
 | `tooling/forms.md`                | TanStack Form patterns        |

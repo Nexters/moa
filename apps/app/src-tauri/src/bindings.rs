@@ -3,6 +3,7 @@ use tauri_specta::{collect_commands, Builder};
 pub fn generate_bindings() -> Builder<tauri::Wry> {
     use crate::commands::{
         app, auth, confetti, menubar, notifications, preferences, recovery, terms, user_settings,
+        workday,
     };
     use crate::{salary, tray};
 
@@ -51,6 +52,10 @@ pub fn generate_bindings() -> Builder<tauri::Wry> {
         tray::set_tray_title,
         // Salary ticker
         salary::notify_settings_changed,
+        // Workday sync
+        workday::fetch_workday,
+        workday::clear_workday_schedule_override,
+        workday::mutate_workday,
     ])
 }
 

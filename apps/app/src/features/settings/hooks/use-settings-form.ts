@@ -8,7 +8,8 @@ import {
   type SalaryType,
   type UserSettings,
 } from '~/lib/tauri-bindings';
-import { emergencyDataQuery, userSettingsQuery } from '~/queries';
+import { getTodayString } from '~/lib/time';
+import { userSettingsQuery, workdayQuery } from '~/queries';
 
 export const SALARY_TYPE_OPTIONS = [
   { value: 'monthly', label: '월급' },
@@ -78,6 +79,10 @@ export function useSettingsForm({
       },
     },
     onSubmit: async ({ value }) => {
+      const scheduleChanged =
+        settings.workStartTime !== value.workStartTime ||
+        settings.workEndTime !== value.workEndTime;
+
       const result = await commands.saveUserSettings({
         ...settings,
         salaryType: value.salaryType,
@@ -95,12 +100,18 @@ export function useSettingsForm({
       await queryClient.invalidateQueries({
         queryKey: userSettingsQuery.all(),
       });
-      unwrapResult(
-        await commands.saveEmergencyData('today-work-schedule', null),
-      );
-      void queryClient.invalidateQueries({
-        queryKey: emergencyDataQuery.file('today-work-schedule'),
-      });
+      if (scheduleChanged) {
+        const today = getTodayString();
+        const cleared = unwrapResult(
+          await commands.clearWorkdayScheduleOverride(today),
+        );
+        if (cleared) {
+          queryClient.setQueryData(workdayQuery.byDate(today), cleared);
+        }
+        await queryClient.invalidateQueries({
+          queryKey: workdayQuery.byDate(today),
+        });
+      }
       void commands.notifySettingsChanged();
       void commands.syncSettingsToServer(); // fire-and-forget
       onSuccess?.();
