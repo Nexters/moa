@@ -6,8 +6,7 @@ import {
   waitForNextSalaryTick,
   waitForSalaryTick,
 } from '~/hooks/use-salary-tick';
-import { useTodayWorkSchedule } from '~/hooks/use-today-work-schedule';
-import { useTodayWorkStatus } from '~/hooks/use-today-work-status';
+import { useWorkday } from '~/hooks/use-workday';
 import { AppBar } from '~/ui/app-bar';
 
 import { useHomeScreen } from './hooks/use-home-screen';
@@ -31,8 +30,7 @@ export function Home() {
   const [adjustMode, setAdjustMode] = useState<AdjustMode>(null);
   const [isExtendingWork, setIsExtendingWork] = useState(false);
   const { isLoading, mainScreen } = useHomeScreen();
-  const { saveSchedule, clearSchedule } = useTodayWorkSchedule();
-  const { saveStatus, clearStatus } = useTodayWorkStatus();
+  const { saveSchedule, clearSchedule, saveStatus, clearStatus } = useWorkday();
 
   useEffect(() => {
     if (!mainScreen) return;

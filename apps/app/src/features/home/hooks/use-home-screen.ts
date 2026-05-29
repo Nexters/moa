@@ -6,12 +6,13 @@ import {
   waitForNextSalaryTick,
   waitForSalaryTick,
 } from '~/hooks/use-salary-tick';
-import type { TodayWorkSchedule } from '~/hooks/use-today-work-schedule';
-import { useTodayWorkSchedule } from '~/hooks/use-today-work-schedule';
-import type { TodayWorkStatus } from '~/hooks/use-today-work-status';
-import { useTodayWorkStatus } from '~/hooks/use-today-work-status';
 import { useUserSettings } from '~/hooks/use-user-settings';
 import { useWorkCompletedAck } from '~/hooks/use-work-completed-ack';
+import {
+  useWorkday,
+  type WorkdaySchedule,
+  type WorkdayStatus,
+} from '~/hooks/use-workday';
 import {
   assertOnboarded,
   type OnboardedUserSettings,
@@ -30,7 +31,7 @@ import {
 export type HomeMainScreen =
   | {
       screen: 'non-working';
-      status: TodayWorkStatus;
+      status: WorkdayStatus;
       salaryInfo: SalaryInfo;
       isPending?: boolean;
       onTodayWork: () => void;
@@ -39,7 +40,7 @@ export type HomeMainScreen =
       screen: 'before-work';
       settings: OnboardedUserSettings;
       salaryInfo: SalaryInfo;
-      todaySchedule: TodayWorkSchedule | null;
+      todaySchedule: WorkdaySchedule | null;
       isPending?: boolean;
       onVacation: () => void;
       onStartWork: () => void;
@@ -48,7 +49,7 @@ export type HomeMainScreen =
       screen: 'working';
       settings: OnboardedUserSettings;
       salaryInfo: SalaryInfo;
-      todaySchedule: TodayWorkSchedule | null;
+      todaySchedule: WorkdaySchedule | null;
       isPending?: boolean;
       onEarlyLeave: () => void;
       onVacation: () => void;
@@ -57,7 +58,7 @@ export type HomeMainScreen =
       screen: 'completed';
       settings: OnboardedUserSettings;
       salaryInfo: SalaryInfo;
-      todaySchedule: TodayWorkSchedule | null;
+      todaySchedule: WorkdaySchedule | null;
       isPending?: boolean;
       onAcknowledge: () => void;
       onAdjustSchedule: (startTime: string, endTime: string) => Promise<void>;
@@ -67,7 +68,7 @@ export type HomeMainScreen =
       screen: 'post-completed';
       settings: OnboardedUserSettings;
       salaryInfo: SalaryInfo;
-      todaySchedule: TodayWorkSchedule | null;
+      todaySchedule: WorkdaySchedule | null;
       onAdjustSchedule: (startTime: string, endTime: string) => Promise<void>;
       onStillWorking?: () => void;
     };
@@ -85,14 +86,11 @@ export function useHomeScreen(): HomeScreenState {
   const { data: settings, isLoading } = useUserSettings();
   const {
     schedule: todaySchedule,
-    isLoading: scheduleLoading,
+    isLoading: workdayLoading,
     saveSchedule,
-  } = useTodayWorkSchedule();
-  const {
-    isLoading: workStatusLoading,
     clearStatus,
     saveStatus,
-  } = useTodayWorkStatus();
+  } = useWorkday();
   const salaryInfo = useSalaryTick();
   const {
     isAcknowledged,
@@ -167,7 +165,7 @@ export function useHomeScreen(): HomeScreenState {
   const workStatusMutation = useMutation({
     mutationFn: async (_vars: {
       fromScreen: 'before-work' | 'working';
-      status: TodayWorkStatus;
+      status: WorkdayStatus;
     }) => {
       await saveStatus(_vars.status);
       await waitForSalaryTick((info) => info.workStatus === _vars.status);
@@ -175,8 +173,7 @@ export function useHomeScreen(): HomeScreenState {
   });
 
   // 로딩 체크
-  const allLoading =
-    isLoading || workStatusLoading || ackLoading || scheduleLoading;
+  const allLoading = isLoading || workdayLoading || ackLoading;
 
   if (allLoading || !settings || !salaryInfo) {
     return {
@@ -435,7 +432,7 @@ export function useHomeScreen(): HomeScreenState {
 interface ResolveParams {
   salaryInfo: SalaryInfo;
   settings: OnboardedUserSettings;
-  todaySchedule: TodayWorkSchedule | null;
+  todaySchedule: WorkdaySchedule | null;
   isAcknowledged: boolean;
   onTodayWorkFromNonWorking: () => void;
   onVacationFromBeforeWork: () => void;
@@ -453,7 +450,7 @@ interface ResolveParams {
 
 function isNonWorkingStatus(
   status: SalaryInfo['workStatus'],
-): status is TodayWorkStatus {
+): status is WorkdayStatus {
   return (
     status === 'annual-leave' ||
     status === 'day-off' ||
@@ -461,9 +458,7 @@ function isNonWorkingStatus(
   );
 }
 
-function getNonWorkingStatus(
-  status: SalaryInfo['workStatus'],
-): TodayWorkStatus {
+function getNonWorkingStatus(status: SalaryInfo['workStatus']): WorkdayStatus {
   return isNonWorkingStatus(status) ? status : 'day-off';
 }
 

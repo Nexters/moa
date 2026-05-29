@@ -1,6 +1,6 @@
 import { useLottieOverlay } from '~/hooks/use-lottie-overlay';
 import type { SalaryInfo } from '~/hooks/use-salary-tick';
-import type { TodayWorkSchedule } from '~/hooks/use-today-work-schedule';
+import type { WorkdaySchedule } from '~/hooks/use-workday';
 import { formatCurrency } from '~/lib/format';
 import type { OnboardedUserSettings } from '~/lib/tauri-bindings';
 import {
@@ -17,7 +17,7 @@ import { HeroSection } from '../components/hero-section';
 interface CompletedScreenProps {
   settings: OnboardedUserSettings;
   salaryInfo: SalaryInfo;
-  todaySchedule: TodayWorkSchedule | null;
+  todaySchedule: WorkdaySchedule | null;
   isPending?: boolean;
   onAcknowledge: () => void;
   onAdjustWorkTime: () => void;

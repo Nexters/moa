@@ -11,10 +11,15 @@ import { workdayQuery, workdayQueryOptions } from '~/queries/workday';
 
 export type WorkdayStatus = Exclude<WorkdayKind, 'work'>;
 
+export interface WorkdaySchedule {
+  workStartTime: string;
+  workEndTime: string;
+}
+
 export interface UseWorkdayResult {
   workday: WorkdayCache | undefined;
   status: WorkdayStatus | null;
-  schedule: { workStartTime: string; workEndTime: string } | null;
+  schedule: WorkdaySchedule | null;
   completed: boolean;
   isLoading: boolean;
   isSaving: boolean;
