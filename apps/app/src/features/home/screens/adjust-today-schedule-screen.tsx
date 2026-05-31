@@ -61,54 +61,52 @@ export function AdjustTodayScheduleScreen({
     <main className="flex flex-1 flex-col">
       <AppBar type="detail" onBack={onBack} />
 
-      <div className="scrollbar-overlay flex flex-1 flex-col px-5 pb-5">
-        <div className="flex flex-col gap-8">
-          <h1 className="t2-700 text-text-high">일정을 변경할까요?</h1>
+      <div className="scrollbar-overlay flex flex-1 flex-col gap-8 px-5 pb-5">
+        <h1 className="t2-700 text-text-high">일정을 변경할까요?</h1>
 
-          {showStatusOptions && (
-            <Field.Root className="gap-3">
-              <Field.Label>어떤 일정인가요?</Field.Label>
-              <ToggleInput
-                options={SCHEDULE_TYPE_OPTIONS}
-                value={scheduleType}
-                onValueChange={setScheduleType}
-                disabled={disabled}
-              />
-            </Field.Root>
-          )}
-
-          {isWork && (
-            <Field.Root className="gap-3">
-              <Field.Label>근무 시간</Field.Label>
-              <TimePeriodInput value={value} onChange={setValue} autoFocus />
-            </Field.Root>
-          )}
-        </div>
-
-        <AppFooter>
-          <div className="flex w-full gap-3">
-            <Button
-              variant="tertiary"
-              rounded="full"
-              size="lg"
-              className="flex-1"
+        {showStatusOptions && (
+          <Field.Root className="gap-3">
+            <Field.Label>어떤 일정인가요?</Field.Label>
+            <ToggleInput
+              options={SCHEDULE_TYPE_OPTIONS}
+              value={scheduleType}
+              onValueChange={setScheduleType}
               disabled={disabled}
-              onClick={onBack}
-            >
-              취소
-            </Button>
-            <Button
-              rounded="full"
-              size="lg"
-              className="flex-1"
-              disabled={disabled || !isValid}
-              onClick={handleConfirm}
-            >
-              확인
-            </Button>
-          </div>
-        </AppFooter>
+            />
+          </Field.Root>
+        )}
+
+        {isWork && (
+          <Field.Root className="gap-3">
+            <Field.Label>근무 시간</Field.Label>
+            <TimePeriodInput value={value} onChange={setValue} autoFocus />
+          </Field.Root>
+        )}
       </div>
+
+      <AppFooter>
+        <div className="flex w-full gap-3">
+          <Button
+            variant="tertiary"
+            rounded="full"
+            size="lg"
+            className="flex-1"
+            disabled={disabled}
+            onClick={onBack}
+          >
+            취소
+          </Button>
+          <Button
+            rounded="full"
+            size="lg"
+            className="flex-1"
+            disabled={disabled || !isValid}
+            onClick={handleConfirm}
+          >
+            확인
+          </Button>
+        </div>
+      </AppFooter>
     </main>
   );
 }

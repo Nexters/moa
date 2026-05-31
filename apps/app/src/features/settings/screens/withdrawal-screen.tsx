@@ -24,9 +24,9 @@ export function WithdrawalScreen() {
           e.preventDefault();
           void form.handleSubmit();
         }}
-        className="flex min-h-0 flex-1 flex-col"
+        className="scrollbar-overlay flex min-h-0 flex-1 flex-col"
       >
-        <div className="scrollbar-overlay flex flex-col px-5 pb-32">
+        <div className="px-5 pb-32">
           <header className="mb-7 flex flex-col gap-1.5">
             <p className="b2-400 text-text-medium">헤어지게 되어 아쉬워요..</p>
             <h1 className="t2-700 text-text-high">

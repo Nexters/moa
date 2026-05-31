@@ -63,9 +63,11 @@ export function ExtendWorkScreen({
 
   return (
     <main className="flex flex-1 flex-col">
-      <AppBar type="detail" title="얼마나 더 일하나요?" onBack={onBack} />
+      <AppBar type="detail" onBack={onBack} />
 
-      <div className="scrollbar-overlay flex flex-1 flex-col p-5">
+      <div className="scrollbar-overlay flex flex-1 flex-col gap-8 px-5 pb-5">
+        <h1 className="t2-700 text-text-high">얼마나 더 일하나요?</h1>
+
         <Field.Root className="gap-3">
           <Field.Label>근무 시간</Field.Label>
           <TimePeriodInput
@@ -76,31 +78,31 @@ export function ExtendWorkScreen({
             autoFocus
           />
         </Field.Root>
-
-        <AppFooter>
-          <div className="flex w-full gap-3">
-            <Button
-              variant="tertiary"
-              rounded="full"
-              size="lg"
-              className="flex-1"
-              onClick={onBack}
-            >
-              취소
-            </Button>
-            <Button
-              variant="primary"
-              rounded="full"
-              size="lg"
-              className="flex-1"
-              disabled={disabled || !isValid}
-              onClick={handleConfirm}
-            >
-              확인
-            </Button>
-          </div>
-        </AppFooter>
       </div>
+
+      <AppFooter>
+        <div className="flex w-full gap-3">
+          <Button
+            variant="tertiary"
+            rounded="full"
+            size="lg"
+            className="flex-1"
+            onClick={onBack}
+          >
+            취소
+          </Button>
+          <Button
+            variant="primary"
+            rounded="full"
+            size="lg"
+            className="flex-1"
+            disabled={disabled || !isValid}
+            onClick={handleConfirm}
+          >
+            확인
+          </Button>
+        </div>
+      </AppFooter>
     </main>
   );
 }

@@ -30,6 +30,7 @@ export function PostCompletedScreen({
         amount={salaryInfo.accumulatedEarnings}
         highlighted
       />
+
       <InfoCard>
         <InfoCardRow
           label="오늘 일급"
@@ -43,6 +44,7 @@ export function PostCompletedScreen({
           onClick={onAdjustWorkTime}
         />
       </InfoCard>
+
       {onStillWorking && (
         <Button
           variant="link"

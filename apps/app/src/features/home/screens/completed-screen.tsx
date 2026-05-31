@@ -41,11 +41,13 @@ export function CompletedScreen({
   return (
     <div className="flex flex-1 flex-col gap-5">
       {lottieOverlay}
+
       <HeroSection
         variant="full"
         label="오늘 쌓은 월급"
         amount={salaryInfo.todayEarnings}
       />
+
       <InfoCard>
         <InfoCardRow
           label="누적 월급"
@@ -60,6 +62,7 @@ export function CompletedScreen({
           disabled={isPending}
         />
       </InfoCard>
+
       <AppFooter>
         <div className="flex w-full gap-3">
           <Button
