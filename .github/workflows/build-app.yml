@@ -2,6 +2,7 @@ name: Build Moa App
 
 on:
   push:
+    branches: [main]
     tags: ['v*']
   workflow_dispatch:
     inputs:
@@ -15,14 +16,75 @@ env:
   RUST_BACKTRACE: 1
 
 jobs:
+  # 빌드 대상 버전과 실행 여부를 결정한다.
+  # - 태그 push / workflow_dispatch: 항상 빌드 (명시적 의도)
+  # - main push: 릴리스 PR 머지로 tauri.conf.json 이 변경되고, 해당 버전 릴리스가
+  #   아직 없을 때만 빌드 (일반 push 는 skip)
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      tag: ${{ steps.v.outputs.tag }}
+      is_prerelease: ${{ steps.v.outputs.is_prerelease }}
+      should_build: ${{ steps.v.outputs.should_build }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: v
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          BEFORE: ${{ github.event.before }}
+          SHA: ${{ github.sha }}
+        run: |
+          if [ "$EVENT_NAME" = "push" ] && [ "$REF_TYPE" = "tag" ]; then
+            VERSION="${REF_NAME#v}"
+            SHOULD_BUILD=true
+          elif [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            VERSION="${INPUT_VERSION#v}"
+            SHOULD_BUILD=true
+          else
+            # main push: 버전은 package.json 에서 읽고, 릴리스 커밋인지 검증한다.
+            VERSION="$(jq -r .version apps/app/package.json)"
+            SHOULD_BUILD=false
+            CHANGED=$(gh api "repos/$REPO/compare/${BEFORE}...${SHA}" --jq '.files[].filename' 2>/dev/null || true)
+            if echo "$CHANGED" | grep -qx 'apps/app/src-tauri/tauri.conf.json'; then
+              if ! gh release view "v$VERSION" --repo "$REPO" >/dev/null 2>&1; then
+                SHOULD_BUILD=true
+              else
+                echo "릴리스 v$VERSION 가 이미 존재하여 빌드를 건너뜁니다."
+              fi
+            else
+              echo "tauri.conf.json 변경이 없어 릴리스 push 가 아닙니다. 빌드를 건너뜁니다."
+            fi
+          fi
+
+          TAG="v${VERSION}"
+          if [[ "$VERSION" == *-* ]]; then IS_PRE=true; else IS_PRE=false; fi
+
+          {
+            echo "version=$VERSION"
+            echo "tag=$TAG"
+            echo "is_prerelease=$IS_PRE"
+            echo "should_build=$SHOULD_BUILD"
+          } >> "$GITHUB_OUTPUT"
+          echo "resolved: version=$VERSION tag=$TAG prerelease=$IS_PRE should_build=$SHOULD_BUILD"
+
   notify-start:
+    needs: [resolve]
+    if: needs.resolve.outputs.should_build == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Discord Build Start Notification
         continue-on-error: true
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          VERSION: ${{ github.ref_name || inputs.version }}
+          VERSION: ${{ needs.resolve.outputs.tag }}
           ACTOR: ${{ github.actor }}
         run: |
           TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
@@ -49,7 +111,8 @@ jobs:
             "$DISCORD_WEBHOOK"
 
   publish-tauri:
-    needs: [notify-start]
+    needs: [resolve, notify-start]
+    if: needs.resolve.outputs.should_build == 'true'
     permissions:
       contents: write
     strategy:
@@ -131,10 +194,10 @@ jobs:
           APPLE_KEY_ID: ${{ secrets.APPLE_KEY_ID }}
           APPLE_PRIVATE_KEY: ${{ secrets.APPLE_PRIVATE_KEY }}
         with:
-          tagName: ${{ github.ref_name || inputs.version }}
-          releaseName: 'Moa ${{ github.ref_name || inputs.version }}'
+          tagName: ${{ needs.resolve.outputs.tag }}
+          releaseName: 'Moa ${{ needs.resolve.outputs.tag }}'
           releaseBody: |
-            ## Moa ${{ github.ref_name || inputs.version }}
+            ## Moa ${{ needs.resolve.outputs.tag }}
 
             ### 설치 방법
 
@@ -150,21 +213,77 @@ jobs:
             #### 자동 업데이트
             기존 사용자는 자동 업데이트 알림을 받습니다.
           releaseDraft: true
-          prerelease: ${{ contains(github.ref_name, '-') || contains(inputs.version, '-') }}
+          prerelease: ${{ needs.resolve.outputs.is_prerelease == 'true' }}
           includeUpdaterJson: true
           args: ${{ matrix.args }}
 
-  notify-end:
-    needs: [publish-tauri]
+  # GitHub 자동 생성 릴리스 노트("What's Changed")를 draft 릴리스 본문에 덧붙인다.
+  # 베타/정식 모두 적용 — 베타는 draft 로 남지만 노트는 미리 채워둔다.
+  release-notes:
+    needs: [resolve, publish-tauri]
+    if: needs.resolve.outputs.should_build == 'true'
     runs-on: ubuntu-latest
-    if: always()
+    steps:
+      - name: Generate and append release notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ needs.resolve.outputs.tag }}
+        run: |
+          CUR=$(gh release view "$TAG" --repo "$REPO" --json body --jq .body)
+
+          if echo "$CUR" | grep -q "What's Changed"; then
+            echo "릴리스 노트가 이미 존재하여 건너뜁니다."
+            exit 0
+          fi
+
+          NOTES=$(gh api "repos/$REPO/releases/generate-notes" \
+            -f tag_name="$TAG" --jq .body 2>/dev/null || true)
+
+          if [ -z "$NOTES" ]; then
+            echo "생성된 노트가 없어 본문을 그대로 둡니다."
+            exit 0
+          fi
+
+          gh release edit "$TAG" --repo "$REPO" --notes "$CUR
+
+          $NOTES"
+
+  # 정식 릴리스만 draft 를 해제(publish)한다 → 전체 사용자 자동 업데이트 트리거.
+  # 베타(-beta 등 prerelease)는 draft 로 남겨 자동 업데이트를 막는다.
+  publish-release:
+    needs: [resolve, release-notes]
+    if: needs.resolve.outputs.is_prerelease == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ needs.resolve.outputs.tag }}
+        run: gh release edit "$TAG" --repo "$REPO" --draft=false
+
+  # publish 는 GITHUB_TOKEN 으로 수행되어 release:published 이벤트가 deploy 를
+  # 트리거하지 못하므로, 같은 런에서 reusable workflow 로 직접 호출한다.
+  deploy:
+    needs: [resolve, publish-release]
+    if: needs.resolve.outputs.is_prerelease == 'false'
+    uses: ./.github/workflows/deploy-app.yml
+    with:
+      version: ${{ needs.resolve.outputs.tag }}
+    secrets: inherit
+
+  notify-end:
+    needs: [resolve, publish-tauri]
+    runs-on: ubuntu-latest
+    if: always() && needs.resolve.outputs.should_build == 'true'
     steps:
       - name: Discord Notification
         continue-on-error: true
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
           BUILD_RESULT: ${{ needs.publish-tauri.result }}
-          VERSION: ${{ github.ref_name || inputs.version }}
+          VERSION: ${{ needs.resolve.outputs.tag }}
           ACTOR: ${{ github.actor }}
           REPO: ${{ github.repository }}
         run: |
