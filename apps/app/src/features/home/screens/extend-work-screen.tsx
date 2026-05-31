@@ -48,7 +48,12 @@ export function ExtendWorkScreen({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isValid = isEndAfterOriginal(startTime, originalEndTime, value.endTime);
-  const error = isValid ? null : '현재 퇴근 시간보다 늦게 설정해주세요.';
+  // 입력값이 아직 오늘 퇴근 시간 그대로면(열자마자) 경고를 숨긴다.
+  // 사용자가 더 이른 시각으로 바꿨을 때만 경고를 노출.
+  const error =
+    !isValid && value.endTime !== originalEndTime
+      ? '현재 퇴근 시간보다 늦게 설정해주세요.'
+      : null;
   const disabled = isPending || isSubmitting;
 
   const handleConfirm = async () => {
