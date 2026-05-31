@@ -9,6 +9,11 @@ on:
         description: 'Release tag (e.g. v0.5.0)'
         required: true
         type: string
+    secrets:
+      DISCORD_WEBHOOK_URL:
+        required: true
+      HOMEBREW_TAP_TOKEN:
+        required: true
   workflow_dispatch:
     inputs:
       version:

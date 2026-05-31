@@ -22,6 +22,8 @@ jobs:
   #   아직 없을 때만 빌드 (일반 push 는 skip)
   resolve:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     outputs:
       version: ${{ steps.v.outputs.version }}
       tag: ${{ steps.v.outputs.tag }}
@@ -223,6 +225,8 @@ jobs:
     needs: [resolve, publish-tauri]
     if: needs.resolve.outputs.should_build == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Generate and append release notes
         env:
@@ -255,6 +259,8 @@ jobs:
     needs: [resolve, release-notes]
     if: needs.resolve.outputs.is_prerelease == 'false'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Publish release
         env:
@@ -271,7 +277,9 @@ jobs:
     uses: ./.github/workflows/deploy-app.yml
     with:
       version: ${{ needs.resolve.outputs.tag }}
-    secrets: inherit
+    secrets:
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
 
   notify-end:
     needs: [resolve, publish-tauri]

@@ -100,7 +100,7 @@ gh pr create \
 
 prerelease 여부에 맞는 "배포 영향" 항목만 남긴다.
 
-태그는 생성하지 않는다 — 머지 후 `build-app.yml`의 tauri-action이 `v<version>` 태그를 생성한다.
+스킬에서 git 태그를 직접 만들지 않는다. 머지 후 `build-app.yml`의 tauri-action이 `with.tagName`(`v<version>`)으로 GitHub Release를 만든다. 단 GitHub은 **draft 릴리스에는 git 태그 ref를 생성하지 않고**, 릴리스가 publish될 때 해당 커밋에 태그를 만든다. 따라서 정식은 자동 publish 시점에 `v<version>` 태그가 생성되고, **베타는 draft로 남는 동안 git 태그가 만들어지지 않는다**(수동 publish 전까지). 머지 전에 git 태그가 꼭 필요하면 별도로 생성해야 한다.
 
 ### 7. Inform the user
 
