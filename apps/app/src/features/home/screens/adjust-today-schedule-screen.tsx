@@ -17,17 +17,15 @@ interface AdjustTodayScheduleScreenProps {
   settings: OnboardedUserSettings;
   todaySchedule: WorkdaySchedule | null;
   isPending?: boolean;
-  showStatusOptions?: boolean;
   onBack: () => void;
   onSave: (startTime: string, endTime: string) => Promise<void> | void;
-  onSaveStatus?: (status: WorkdayStatus) => Promise<void> | void;
+  onSaveStatus: (status: WorkdayStatus) => Promise<void> | void;
 }
 
 export function AdjustTodayScheduleScreen({
   settings,
   todaySchedule,
   isPending,
-  showStatusOptions,
   onBack,
   onSave,
   onSaveStatus,
@@ -41,7 +39,7 @@ export function AdjustTodayScheduleScreen({
 
   const disabled = isPending || isSaving;
   const isWork = scheduleType === 'work';
-  const isValid = isWork ? value.startTime && value.endTime : !!onSaveStatus;
+  const isValid = isWork ? !!(value.startTime && value.endTime) : true;
 
   const handleConfirm = async () => {
     setIsSaving(true);
@@ -49,7 +47,7 @@ export function AdjustTodayScheduleScreen({
       if (isWork) {
         await onSave(value.startTime, value.endTime);
       } else {
-        await onSaveStatus?.(scheduleType);
+        await onSaveStatus(scheduleType);
       }
       onBack();
     } finally {
@@ -64,24 +62,20 @@ export function AdjustTodayScheduleScreen({
       <div className="scrollbar-overlay flex flex-1 flex-col gap-8 px-5 pb-5">
         <h1 className="t2-700 text-text-high">일정을 변경할까요?</h1>
 
-        {showStatusOptions && (
-          <Field.Root className="gap-3">
-            <Field.Label>어떤 일정인가요?</Field.Label>
-            <ToggleInput
-              options={SCHEDULE_TYPE_OPTIONS}
-              value={scheduleType}
-              onValueChange={setScheduleType}
-              disabled={disabled}
-            />
-          </Field.Root>
-        )}
+        <Field.Root className="gap-3">
+          <Field.Label>어떤 일정인가요?</Field.Label>
+          <ToggleInput
+            options={SCHEDULE_TYPE_OPTIONS}
+            value={scheduleType}
+            onValueChange={setScheduleType}
+            disabled={disabled}
+          />
+        </Field.Root>
 
-        {isWork && (
-          <Field.Root className="gap-3">
-            <Field.Label>근무 시간</Field.Label>
-            <TimePeriodInput value={value} onChange={setValue} autoFocus />
-          </Field.Root>
-        )}
+        <Field.Root className="gap-3">
+          <Field.Label>근무 시간</Field.Label>
+          <TimePeriodInput value={value} onChange={setValue} autoFocus />
+        </Field.Root>
       </div>
 
       <AppFooter>
