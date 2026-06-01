@@ -283,7 +283,7 @@ export function useHomeScreen(): HomeScreenState {
   const handleStillWorking = () => {
     stillWorkingMutation.mutate({
       startTime: getEffectiveStartTime(),
-      endTime: settings.workEndTime,
+      endTime: getEffectiveEndTime(),
     });
   };
 
@@ -510,9 +510,13 @@ function resolveMainScreen(params: ResolveParams): HomeMainScreen {
     case 'completed':
       if (isAcknowledged) {
         const now = getCurrentTimeString();
+        // 오늘 근무 일정(없으면 기본 일정)을 기준으로 판정.
+        const effectiveStart =
+          todaySchedule?.workStartTime ?? settings.workStartTime;
+        const effectiveEnd = todaySchedule?.workEndTime ?? settings.workEndTime;
         const { normalizedEnd, normalizedNow } = normalizeOvernightMinutes(
-          timeToMinutes(settings.workStartTime),
-          timeToMinutes(settings.workEndTime),
+          timeToMinutes(effectiveStart),
+          timeToMinutes(effectiveEnd),
           timeToMinutes(now),
         );
         const isBeforeOriginalEnd = normalizedNow < normalizedEnd;

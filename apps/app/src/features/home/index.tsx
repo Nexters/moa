@@ -6,7 +6,7 @@ import {
   waitForNextSalaryTick,
   waitForSalaryTick,
 } from '~/hooks/use-salary-tick';
-import { useWorkday } from '~/hooks/use-workday';
+import { useWorkday, type WorkdayStatus } from '~/hooks/use-workday';
 import { AppBar } from '~/ui/app-bar';
 
 import { useHomeScreen } from './hooks/use-home-screen';
@@ -18,106 +18,51 @@ import { ExtendWorkScreen } from './screens/extend-work-screen';
 import { PostCompletedScreen } from './screens/post-completed-screen';
 import { WorkingScreen } from './screens/working-screen';
 
-type AdjustMode =
-  | null
-  | 'before-work'
-  | 'working'
-  | 'completed'
-  | 'post-completed';
-
 export function Home() {
   const navigate = useNavigate();
-  const [adjustMode, setAdjustMode] = useState<AdjustMode>(null);
+  const [isAdjusting, setIsAdjusting] = useState(false);
   const [isExtendingWork, setIsExtendingWork] = useState(false);
   const { isLoading, mainScreen } = useHomeScreen();
-  const { saveSchedule, clearSchedule, saveStatus, clearStatus } = useWorkday();
+  const { saveSchedule, saveStatus } = useWorkday();
 
   useEffect(() => {
     if (!mainScreen) return;
-    if (adjustMode === 'before-work' && mainScreen.screen !== 'before-work') {
-      setAdjustMode(null);
-    }
-    if (adjustMode === 'working' && mainScreen.screen !== 'working') {
-      setAdjustMode(null);
-    }
-    if (adjustMode === 'completed' && mainScreen.screen !== 'completed') {
-      setAdjustMode(null);
-    }
-    if (
-      adjustMode === 'post-completed' &&
-      mainScreen.screen !== 'post-completed'
-    ) {
-      setAdjustMode(null);
+    if (isAdjusting && mainScreen.screen === 'non-working') {
+      setIsAdjusting(false);
     }
     if (isExtendingWork && mainScreen.screen !== 'completed') {
       setIsExtendingWork(false);
     }
-  }, [adjustMode, isExtendingWork, mainScreen]);
+  }, [isAdjusting, isExtendingWork, mainScreen]);
 
   if (isLoading || !mainScreen) return null;
 
-  if (adjustMode === 'before-work' && mainScreen.screen === 'before-work') {
-    return (
-      <AdjustTodayScheduleScreen
-        settings={mainScreen.settings}
-        todaySchedule={mainScreen.todaySchedule}
-        isPending={mainScreen.isPending}
-        showStatusOptions
-        onBack={() => setAdjustMode(null)}
-        onSave={async (startTime, endTime) => {
-          await Promise.all([clearStatus(), saveSchedule(startTime, endTime)]);
-          await waitForNextSalaryTick();
-        }}
-        onSaveStatus={async (status) => {
-          await Promise.all([saveStatus(status), clearSchedule()]);
-          await waitForSalaryTick((info) => info.workStatus === status);
-        }}
-      />
-    );
-  }
+  const handleSaveSchedule = async (startTime: string, endTime: string) => {
+    if (
+      mainScreen.screen === 'completed' ||
+      mainScreen.screen === 'post-completed'
+    ) {
+      await mainScreen.onAdjustSchedule(startTime, endTime);
+    } else {
+      await saveSchedule(startTime, endTime);
+      await waitForNextSalaryTick();
+    }
+  };
 
-  if (adjustMode === 'working' && mainScreen.screen === 'working') {
-    return (
-      <AdjustTodayScheduleScreen
-        settings={mainScreen.settings}
-        todaySchedule={mainScreen.todaySchedule}
-        isPending={mainScreen.isPending}
-        showStatusOptions
-        onBack={() => setAdjustMode(null)}
-        onSave={async (startTime, endTime) => {
-          await Promise.all([clearStatus(), saveSchedule(startTime, endTime)]);
-          await waitForNextSalaryTick();
-        }}
-        onSaveStatus={async (status) => {
-          await Promise.all([saveStatus(status), clearSchedule()]);
-          await waitForSalaryTick((info) => info.workStatus === status);
-        }}
-      />
-    );
-  }
+  const handleSaveStatus = async (status: WorkdayStatus) => {
+    await saveStatus(status);
+    await waitForSalaryTick((info) => info.workStatus === status);
+  };
 
-  if (adjustMode === 'completed' && mainScreen.screen === 'completed') {
+  if (isAdjusting && mainScreen.screen !== 'non-working') {
     return (
       <AdjustTodayScheduleScreen
         settings={mainScreen.settings}
         todaySchedule={mainScreen.todaySchedule}
-        isPending={mainScreen.isPending}
-        onBack={() => setAdjustMode(null)}
-        onSave={mainScreen.onAdjustSchedule}
-      />
-    );
-  }
-
-  if (
-    adjustMode === 'post-completed' &&
-    mainScreen.screen === 'post-completed'
-  ) {
-    return (
-      <AdjustTodayScheduleScreen
-        settings={mainScreen.settings}
-        todaySchedule={mainScreen.todaySchedule}
-        onBack={() => setAdjustMode(null)}
-        onSave={mainScreen.onAdjustSchedule}
+        isPending={'isPending' in mainScreen ? mainScreen.isPending : undefined}
+        onBack={() => setIsAdjusting(false)}
+        onSave={handleSaveSchedule}
+        onSaveStatus={handleSaveStatus}
       />
     );
   }
@@ -148,13 +93,13 @@ export function Home() {
         {mainScreen.screen === 'before-work' && (
           <BeforeWorkScreen
             {...mainScreen}
-            onAdjustWorkTime={() => setAdjustMode('before-work')}
+            onAdjustWorkTime={() => setIsAdjusting(true)}
           />
         )}
         {mainScreen.screen === 'working' && (
           <WorkingScreen
             {...mainScreen}
-            onAdjustWorkTime={() => setAdjustMode('working')}
+            onAdjustWorkTime={() => setIsAdjusting(true)}
           />
         )}
         {mainScreen.screen === 'completed' && (
@@ -164,14 +109,14 @@ export function Home() {
             todaySchedule={mainScreen.todaySchedule}
             isPending={mainScreen.isPending}
             onAcknowledge={mainScreen.onAcknowledge}
-            onAdjustWorkTime={() => setAdjustMode('completed')}
+            onAdjustWorkTime={() => setIsAdjusting(true)}
             onExtendWork={() => setIsExtendingWork(true)}
           />
         )}
         {mainScreen.screen === 'post-completed' && (
           <PostCompletedScreen
             {...mainScreen}
-            onAdjustWorkTime={() => setAdjustMode('post-completed')}
+            onAdjustWorkTime={() => setIsAdjusting(true)}
           />
         )}
       </div>
