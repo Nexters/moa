@@ -91,9 +91,11 @@ gh pr create \
 ## Release v<version>
 
 ### What's Changed
+
 - <feat/fix 등 주요 변경 요약 (커밋/PR 기준)>
 
 ### 배포 영향
+
 - (정식) 머지 시 자동 빌드 → 릴리스 노트 자동 생성 → 자동 publish → 전체 사용자 자동 업데이트
 - (베타) 머지 시 빌드만, draft 유지 — 자동 업데이트 안 나감
 ```
