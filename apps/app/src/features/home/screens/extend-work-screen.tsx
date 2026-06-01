@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useForm } from '@tanstack/react-form';
 
 import type { WorkdaySchedule } from '~/hooks/use-workday';
 import type { OnboardedUserSettings } from '~/lib/tauri-bindings';
 import { timeToMinutes } from '~/lib/time';
 import { AppBar, AppFooter, Button, Field } from '~/ui';
 import { TimePeriodInput, type TimePeriodValue } from '~/ui/time-period-input';
+
+import { getEffectiveWorkTime } from '../lib/effective-work-time';
 
 interface ExtendWorkScreenProps {
   settings: OnboardedUserSettings;
@@ -38,33 +40,20 @@ export function ExtendWorkScreen({
   onBack,
   onSubmit,
 }: ExtendWorkScreenProps) {
-  const startTime = todaySchedule?.workStartTime ?? settings.workStartTime;
-  const originalEndTime = todaySchedule?.workEndTime ?? settings.workEndTime;
+  const { startTime, endTime: originalEndTime } = getEffectiveWorkTime(
+    todaySchedule,
+    settings,
+  );
 
-  const [value, setValue] = useState<TimePeriodValue>({
-    startTime,
-    endTime: originalEndTime,
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const isValid = isEndAfterOriginal(startTime, originalEndTime, value.endTime);
-  // 입력값이 아직 오늘 퇴근 시간 그대로면(열자마자) 경고를 숨긴다.
-  // 사용자가 더 이른 시각으로 바꿨을 때만 경고를 노출.
-  const error =
-    !isValid && value.endTime !== originalEndTime
-      ? '현재 퇴근 시간보다 늦게 설정해주세요.'
-      : null;
-  const disabled = isPending || isSubmitting;
-
-  const handleConfirm = async () => {
-    setIsSubmitting(true);
-    try {
-      await onSubmit(value.endTime);
+  const form = useForm({
+    defaultValues: {
+      period: { startTime, endTime: originalEndTime } as TimePeriodValue,
+    },
+    onSubmit: async ({ value }) => {
+      await onSubmit(value.period.endTime);
       onBack();
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    },
+  });
 
   return (
     <main className="flex flex-1 flex-col">
@@ -73,16 +62,30 @@ export function ExtendWorkScreen({
       <div className="scrollbar-overlay flex flex-1 flex-col gap-8 px-5 pb-5">
         <h1 className="t2-700 text-text-high">얼마나 더 일하나요?</h1>
 
-        <Field.Root className="gap-3">
-          <Field.Label>근무 시간</Field.Label>
-          <TimePeriodInput
-            value={value}
-            onChange={(v) => setValue({ ...v, startTime })}
-            disabledStart
-            error={error}
-            autoFocus
-          />
-        </Field.Root>
+        <form.Field name="period">
+          {(field) => {
+            const { endTime } = field.state.value;
+            // 입력값이 아직 오늘 퇴근 시간 그대로면(열자마자) 경고를 숨긴다.
+            // 사용자가 더 이른 시각으로 바꿨을 때만 경고를 노출.
+            const error =
+              !isEndAfterOriginal(startTime, originalEndTime, endTime) &&
+              endTime !== originalEndTime
+                ? '현재 퇴근 시간보다 늦게 설정해주세요.'
+                : null;
+            return (
+              <Field.Root className="gap-3">
+                <Field.Label>근무 시간</Field.Label>
+                <TimePeriodInput
+                  value={field.state.value}
+                  onChange={(v) => field.handleChange({ ...v, startTime })}
+                  disabledStart
+                  error={error}
+                  autoFocus
+                />
+              </Field.Root>
+            );
+          }}
+        </form.Field>
       </div>
 
       <AppFooter>
@@ -96,16 +99,29 @@ export function ExtendWorkScreen({
           >
             취소
           </Button>
-          <Button
-            variant="primary"
-            rounded="full"
-            size="lg"
-            className="flex-1"
-            disabled={disabled || !isValid}
-            onClick={handleConfirm}
+          <form.Subscribe
+            selector={(state) => ({
+              endTime: state.values.period.endTime,
+              isSubmitting: state.isSubmitting,
+            })}
           >
-            확인
-          </Button>
+            {({ endTime, isSubmitting }) => (
+              <Button
+                variant="primary"
+                rounded="full"
+                size="lg"
+                className="flex-1"
+                disabled={
+                  isPending ||
+                  isSubmitting ||
+                  !isEndAfterOriginal(startTime, originalEndTime, endTime)
+                }
+                onClick={() => form.handleSubmit()}
+              >
+                확인
+              </Button>
+            )}
+          </form.Subscribe>
         </div>
       </AppFooter>
     </main>
