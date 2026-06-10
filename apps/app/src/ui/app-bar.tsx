@@ -49,7 +49,7 @@ function MainAppBar({ onSettings, actions }: MainAppBarProps) {
   return (
     <>
       <button
-        className="text-text-high cursor-pointer px-5 py-2.5"
+        className="text-text-high hover:text-text-medium active:text-text-medium cursor-pointer px-5 py-2.5 transition-colors"
         aria-label="Moa 홈페이지"
         onClick={() => openUrl('https://nexters.github.io/moa')}
       >

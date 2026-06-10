@@ -42,7 +42,7 @@ export function ToggleInput<T extends string>({
             'transition-colors duration-150 ease-in-out',
             option.value === value
               ? 'b1-600 text-text-high'
-              : 'b1-500 text-text-disabled',
+              : 'b1-500 text-text-disabled hover:bg-interactive-hover',
           )}
         >
           {option.label}

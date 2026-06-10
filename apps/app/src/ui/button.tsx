@@ -8,11 +8,11 @@ export const buttonVariants = tv({
   variants: {
     variant: {
       primary:
-        'bg-green-40 text-gray-90 disabled:bg-gray-70 disabled:text-text-disabled active:bg-green-50',
+        'bg-green-40 text-gray-90 disabled:bg-gray-70 disabled:text-text-disabled hover:bg-green-50 active:bg-green-50',
       secondary:
-        'bg-gray-60 text-gray-0 active:bg-gray-70 disabled:bg-gray-70 disabled:text-text-disabled',
+        'bg-gray-60 text-gray-0 hover:bg-gray-70 active:bg-gray-70 disabled:bg-gray-70 disabled:text-text-disabled',
       tertiary:
-        'bg-gray-0 text-gray-90 active:bg-gray-20 disabled:bg-gray-70 disabled:text-text-disabled',
+        'bg-gray-0 text-gray-90 hover:bg-gray-20 active:bg-gray-20 disabled:bg-gray-70 disabled:text-text-disabled',
       link: 'b2-600 text-text-medium hover:text-text-high active:text-text-low disabled:text-text-disabled bg-transparent px-0 underline underline-offset-2 disabled:no-underline',
     },
     rounded: {
