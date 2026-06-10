@@ -36,7 +36,9 @@ export function SalaryScreen() {
       <div className="flex flex-1 flex-col px-6">
         <h1 className="t2-700 text-text-high">급여 정보를 알려주세요</h1>
         <p className="b2-500 text-text-medium mt-2">
-          세전, 세후 상관없이 보고 싶은 금액을 입력해주세요.
+          입력한 정보를 바탕으로 실시간 급여가 계산되며,
+          <br />
+          급여 정보는 누구에게도 공개되지 않아요.
         </p>
 
         <div className="mt-8 flex flex-col gap-6">
@@ -153,10 +155,15 @@ export function SalaryScreen() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setConfirmOpen(false)}>
+            <AlertDialogAction variant="tertiary" onClick={goToPrevious}>
+              네
+            </AlertDialogAction>
+            <AlertDialogCancel
+              variant="primary"
+              onClick={() => setConfirmOpen(false)}
+            >
               아니오
             </AlertDialogCancel>
-            <AlertDialogAction onClick={goToPrevious}>네</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

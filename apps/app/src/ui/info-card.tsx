@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { tv, type VariantProps } from 'tailwind-variants';
+import { cn, tv, type VariantProps } from 'tailwind-variants';
 
 import { ChevronRightIcon } from './icons';
 
@@ -32,14 +32,24 @@ export function InfoCard({ spacing, children, className }: InfoCardProps) {
 interface InfoCardRowProps {
   label: string;
   value?: string;
+  valueClassName?: string;
   children?: ReactNode;
 }
 
-export function InfoCardRow({ label, value, children }: InfoCardRowProps) {
+export function InfoCardRow({
+  label,
+  value,
+  valueClassName,
+  children,
+}: InfoCardRowProps) {
   return (
     <div className="flex h-6 items-center gap-3">
       <span className="b1-400 text-text-medium">{label}</span>
-      {children ?? <span className="b1-600 text-text-high">{value}</span>}
+      {children ?? (
+        <span className={cn('b1-600 text-text-high', valueClassName)}>
+          {value}
+        </span>
+      )}
     </div>
   );
 }
