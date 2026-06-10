@@ -23,7 +23,7 @@ export function IconButton({
     <button
       type="button"
       className={cn(
-        'text-text-high active:text-text-medium disabled:text-text-disabled flex cursor-pointer items-center justify-center transition-colors disabled:cursor-not-allowed',
+        'text-text-high hover:text-text-medium active:text-text-medium disabled:text-text-disabled flex cursor-pointer items-center justify-center transition-colors disabled:cursor-not-allowed',
         sizeStyles[size],
         className,
       )}
