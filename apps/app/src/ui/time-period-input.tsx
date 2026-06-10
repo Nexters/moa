@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { cn } from 'tailwind-variants';
 
-import { ArrowRightIcon, ClockIcon } from './icons';
+import { ArrowRightIcon, AttentionCircleIcon } from './icons';
 import { TimeInput } from './time-input';
 
 // ============================================================================
@@ -121,13 +121,13 @@ export function TimePeriodInput({
       </div>
       {error ? (
         <div className="flex items-center gap-1">
-          <ClockIcon className="text-error" />
+          <AttentionCircleIcon className="text-error" />
           <span className="b2-500 text-error">{error}</span>
         </div>
       ) : (
         duration && (
           <div className="flex items-center gap-1">
-            <ClockIcon className="text-green-40" />
+            <AttentionCircleIcon className="text-green-40" />
             <span className="b2-500 text-green-40">{duration}</span>
           </div>
         )

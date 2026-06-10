@@ -304,19 +304,21 @@ fn wait_for_auth_code(listener: &TcpListener, expected_state: &str) -> Result<St
 fn write_expired_oauth_response(stream: &mut impl Write) {
     write_oauth_html_response(
         stream,
-        "만료된 로그인 창",
+        "로그인 시간 초과",
         "Moa에서 새로 열린 로그인 창을 사용해 주세요.",
         "!",
         "#9ca3af",
     );
 }
 
+const COIN_ROTATE_OAUTH_ICON: &str = r#"<img src="https://nexters.github.io/moa/images/coin-rotate.gif" width="72" height="72" alt="" style="display:block;margin:0 auto" />"#;
+
 fn write_success_oauth_response(stream: &mut impl Write) {
     write_oauth_html_response(
         stream,
         "로그인 완료",
-        "Moa 앱으로 돌아가세요",
-        "&#10003;",
+        "이제 Moa 앱으로 돌아가세요.",
+        COIN_ROTATE_OAUTH_ICON,
         "#1fd683",
     );
 }
@@ -340,7 +342,7 @@ fn write_oauth_html_response(
 ) {
     // HTML 응답 — theme.css 디자인 시스템(bg-primary, container-primary, green-40, text-high/medium) 반영
     let body = format!(
-        r#"<!DOCTYPE html><html lang="ko"><body style="margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#141414;font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif"><div style="text-align:center;padding:40px;background:#212224;border-radius:16px"><div style="font-size:48px;line-height:1;margin-bottom:16px;color:{icon_color}">{icon}</div><h2 style="margin:0 0 8px;font-size:20px;line-height:28px;letter-spacing:-0.2px;font-weight:700;color:#ffffff">{title}</h2><p style="margin:0;font-size:14px;line-height:21px;letter-spacing:-0.2px;font-weight:400;color:rgba(255,255,255,0.6)">{description}</p></div></body></html>"#
+        r#"<!DOCTYPE html><html lang="ko"><body style="margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#141414;font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Noto Sans KR',sans-serif"><div style="text-align:center;padding:48px 56px;background:#212224;border-radius:16px"><div style="font-size:48px;line-height:1;margin-bottom:16px;color:{icon_color}">{icon}</div><h2 style="margin:0 0 8px;font-size:20px;line-height:28px;letter-spacing:-0.2px;font-weight:700;color:#ffffff">{title}</h2><p style="margin:0;font-size:14px;line-height:21px;letter-spacing:-0.2px;font-weight:400;color:rgba(255,255,255,0.6)">{description}</p></div></body></html>"#
     );
     let response = format!(
         "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
@@ -1041,7 +1043,7 @@ mod tests {
         let rx = wait_for_auth_code_async(listener);
 
         let stale_response = send_callback(port, "code=stale-code&state=stale");
-        assert!(stale_response.contains("만료된 로그인 창"));
+        assert!(stale_response.contains("로그인 시간 초과"));
 
         let valid_response = send_callback(port, "code=valid-code&state=expected");
         assert!(valid_response.contains("로그인 완료"));
