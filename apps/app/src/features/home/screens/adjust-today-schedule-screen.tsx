@@ -79,18 +79,24 @@ export function AdjustTodayScheduleScreen({
           )}
         </form.Field>
 
-        <form.Field name="period">
-          {(field) => (
-            <Field.Root className="gap-3">
-              <Field.Label>근무 시간</Field.Label>
-              <TimePeriodInput
-                value={field.state.value}
-                onChange={field.handleChange}
-                autoFocus
-              />
-            </Field.Root>
-          )}
-        </form.Field>
+        <form.Subscribe selector={(state) => state.values.scheduleType}>
+          {(scheduleType) =>
+            scheduleType === 'work' && (
+              <form.Field name="period">
+                {(field) => (
+                  <Field.Root className="gap-3">
+                    <Field.Label>근무 시간</Field.Label>
+                    <TimePeriodInput
+                      value={field.state.value}
+                      onChange={field.handleChange}
+                      autoFocus
+                    />
+                  </Field.Root>
+                )}
+              </form.Field>
+            )
+          }
+        </form.Subscribe>
       </div>
 
       <AppFooter>
