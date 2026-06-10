@@ -1,4 +1,4 @@
-import { formatMonth } from '~/lib/format';
+import { formatCurrency, formatMonth } from '~/lib/format';
 import { AppFooter, Button, InfoCard, InfoCardRow } from '~/ui';
 
 import { HeroSection } from '../components/hero-section';
@@ -24,18 +24,22 @@ export function DayOffScreen({
     <div className="flex flex-1 flex-col">
       <HeroSection
         variant="holiday"
-        label={
-          isAnnualLeave ? '연차 중 쌓은 월급' : `${formatMonth()} 누적 월급`
-        }
-        amount={
-          isAnnualLeave
-            ? salaryInfo.todayEarnings
-            : salaryInfo.accumulatedEarnings
-        }
+        label={`${formatMonth()} 누적 월급`}
+        amount={salaryInfo.accumulatedEarnings}
       />
 
       <InfoCard className="mt-7">
-        <InfoCardRow label="근무 상태" value={STATUS_LABEL[status]} />
+        <InfoCardRow
+          label="근무 상태"
+          value={STATUS_LABEL[status]}
+          valueClassName={isAnnualLeave ? 'text-blue' : undefined}
+        />
+        {isAnnualLeave && (
+          <InfoCardRow
+            label="오늘 일급"
+            value={formatCurrency(salaryInfo.todayEarnings)}
+          />
+        )}
       </InfoCard>
 
       <AppFooter>
