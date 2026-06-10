@@ -69,7 +69,7 @@ export function InfoCardButtonRow({
     <button
       type="button"
       aria-label={ariaLabel ?? label}
-      className="hover:bg-interactive-hover -mx-2 flex h-6 cursor-pointer items-center justify-between gap-3 rounded-md px-2 text-left transition-colors disabled:cursor-not-allowed"
+      className="hover:bg-interactive-hover -m-2 flex cursor-pointer items-center justify-between gap-3 rounded-md p-2 text-left transition-colors disabled:cursor-not-allowed"
       onClick={onClick}
       disabled={disabled}
     >
