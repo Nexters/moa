@@ -33,7 +33,7 @@ function Error({
   return (
     <BaseField.Error
       match={match}
-      className={cn('b3-400 text-error', className)}
+      className={cn('b2-500 text-error', className)}
       {...props}
     />
   );
