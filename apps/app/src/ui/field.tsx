@@ -27,10 +27,12 @@ function Label({
 
 function Error({
   className,
+  match = true,
   ...props
 }: React.ComponentProps<typeof BaseField.Error>) {
   return (
     <BaseField.Error
+      match={match}
       className={cn('b3-400 text-error', className)}
       {...props}
     />
