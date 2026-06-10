@@ -25,7 +25,7 @@ export function Checkbox({
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={cn(
-        'flex w-full cursor-pointer items-center gap-3 disabled:cursor-not-allowed',
+        'group flex w-full cursor-pointer items-center gap-3 disabled:cursor-not-allowed',
         className,
       )}
     >
@@ -33,7 +33,9 @@ export function Checkbox({
         aria-hidden="true"
         className={cn(
           'flex size-8 shrink-0 items-center justify-center rounded-lg p-1 transition-colors',
-          checked ? 'bg-green-40' : 'bg-container-primary',
+          checked
+            ? 'bg-green-40'
+            : 'bg-container-primary group-hover:bg-interactive-hover',
         )}
       >
         <CheckIcon
