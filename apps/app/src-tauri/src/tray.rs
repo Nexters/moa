@@ -548,7 +548,13 @@ pub fn set_tray_attributed_title(
                     ];
 
                     let attrs: id = if green {
-                        let color: id = msg_send![class!(NSColor), systemGreenColor];
+                        let color: id = msg_send![
+                            class!(NSColor),
+                            colorWithSRGBRed: 0.121_568_63_f64
+                            green: 0.839_215_69_f64
+                            blue: 0.513_725_5_f64
+                            alpha: 1.0_f64
+                        ];
 
                         let font_key_c = CString::new("NSFont").unwrap();
                         let font_key: id =

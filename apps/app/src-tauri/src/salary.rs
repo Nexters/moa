@@ -438,11 +438,11 @@ fn get_worked_days_since_pay_day(
     count
 }
 
-/// Format amount as " 1,234,567원" (Korean currency with comma separators).
+/// Format amount as " 1,234,567원" (Korean currency with comma separators).
 fn format_tray_title(amount: f64) -> String {
     let rounded = amount.floor() as i64;
     let s = format_with_commas(rounded.unsigned_abs());
-    format!(" {s}원")
+    format!("\u{2009}{s}원")
 }
 
 fn format_with_commas(n: u64) -> String {
@@ -539,9 +539,9 @@ mod tests {
 
     #[test]
     fn test_format_tray_title() {
-        assert_eq!(format_tray_title(1234567.89), " 1,234,567원");
-        assert_eq!(format_tray_title(0.0), " 0원");
-        assert_eq!(format_tray_title(999.5), " 999원");
+        assert_eq!(format_tray_title(1234567.89), "\u{2009}1,234,567원");
+        assert_eq!(format_tray_title(0.0), "\u{2009}0원");
+        assert_eq!(format_tray_title(999.5), "\u{2009}999원");
     }
 
     #[test]
