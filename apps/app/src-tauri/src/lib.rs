@@ -8,6 +8,7 @@ mod api_client;
 mod auth;
 mod bindings;
 mod commands;
+mod push_notifications;
 mod salary;
 mod tray;
 mod types;

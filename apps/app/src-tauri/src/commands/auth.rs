@@ -182,6 +182,15 @@ fn generate_apple_client_secret() -> Result<String, String> {
         .map_err(|e| format!("Apple client_secret JWT 생성 실패: {e}"))
 }
 
+fn build_apple_authorize_url(client_id: &str, redirect_uri: &str, state: &str) -> String {
+    format!(
+        "https://appleid.apple.com/auth/authorize?client_id={}&redirect_uri={}&response_type=code&response_mode=query&state={}",
+        client_id,
+        urlencoded(redirect_uri),
+        state,
+    )
+}
+
 /// Apple auth code → id_token 교환
 async fn exchange_apple_code(code: &str, redirect_uri: &str) -> Result<String, String> {
     let client_id = apple_client_id()?;
@@ -393,12 +402,7 @@ pub async fn social_login(app: AppHandle, provider: AuthProvider) -> Result<Logi
         }
         AuthProvider::Apple => {
             let client_id = apple_client_id()?;
-            format!(
-                "https://appleid.apple.com/auth/authorize?client_id={}&redirect_uri={}&response_type=code&scope=openid&response_mode=query&state={}",
-                client_id,
-                urlencoded(&redirect_uri),
-                state,
-            )
+            build_apple_authorize_url(&client_id, &redirect_uri, &state)
         }
     };
 
@@ -434,8 +438,7 @@ pub async fn social_login(app: AppHandle, provider: AuthProvider) -> Result<Logi
     let api = ApiClient::new(&base_url);
 
     log::info!("MOA 서버 로그인 시작 ({})", base_url);
-    let access_token = api
-        .auth_login(provider.as_str(), &id_token)
+    let access_token = login_to_moa_server(&api, &provider, &id_token)
         .await
         .map_err(|e| format!("서버 로그인 실패: {e}"))?;
 
@@ -459,6 +462,32 @@ pub async fn social_login(app: AppHandle, provider: AuthProvider) -> Result<Logi
         is_logged_in: true,
         needs_onboarding,
     })
+}
+
+async fn login_to_moa_server(
+    api: &ApiClient,
+    provider: &AuthProvider,
+    id_token: &str,
+) -> Result<String, ApiError> {
+    match provider {
+        AuthProvider::Kakao => api.auth_login(provider.as_str(), id_token).await,
+        AuthProvider::Apple => {
+            let fcm_device_token =
+                fcm_device_token_or_empty(crate::push_notifications::get_fcm_device_token().await);
+
+            api.auth_login_apple(id_token, &fcm_device_token).await
+        }
+    }
+}
+
+fn fcm_device_token_or_empty(result: Result<String, String>) -> String {
+    match result {
+        Ok(token) => token,
+        Err(e) => {
+            log::warn!("FCM 토큰 획득 실패 — 빈 토큰으로 Apple 로그인 계속: {e}");
+            String::new()
+        }
+    }
 }
 
 /// 진행 중인 소셜 로그인 취소
@@ -991,7 +1020,10 @@ mod tests {
     use super::*;
     use std::net::TcpStream;
     use std::sync::mpsc;
+    use std::sync::Mutex;
     use std::time::Duration;
+
+    static CALLBACK_TEST_LOCK: Mutex<()> = Mutex::new(());
 
     fn callback_listener() -> (TcpListener, u16) {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
@@ -1017,14 +1049,20 @@ mod tests {
             "GET /callback?{query} HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n"
         )
         .unwrap();
+        stream.shutdown(std::net::Shutdown::Write).unwrap();
 
         let mut response = String::new();
-        stream.read_to_string(&mut response).unwrap();
+        match stream.read_to_string(&mut response) {
+            Ok(_) => {}
+            Err(e) if e.kind() == std::io::ErrorKind::ConnectionReset && !response.is_empty() => {}
+            Err(e) => panic!("callback response read failed: {e}"),
+        }
         response
     }
 
     #[test]
     fn wait_for_auth_code_returns_code_for_matching_state() {
+        let _guard = CALLBACK_TEST_LOCK.lock().unwrap();
         SOCIAL_LOGIN_CANCELLED.store(false, Ordering::Relaxed);
         let (listener, port) = callback_listener();
         let rx = wait_for_auth_code_async(listener);
@@ -1038,6 +1076,7 @@ mod tests {
 
     #[test]
     fn wait_for_auth_code_ignores_stale_state_then_accepts_matching_state() {
+        let _guard = CALLBACK_TEST_LOCK.lock().unwrap();
         SOCIAL_LOGIN_CANCELLED.store(false, Ordering::Relaxed);
         let (listener, port) = callback_listener();
         let rx = wait_for_auth_code_async(listener);
@@ -1054,6 +1093,7 @@ mod tests {
 
     #[test]
     fn wait_for_auth_code_returns_error_for_provider_error_matching_state() {
+        let _guard = CALLBACK_TEST_LOCK.lock().unwrap();
         SOCIAL_LOGIN_CANCELLED.store(false, Ordering::Relaxed);
         let (listener, port) = callback_listener();
         let rx = wait_for_auth_code_async(listener);
@@ -1063,5 +1103,37 @@ mod tests {
 
         let result = rx.recv_timeout(Duration::from_secs(1)).unwrap();
         assert_eq!(result.unwrap_err(), "OAuth 제공자 오류: access_denied");
+    }
+
+    #[test]
+    fn apple_authorize_url_uses_query_mode_without_scope() {
+        let url = build_apple_authorize_url(
+            "com.example.service",
+            "http://127.0.0.1:17171/callback",
+            "state-value",
+        );
+
+        assert!(url.contains("client_id=com.example.service"));
+        assert!(url.contains("redirect_uri=http%3A%2F%2F127.0.0.1%3A17171%2Fcallback"));
+        assert!(url.contains("response_type=code"));
+        assert!(url.contains("response_mode=query"));
+        assert!(url.contains("state=state-value"));
+        assert!(!url.contains("scope="));
+    }
+
+    #[test]
+    fn fcm_device_token_falls_back_to_empty_string_on_error() {
+        assert_eq!(
+            fcm_device_token_or_empty(Err("permission denied".to_string())),
+            ""
+        );
+    }
+
+    #[test]
+    fn fcm_device_token_uses_token_on_success() {
+        assert_eq!(
+            fcm_device_token_or_empty(Ok("fcm-token".to_string())),
+            "fcm-token"
+        );
     }
 }

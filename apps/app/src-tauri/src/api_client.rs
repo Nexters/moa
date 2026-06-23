@@ -71,6 +71,13 @@ pub struct AuthRequest {
     pub id_token: String,
 }
 
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AppleAuthRequest {
+    pub id_token: String,
+    pub fcm_device_token: String,
+}
+
 // ============================================================================
 // Profile
 // ============================================================================
@@ -341,6 +348,41 @@ impl ApiClient {
         let url = format!("{}/api/v1/auth/{}", self.base_url, provider);
         let body = AuthRequest {
             id_token: id_token.to_string(),
+        };
+
+        let resp = self
+            .http
+            .post(&url)
+            .json(&body)
+            .send()
+            .await
+            .map_err(|e| ApiError::Network(e.to_string()))?;
+
+        if !resp.status().is_success() {
+            return Err(response_error(resp).await);
+        }
+
+        let api_resp: ApiResponse<AuthTokenResponse> = resp
+            .json()
+            .await
+            .map_err(|e| ApiError::Network(e.to_string()))?;
+
+        api_resp
+            .content
+            .map(|c| c.access_token)
+            .ok_or_else(|| missing_content_error("응답에 accessToken 없음"))
+    }
+
+    /// POST /api/v1/auth/apple
+    pub async fn auth_login_apple(
+        &self,
+        id_token: &str,
+        fcm_device_token: &str,
+    ) -> Result<String, ApiError> {
+        let url = format!("{}/api/v1/auth/apple", self.base_url);
+        let body = AppleAuthRequest {
+            id_token: id_token.to_string(),
+            fcm_device_token: fcm_device_token.to_string(),
         };
 
         let resp = self
@@ -807,6 +849,31 @@ mod tests {
         assert_eq!(
             serde_json::to_string(&req).unwrap(),
             r#"{"clockOutTime":"20:30"}"#
+        );
+    }
+
+    #[test]
+    fn auth_request_serializes_kakao_body_without_fcm_token() {
+        let req = AuthRequest {
+            id_token: "id-token".into(),
+        };
+
+        assert_eq!(
+            serde_json::to_string(&req).unwrap(),
+            r#"{"idToken":"id-token"}"#
+        );
+    }
+
+    #[test]
+    fn apple_auth_request_serializes_id_token_and_fcm_device_token() {
+        let req = AppleAuthRequest {
+            id_token: "id-token".into(),
+            fcm_device_token: "fcm-token".into(),
+        };
+
+        assert_eq!(
+            serde_json::to_string(&req).unwrap(),
+            r#"{"idToken":"id-token","fcmDeviceToken":"fcm-token"}"#
         );
     }
 }
