@@ -139,7 +139,7 @@ export function LoginScreen() {
           rounded="full"
           size="lg"
           fullWidth
-          className="bg-[#fee500] active:bg-[#e6cf00]"
+          className="bg-[#fee500] hover:bg-[#E5CE02] active:bg-[#e6cf00]"
           onClick={() => handleSocialLogin('kakao')}
         >
           <span className="flex items-center justify-center gap-2">

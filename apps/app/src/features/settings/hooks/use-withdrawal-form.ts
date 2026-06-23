@@ -16,17 +16,23 @@ export const WITHDRAWAL_REASON_OPTIONS: readonly string[] = [
 ];
 
 export interface WithdrawalFormValues {
-  reasons: string[];
+  reason: string | null;
 }
+
+const DEFAULT_VALUES: WithdrawalFormValues = {
+  reason: null,
+};
 
 export function useWithdrawalForm() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   return useForm({
-    defaultValues: { reasons: [] as string[] } satisfies WithdrawalFormValues,
+    defaultValues: DEFAULT_VALUES,
     onSubmit: async ({ value }) => {
-      const result = await commands.withdrawMember(value.reasons);
+      if (!value.reason) return;
+
+      const result = await commands.withdrawMember([value.reason]);
       if (result.status === 'error') {
         toast.error(`회원 탈퇴 실패: ${result.error}`);
         throw new Error(result.error);

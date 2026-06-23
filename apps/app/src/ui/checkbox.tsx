@@ -32,7 +32,7 @@ export function Checkbox({
       <span
         aria-hidden="true"
         className={cn(
-          'flex size-8 shrink-0 items-center justify-center rounded-lg p-1 transition-colors',
+          'flex size-8 shrink-0 items-center justify-center rounded-sm p-1 transition-colors',
           checked
             ? 'bg-green-40'
             : 'bg-container-primary group-hover:bg-interactive-hover',

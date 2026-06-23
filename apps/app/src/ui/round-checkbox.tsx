@@ -38,16 +38,18 @@ function UncheckedRoundCheckbox({ className }: { className?: string }) {
       <circle
         cx="12"
         cy="12"
-        r="11.25"
+        r="9"
         stroke="white"
         strokeOpacity="0.28"
-        strokeWidth="1.5"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
       <path
-        d="M7.5 12.5L10.5 15.5L16.5 9.5"
+        d="M15 10L11 14L9 12"
         stroke="white"
         strokeOpacity="0.28"
-        strokeWidth="1.5"
+        strokeWidth="1.6"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
