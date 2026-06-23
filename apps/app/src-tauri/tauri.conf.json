@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "moa",
-  "version": "1.1.0-beta.10",
+  "version": "1.1.0-beta.12",
   "identifier": "com.moa.app",
   "build": {
     "removeUnusedCommands": true,
