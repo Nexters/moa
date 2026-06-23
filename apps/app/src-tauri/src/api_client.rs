@@ -809,4 +809,16 @@ mod tests {
             r#"{"clockOutTime":"20:30"}"#
         );
     }
+
+    #[test]
+    fn auth_request_serializes_id_token_body() {
+        let req = AuthRequest {
+            id_token: "id-token".into(),
+        };
+
+        assert_eq!(
+            serde_json::to_string(&req).unwrap(),
+            r#"{"idToken":"id-token"}"#
+        );
+    }
 }
