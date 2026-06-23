@@ -7,8 +7,8 @@ import { commands, type SalaryType } from '~/lib/tauri-bindings';
 import { authQuery, userSettingsQuery } from '~/queries';
 
 export const SALARY_TYPE_OPTIONS = [
-  { value: 'monthly', label: '월급' },
   { value: 'yearly', label: '연봉' },
+  { value: 'monthly', label: '월급' },
 ] as const satisfies { value: SalaryType; label: string }[];
 
 export interface OnboardingFormValues {
@@ -22,7 +22,7 @@ export interface OnboardingFormValues {
 
 const DEFAULT_VALUES: OnboardingFormValues = {
   salaryType: SALARY_TYPE_OPTIONS[0].value,
-  salaryAmount: 3_000_000,
+  salaryAmount: 36_000_000,
   payDay: 25,
   workDays: [1, 2, 3, 4, 5],
   workStartTime: '09:00',

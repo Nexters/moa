@@ -6,6 +6,7 @@ interface CheckboxProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
   label: string;
+  role?: 'checkbox' | 'radio';
   disabled?: boolean;
   className?: string;
 }
@@ -14,13 +15,14 @@ export function Checkbox({
   checked,
   onChange,
   label,
+  role = 'checkbox',
   disabled,
   className,
 }: CheckboxProps) {
   return (
     <button
       type="button"
-      role="checkbox"
+      role={role}
       aria-checked={checked}
       disabled={disabled}
       onClick={() => onChange(!checked)}
@@ -40,7 +42,7 @@ export function Checkbox({
       >
         <CheckIcon
           className={cn(
-            'size-5 transition-colors',
+            'size-6 transition-colors',
             checked ? 'text-gray-90' : 'text-text-disabled',
           )}
         />

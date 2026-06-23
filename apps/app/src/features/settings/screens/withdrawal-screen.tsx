@@ -37,22 +37,17 @@ export function WithdrawalScreen() {
           </header>
 
           <div className="flex flex-col gap-6">
-            <form.Field name="reasons">
+            <form.Field name="reason">
               {(field) =>
                 WITHDRAWAL_REASON_OPTIONS.map((label) => {
-                  const checked = field.state.value.includes(label);
+                  const checked = field.state.value === label;
                   return (
                     <Checkbox
                       key={label}
                       label={label}
                       checked={checked}
-                      onChange={(next) =>
-                        field.handleChange(
-                          next
-                            ? [...field.state.value, label]
-                            : field.state.value.filter((r) => r !== label),
-                        )
-                      }
+                      role="radio"
+                      onChange={() => field.handleChange(label)}
                     />
                   );
                 })
@@ -64,12 +59,12 @@ export function WithdrawalScreen() {
         <div className="from-bg-primary/0 to-bg-primary pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-b px-8 pt-10 pb-8">
           <form.Subscribe
             selector={(state) => ({
-              count: state.values.reasons.length,
+              reason: state.values.reason,
               isSubmitting: state.isSubmitting,
             })}
           >
-            {({ count, isSubmitting }) => {
-              const disabled = count === 0 || isSubmitting;
+            {({ reason, isSubmitting }) => {
+              const disabled = !reason || isSubmitting;
               return (
                 <Button
                   type="submit"

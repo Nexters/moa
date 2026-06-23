@@ -100,7 +100,7 @@ export function TimePeriodInput({
 
   return (
     <div className={cn('flex flex-col gap-2', className)}>
-      <div className="flex items-center gap-3">
+      <div className="flex w-full items-center gap-3">
         <TimeInput
           value={value.startTime}
           onChange={(startTime) => handleChange({ ...value, startTime })}
@@ -108,8 +108,9 @@ export function TimePeriodInput({
           minuteRef={startMinuteRef}
           onRightFocus={() => endHourRef.current?.focus()}
           disabled={disabledStart}
+          className="flex-1 justify-center"
         />
-        <ArrowRightIcon className="text-text-low" />
+        <ArrowRightIcon className="text-text-low shrink-0" />
         <TimeInput
           value={value.endTime}
           onChange={(endTime) => handleChange({ ...value, endTime })}
@@ -117,6 +118,7 @@ export function TimePeriodInput({
           onLeftFocus={() =>
             disabledStart ? undefined : startMinuteRef.current?.focus()
           }
+          className="flex-1 justify-center"
         />
       </div>
       {error ? (

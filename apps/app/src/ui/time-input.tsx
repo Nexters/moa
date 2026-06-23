@@ -159,7 +159,7 @@ function TimePickerInput({
       tabIndex={disabled ? -1 : undefined}
       onKeyDown={handleKeyDown}
       className={cn(
-        'bg-container-primary b1-500 text-text-high w-[48px] rounded-sm py-1 text-center tabular-nums',
+        'bg-container-primary b1-600 text-text-high w-[48px] rounded-sm py-1 text-center tabular-nums',
         'focus:bg-container-secondary focus:outline-none',
         disabled && 'text-text-medium cursor-not-allowed focus:bg-transparent',
         className,
