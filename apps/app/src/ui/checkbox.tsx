@@ -40,7 +40,7 @@ export function Checkbox({
       >
         <CheckIcon
           className={cn(
-            'size-6 transition-colors',
+            'size-5 transition-colors',
             checked ? 'text-gray-90' : 'text-text-disabled',
           )}
         />
