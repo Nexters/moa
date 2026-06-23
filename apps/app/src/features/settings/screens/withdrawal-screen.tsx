@@ -46,7 +46,6 @@ export function WithdrawalScreen() {
                       key={label}
                       label={label}
                       checked={checked}
-                      role="radio"
                       onChange={() => field.handleChange(label)}
                     />
                   );
