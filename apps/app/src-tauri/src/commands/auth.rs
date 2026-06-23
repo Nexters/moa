@@ -469,25 +469,7 @@ async fn login_to_moa_server(
     provider: &AuthProvider,
     id_token: &str,
 ) -> Result<String, ApiError> {
-    match provider {
-        AuthProvider::Kakao => api.auth_login(provider.as_str(), id_token).await,
-        AuthProvider::Apple => {
-            let fcm_device_token =
-                fcm_device_token_or_empty(crate::push_notifications::get_fcm_device_token().await);
-
-            api.auth_login_apple(id_token, &fcm_device_token).await
-        }
-    }
-}
-
-fn fcm_device_token_or_empty(result: Result<String, String>) -> String {
-    match result {
-        Ok(token) => token,
-        Err(e) => {
-            log::warn!("FCM 토큰 획득 실패 — 빈 토큰으로 Apple 로그인 계속: {e}");
-            String::new()
-        }
-    }
+    api.auth_login(provider.as_str(), id_token).await
 }
 
 /// 진행 중인 소셜 로그인 취소
@@ -1119,21 +1101,5 @@ mod tests {
         assert!(url.contains("response_mode=query"));
         assert!(url.contains("state=state-value"));
         assert!(!url.contains("scope="));
-    }
-
-    #[test]
-    fn fcm_device_token_falls_back_to_empty_string_on_error() {
-        assert_eq!(
-            fcm_device_token_or_empty(Err("permission denied".to_string())),
-            ""
-        );
-    }
-
-    #[test]
-    fn fcm_device_token_uses_token_on_success() {
-        assert_eq!(
-            fcm_device_token_or_empty(Ok("fcm-token".to_string())),
-            "fcm-token"
-        );
     }
 }
