@@ -12,8 +12,8 @@ import { getTodayString } from '~/lib/time';
 import { userSettingsQuery, workdayQuery } from '~/queries';
 
 export const SALARY_TYPE_OPTIONS = [
-  { value: 'monthly', label: '월급' },
   { value: 'yearly', label: '연봉' },
+  { value: 'monthly', label: '월급' },
 ] as const satisfies readonly { value: SalaryType; label: string }[];
 
 export interface SettingsFormValues {
