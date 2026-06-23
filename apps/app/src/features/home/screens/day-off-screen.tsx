@@ -1,5 +1,11 @@
 import { formatCurrency, formatMonth } from '~/lib/format';
-import { AppFooter, Button, InfoCard, InfoCardRow } from '~/ui';
+import {
+  AppFooter,
+  Button,
+  InfoCard,
+  InfoCardDivider,
+  InfoCardRow,
+} from '~/ui';
 
 import { HeroSection } from '../components/hero-section';
 import type { HomeMainScreen } from '../hooks/use-home-screen';
@@ -35,10 +41,13 @@ export function DayOffScreen({
           valueClassName={isAnnualLeave ? 'text-blue' : undefined}
         />
         {isAnnualLeave && (
-          <InfoCardRow
-            label="오늘 일급"
-            value={formatCurrency(salaryInfo.todayEarnings)}
-          />
+          <>
+            <InfoCardDivider />
+            <InfoCardRow
+              label="오늘 일급"
+              value={formatCurrency(salaryInfo.todayEarnings)}
+            />
+          </>
         )}
       </InfoCard>
 
