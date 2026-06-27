@@ -121,7 +121,7 @@ function TermsForm({ terms, onBack }: TermsFormProps) {
                 <button
                   type="button"
                   onClick={toggleAll}
-                  className="flex h-8 items-center gap-2"
+                  className="flex h-8 cursor-pointer items-center gap-2"
                   aria-pressed={allChecked}
                 >
                   <RoundCheckbox checked={allChecked} />
@@ -148,7 +148,7 @@ function TermsForm({ terms, onBack }: TermsFormProps) {
                         onClick={() => field.handleChange(!field.state.value)}
                         aria-pressed={field.state.value}
                         aria-label={`${item.title} 동의`}
-                        className="flex flex-1 items-center gap-2 text-left"
+                        className="flex flex-1 cursor-pointer items-center gap-2 text-left"
                       >
                         <RoundCheckbox checked={field.state.value} />
                         <span className="b1-400 text-text-high">
