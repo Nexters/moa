@@ -13,7 +13,7 @@ export function DayChip({ day, label, selected, onToggle }: DayChipProps) {
       type="button"
       onClick={() => onToggle(day)}
       className={cn(
-        'b2-600 flex h-10 w-10 cursor-pointer items-center justify-center rounded-sm transition-colors',
+        'b2-600 flex flex-1 basis-0 cursor-pointer flex-col items-center justify-center gap-2.5 rounded-sm p-2.5 transition-colors',
         selected
           ? 'bg-text-high text-text-high-reverse'
           : 'bg-container-primary text-text-disabled hover:bg-interactive-hover',
@@ -48,7 +48,7 @@ export function DayChipGroup({ selectedDays, onChange }: DayChipGroupProps) {
   };
 
   return (
-    <div className="flex justify-between gap-2">
+    <div className="flex w-full gap-2 self-stretch">
       {DAYS.map(({ day, label }) => (
         <DayChip
           key={day}

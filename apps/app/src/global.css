@@ -51,7 +51,7 @@
 
     /* Firefox */
     scrollbar-width: thin;
-    scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+    scrollbar-color: var(--color-gray-60) transparent;
 
     /* Webkit (Chrome, Safari) */
     &::-webkit-scrollbar {
@@ -60,8 +60,8 @@
     }
 
     &::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.25);
-      border-radius: 3px;
+      background: var(--color-gray-60);
+      border-radius: 100px;
     }
 
     &::-webkit-scrollbar-track {
