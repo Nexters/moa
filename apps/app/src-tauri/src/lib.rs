@@ -44,15 +44,15 @@ pub fn run() {
         }));
     }
 
-    // Window state plugin - saves/restores window size
-    // Note: Exclude VISIBLE and POSITION flags for menu bar app
-    // (should start hidden and position near tray icon)
+    // Window state plugin - saves/restores window state
+    // Note: Exclude VISIBLE, POSITION, and SIZE for menu bar app
+    // (fixed 400×580 in tauri.conf.json; SIZE restore can persist wrong dimensions)
     #[cfg(desktop)]
     {
         use tauri_plugin_window_state::StateFlags;
         app_builder = app_builder.plugin(
             tauri_plugin_window_state::Builder::new()
-                .with_state_flags(StateFlags::SIZE | StateFlags::MAXIMIZED | StateFlags::FULLSCREEN)
+                .with_state_flags(StateFlags::MAXIMIZED | StateFlags::FULLSCREEN)
                 .build(),
         );
     }
