@@ -33,6 +33,8 @@ reqwest = { version = "0.12", default-features = false, features = ["json", "rus
 dotenvy = "0.15"
 jsonwebtoken = "9"
 open = "5"
+# refresh token 보안 저장 — 기본 feature에 macOS Keychain / Windows Credential Manager 네이티브 백엔드 포함
+keyring = "4"
 
 tauri-plugin-clipboard-manager = "2"
 tauri-plugin-dialog = "2"

@@ -5,7 +5,7 @@ import { useEffect, useRef } from 'react';
 
 import { UpdateAlertDialog } from '~/lib/check-for-updates';
 import { commands, unwrapResult } from '~/lib/tauri-bindings';
-import { userSettingsQuery, workdayQuery } from '~/queries';
+import { authQuery, userSettingsQuery, workdayQuery } from '~/queries';
 import { router } from '~/router';
 import { AppToaster } from '~/ui';
 
@@ -101,6 +101,17 @@ export function RootLayout() {
       void unlisten.then((fn) => fn());
     };
   }, []);
+
+  // 세션 만료(refresh 최종 실패) — 백엔드가 토큰 정리 후 emit. 로그인 화면으로.
+  useEffect(() => {
+    const unlisten = listen('auth_expired', () => {
+      void queryClient.invalidateQueries({ queryKey: authQuery.all() });
+      void router.navigate({ to: '/login' });
+    });
+    return () => {
+      void unlisten.then((fn) => fn());
+    };
+  }, [queryClient]);
 
   return (
     <>

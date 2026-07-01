@@ -13,7 +13,7 @@ use tauri::{AppHandle, Manager};
 
 use crate::api_client::{
     ApiClient, ApiError, NicknamePatchRequest, PaydayPatchRequest, PayrollPatchRequest,
-    SalaryInputType, Weekday, WorkPolicyPatchRequest, WorkplacePatchRequest,
+    SalaryInputType, TokenPair, Weekday, WorkPolicyPatchRequest, WorkplacePatchRequest,
 };
 use crate::auth;
 use crate::commands::user_settings::{get_user_settings_path, save_user_settings_sync};
@@ -438,12 +438,16 @@ pub async fn social_login(app: AppHandle, provider: AuthProvider) -> Result<Logi
     let api = ApiClient::new(&base_url);
 
     log::info!("MOA 서버 로그인 시작 ({})", base_url);
-    let access_token = login_to_moa_server(&api, &provider, &id_token)
+    let tokens = login_to_moa_server(&api, &provider, &id_token)
         .await
         .map_err(|e| format!("서버 로그인 실패: {e}"))?;
 
-    // 토큰 저장
-    auth::save_auth_token(&app, &access_token, provider.as_str())?;
+    // 토큰 저장 — refresh 우선 저장 + 검증(R1) 후 access 저장
+    if !tokens.refresh_token.is_empty() {
+        auth::save_refresh_token(&app, &tokens.refresh_token)?;
+    }
+    auth::save_auth_token(&app, &tokens.access_token, provider.as_str())?;
+    let access_token = tokens.access_token;
     log::info!("{} 로그인 성공", provider.as_str());
 
     // 서버 데이터 sync
@@ -468,7 +472,7 @@ async fn login_to_moa_server(
     api: &ApiClient,
     provider: &AuthProvider,
     id_token: &str,
-) -> Result<String, ApiError> {
+) -> Result<TokenPair, ApiError> {
     api.auth_login(provider.as_str(), id_token).await
 }
 
@@ -490,6 +494,19 @@ pub async fn logout(app: AppHandle) -> Result<(), String> {
     if let Err(e) = crate::commands::workday::clear_sync_queue(&app) {
         log::warn!("로그아웃 시 sync queue 클리어 실패: {e}");
     }
+
+    // 서버에 로그아웃 통지 (refreshToken 동봉 → 해당 기기 체인 무효화).
+    // best-effort: 네트워크 실패해도 로컬 정리는 반드시 수행.
+    if let Some(token) = auth::get_access_token(&app) {
+        let refresh = auth::load_refresh_token(&app);
+        let base_url = std::env::var("MOA_API_BASE_URL")
+            .unwrap_or_else(|_| "https://www.moa-official.kr".to_string());
+        let api = ApiClient::new(&base_url);
+        if let Err(e) = api.auth_logout(&token, None, refresh.as_deref()).await {
+            log::warn!("서버 로그아웃 통지 실패 (로컬 정리는 진행): {e}");
+        }
+    }
+
     auth::clear_auth_token(&app);
     log::info!("로그아웃 완료");
     Ok(())
@@ -777,34 +794,35 @@ pub async fn sync_from_server(app: AppHandle) -> Result<(), String> {
     }
     let _guard = SyncGuard;
 
-    let token = match auth::get_access_token(&app) {
-        Some(t) => t,
-        None => return Ok(()), // 비로그인 시 skip
-    };
+    if auth::get_access_token(&app).is_none() {
+        return Ok(()); // 비로그인 시 skip
+    }
 
     let base_url = std::env::var("MOA_API_BASE_URL")
         .unwrap_or_else(|_| "https://www.moa-official.kr".to_string());
-    let api = ApiClient::new(&base_url);
 
-    // 서버에서 데이터 fetch (순차 — tokio 직접 의존 회피)
-    let payroll = api.get_payroll(&token).await;
-    let work_policy = api.get_work_policy(&token).await;
-    let profile = api.get_profile(&token).await;
+    // 세 GET을 하나의 재시도 단위로 묶는다 — 만료 시 refresh 1회만 유발(회전 안전).
+    // 첫 호출에서 셋 다 옛 토큰으로 시도되고, 401이면 refresh 후 셋 다 새 토큰으로 재실행.
+    let fetched = auth::with_token_retry(&app, move |token| {
+        let base_url = base_url.clone();
+        Box::pin(async move {
+            let api = ApiClient::new(&base_url);
+            let payroll = api.get_payroll(&token).await?;
+            let work_policy = api.get_work_policy(&token).await?;
+            let profile = api.get_profile(&token).await?;
+            Ok((payroll, work_policy, profile))
+        })
+    })
+    .await;
 
-    // 401 체크
-    if matches!(&payroll, Err(ApiError::Unauthorized))
-        || matches!(&work_policy, Err(ApiError::Unauthorized))
-        || matches!(&profile, Err(ApiError::Unauthorized))
-    {
-        auth::clear_auth_token(&app);
-        log::info!("토큰 만료 — 자동 로그아웃");
-        return Ok(());
-    }
-
-    // 하나라도 실패하면 skip (네트워크 에러 등)
-    let (Ok(payroll), Ok(work_policy), Ok(profile)) = (payroll, work_policy, profile) else {
-        log::warn!("서버 데이터 fetch 실패 — sync 건너뜀");
-        return Ok(());
+    let (payroll, work_policy, profile) = match fetched {
+        Ok(v) => v,
+        // 401 최종 실패는 refresh_access_token이 이미 finalize(clear + emit) 처리함
+        Err(ApiError::Unauthorized) => return Ok(()),
+        Err(e) => {
+            log::warn!("서버 데이터 fetch 실패 — sync 건너뜀: {e}");
+            return Ok(());
+        }
     };
 
     // 로컬 설정 로드
