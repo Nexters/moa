@@ -59,16 +59,37 @@ fn missing_content_error(message: &str) -> ApiError {
 // Auth responses
 // ============================================================================
 
+/// 로그인/갱신 응답의 토큰 쌍.
+///
+/// refresh_token은 과도기(서버가 아직 미발급)를 대비해 default 허용.
+/// 값이 비면 refresh 저장을 건너뛰고 access-only로 동작한다.
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AuthTokenResponse {
+pub struct TokenPair {
     pub access_token: String,
+    #[serde(default)]
+    pub refresh_token: String,
 }
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AuthRequest {
     pub id_token: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct RefreshRequest {
+    refresh_token: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct LogoutRequest {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    fcm_device_token: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    refresh_token: Option<String>,
 }
 
 // ============================================================================
@@ -255,7 +276,7 @@ pub struct WorkdayResponse {
     pub clock_out_time: Option<String>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct WorkdayUpsertRequest {
     #[serde(rename = "type")]
@@ -337,7 +358,7 @@ impl ApiClient {
     }
 
     /// POST /api/v1/auth/{provider}
-    pub async fn auth_login(&self, provider: &str, id_token: &str) -> Result<String, ApiError> {
+    pub async fn auth_login(&self, provider: &str, id_token: &str) -> Result<TokenPair, ApiError> {
         let url = format!("{}/api/v1/auth/{}", self.base_url, provider);
         let body = AuthRequest {
             id_token: id_token.to_string(),
@@ -355,15 +376,76 @@ impl ApiClient {
             return Err(response_error(resp).await);
         }
 
-        let api_resp: ApiResponse<AuthTokenResponse> = resp
+        let api_resp: ApiResponse<TokenPair> = resp
             .json()
             .await
             .map_err(|e| ApiError::Network(e.to_string()))?;
 
         api_resp
             .content
-            .map(|c| c.access_token)
             .ok_or_else(|| missing_content_error("응답에 accessToken 없음"))
+    }
+
+    /// POST /api/v1/auth/refresh — refreshToken 자체로 인증(Bearer 불필요).
+    ///
+    /// 회전제: 성공 응답의 새 refreshToken으로 반드시 교체 저장해야 한다.
+    pub async fn auth_refresh(&self, refresh_token: &str) -> Result<TokenPair, ApiError> {
+        let url = format!("{}/api/v1/auth/refresh", self.base_url);
+        let body = RefreshRequest {
+            refresh_token: refresh_token.to_string(),
+        };
+
+        let resp = self
+            .http
+            .post(&url)
+            .json(&body)
+            .send()
+            .await
+            .map_err(|e| ApiError::Network(e.to_string()))?;
+
+        if !resp.status().is_success() {
+            return Err(response_error(resp).await);
+        }
+
+        let api_resp: ApiResponse<TokenPair> = resp
+            .json()
+            .await
+            .map_err(|e| ApiError::Network(e.to_string()))?;
+
+        api_resp
+            .content
+            .ok_or_else(|| missing_content_error("응답에 accessToken 없음"))
+    }
+
+    /// POST /api/v1/auth/logout (Authorization: Bearer accessToken)
+    ///
+    /// refresh_token 동봉 시 서버가 해당 기기 체인(familyId)을 무효화한다.
+    pub async fn auth_logout(
+        &self,
+        token: &str,
+        fcm_device_token: Option<&str>,
+        refresh_token: Option<&str>,
+    ) -> Result<(), ApiError> {
+        let url = format!("{}/api/v1/auth/logout", self.base_url);
+        let body = LogoutRequest {
+            fcm_device_token: fcm_device_token.map(str::to_string),
+            refresh_token: refresh_token.map(str::to_string),
+        };
+
+        let resp = self
+            .http
+            .post(&url)
+            .bearer_auth(token)
+            .json(&body)
+            .send()
+            .await
+            .map_err(|e| ApiError::Network(e.to_string()))?;
+
+        if !resp.status().is_success() {
+            return Err(response_error(resp).await);
+        }
+
+        Ok(())
     }
 
     /// GET /api/v1/onboarding/status
