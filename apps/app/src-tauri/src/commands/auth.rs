@@ -442,11 +442,19 @@ pub async fn social_login(app: AppHandle, provider: AuthProvider) -> Result<Logi
         .await
         .map_err(|e| format!("서버 로그인 실패: {e}"))?;
 
-    // 토큰 저장 — refresh 우선 저장 + 검증(R1) 후 access 저장
-    if !tokens.refresh_token.is_empty() {
+    // 토큰 저장 — refresh 우선 저장 + 검증(R1) 후 access 저장.
+    // access-only 응답이면 이전 사용자의 stale refresh를 반드시 제거한다
+    // (다른 계정 재로그인 시 옛 refresh 잔존 방지).
+    if tokens.refresh_token.is_empty() {
+        auth::clear_refresh_token(&app);
+    } else {
         auth::save_refresh_token(&app, &tokens.refresh_token)?;
     }
-    auth::save_auth_token(&app, &tokens.access_token, provider.as_str())?;
+    // access 저장 실패 시 방금 저장한 refresh가 orphan으로 남지 않도록 롤백.
+    if let Err(e) = auth::save_auth_token(&app, &tokens.access_token, provider.as_str()) {
+        auth::clear_refresh_token(&app);
+        return Err(e);
+    }
     let access_token = tokens.access_token;
     log::info!("{} 로그인 성공", provider.as_str());
 

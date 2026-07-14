@@ -412,9 +412,15 @@ impl ApiClient {
             .await
             .map_err(|e| ApiError::Network(e.to_string()))?;
 
-        api_resp
+        let pair = api_resp
             .content
-            .ok_or_else(|| missing_content_error("응답에 accessToken 없음"))
+            .ok_or_else(|| missing_content_error("응답에 accessToken 없음"))?;
+        // 회전제: refresh 응답에 새 refreshToken이 없으면 옛 것을 계속 쓰게 되어
+        // 다음 갱신 때 재사용 감지로 세션이 깨진다. 계약 위반이므로 실패 처리.
+        if pair.refresh_token.is_empty() {
+            return Err(missing_content_error("응답에 refreshToken 없음"));
+        }
+        Ok(pair)
     }
 
     /// POST /api/v1/auth/logout (Authorization: Bearer accessToken)

@@ -264,6 +264,16 @@ pub async fn refresh_access_token(app: &AppHandle, failed_token: &str) -> Result
     let api = ApiClient::new(&base_url());
     match api.auth_refresh(&refresh).await {
         Ok(pair) => {
+            // race 방어: auth_refresh 대기 중 logout/clear가 세션을 비웠으면
+            // stale 응답으로 토큰을 되살리지 않는다. 락은 refresh끼리만 직렬화하고
+            // logout은 이 락을 거치지 않으므로 .await 경계 후 상태를 재확인한다.
+            match get_access_token(app) {
+                Some(current) if current == failed_token => {}
+                _ => {
+                    log::info!("refresh 완료 전 세션 변경됨 — 갱신 결과 폐기");
+                    return Err(ApiError::Unauthorized);
+                }
+            }
             let provider = current_provider(app).unwrap_or_default();
             // R1: refresh 우선 저장 + 검증 → 성공해야 access 저장
             if !pair.refresh_token.is_empty() {
@@ -338,7 +348,16 @@ where
         Err(ApiError::Unauthorized) => {
             // single-flight refresh (실패 시 refresh_access_token이 finalize 처리)
             let new_token = refresh_access_token(app, &token).await?;
-            f(new_token).await
+            // 갱신했는데도 재시도가 401이면 세션 만료를 확정한다.
+            // 이 경로에선 refresh_access_token이 성공을 반환했으므로 토큰이 남아 있어,
+            // 여기서 finalize하지 않으면 반복 refresh/401 루프가 생긴다.
+            match f(new_token).await {
+                Err(ApiError::Unauthorized) => {
+                    finalize_expired(app);
+                    Err(ApiError::Unauthorized)
+                }
+                other => other,
+            }
         }
         other => other,
     }
