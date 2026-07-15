@@ -79,6 +79,12 @@ pub struct AuthRequest {
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
+struct AppleDesktopCompleteRequest {
+    exchange_code: String,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct RefreshRequest {
     refresh_token: String,
 }
@@ -362,6 +368,41 @@ impl ApiClient {
         let url = format!("{}/api/v1/auth/{}", self.base_url, provider);
         let body = AuthRequest {
             id_token: id_token.to_string(),
+        };
+
+        let resp = self
+            .http
+            .post(&url)
+            .json(&body)
+            .send()
+            .await
+            .map_err(|e| ApiError::Network(e.to_string()))?;
+
+        if !resp.status().is_success() {
+            return Err(response_error(resp).await);
+        }
+
+        let api_resp: ApiResponse<TokenPair> = resp
+            .json()
+            .await
+            .map_err(|e| ApiError::Network(e.to_string()))?;
+
+        api_resp
+            .content
+            .ok_or_else(|| missing_content_error("응답에 accessToken 없음"))
+    }
+
+    /// POST /api/v1/auth/apple/desktop/complete — 서버가 발급한 1회용 exchangeCode를
+    /// accessToken/refreshToken으로 교환. 로그인 전 단계라 Bearer 불필요이며,
+    /// `with_token_retry`(refresh 자동 재시도)를 절대 경유하지 않는다(refresh 토큰 부재).
+    /// 401(만료·재사용·위조)은 `ApiError::Unauthorized`로 그대로 전파한다.
+    pub async fn auth_apple_desktop_complete(
+        &self,
+        exchange_code: &str,
+    ) -> Result<TokenPair, ApiError> {
+        let url = format!("{}/api/v1/auth/apple/desktop/complete", self.base_url);
+        let body = AppleDesktopCompleteRequest {
+            exchange_code: exchange_code.to_string(),
         };
 
         let resp = self
@@ -907,6 +948,18 @@ mod tests {
         assert_eq!(
             serde_json::to_string(&req).unwrap(),
             r#"{"idToken":"id-token"}"#
+        );
+    }
+
+    #[test]
+    fn apple_desktop_complete_request_serializes_exchange_code_body() {
+        let req = AppleDesktopCompleteRequest {
+            exchange_code: "one-time-xyz".into(),
+        };
+
+        assert_eq!(
+            serde_json::to_string(&req).unwrap(),
+            r#"{"exchangeCode":"one-time-xyz"}"#
         );
     }
 }

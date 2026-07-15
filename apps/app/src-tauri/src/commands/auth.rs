@@ -114,18 +114,23 @@ async fn exchange_kakao_code(code: &str, redirect_uri: &str) -> Result<String, S
 // ============================================================================
 // Apple OAuth helpers
 // ============================================================================
+//
+// DEPRECATED(롤백 경로): 아래 로컬 서명/교환 체인(apple_team_id, apple_key_id,
+// apple_private_key, generate_apple_client_secret, exchange_apple_code,
+// AppleTokenResponse)은 서버 desktop 콜백 흐름으로 대체됐다. 서버 흐름이 실제
+// 로그인까지 성공함을 e2e로 확인하기 전까지 롤백 경로로만 남겨둔다.
+// 제거 기준: Apple 서버 콜백 로그인 e2e 검증 완료 → 이 블록 + jsonwebtoken 의존성 +
+// APPLE_TEAM_ID/KEY_ID/PRIVATE_KEY env/CI secret 삭제.
+// (apple_client_id는 authorize URL에 계속 쓰이므로 제외.)
 
 #[derive(Deserialize)]
+#[allow(dead_code)]
 struct AppleTokenResponse {
     id_token: Option<String>,
 }
 
-/// Apple client_secret JWT 생성 (ES256)
-///
-/// SECURITY(TODO #issue-TBD): 현재 데스크톱 클라이언트에서 Apple private key를
-/// 직접 읽어 서명하고 있어 RFC 8252 §8.5(퍼블릭 클라이언트 secret 보관 금지)에
-/// 위배됩니다. 중기적으로 MOA 서버에 `auth code → id_token 교환` 엔드포인트를
-/// 추가하고, 클라이언트는 `auth code`만 전달하는 구조로 이전해야 합니다.
+/// Apple client_secret JWT 생성 (ES256) — DEPRECATED, 위 블록 주석 참고.
+#[allow(dead_code)]
 fn apple_team_id() -> Result<String, &'static str> {
     std::env::var("APPLE_TEAM_ID")
         .ok()
@@ -140,6 +145,7 @@ fn apple_client_id() -> Result<String, &'static str> {
         .ok_or("APPLE_CLIENT_ID 환경변수 미설정")
 }
 
+#[allow(dead_code)]
 fn apple_key_id() -> Result<String, &'static str> {
     std::env::var("APPLE_KEY_ID")
         .ok()
@@ -147,6 +153,7 @@ fn apple_key_id() -> Result<String, &'static str> {
         .ok_or("APPLE_KEY_ID 환경변수 미설정")
 }
 
+#[allow(dead_code)]
 fn apple_private_key() -> Result<String, &'static str> {
     std::env::var("APPLE_PRIVATE_KEY")
         .ok()
@@ -154,6 +161,7 @@ fn apple_private_key() -> Result<String, &'static str> {
         .ok_or("APPLE_PRIVATE_KEY 환경변수 미설정")
 }
 
+#[allow(dead_code)]
 fn generate_apple_client_secret() -> Result<String, String> {
     let team_id = apple_team_id()?;
     let client_id = apple_client_id()?;
@@ -191,7 +199,8 @@ fn build_apple_authorize_url(client_id: &str, redirect_uri: &str, state: &str) -
     )
 }
 
-/// Apple auth code → id_token 교환
+/// Apple auth code → id_token 교환 — DEPRECATED, 위 블록 주석 참고.
+#[allow(dead_code)]
 async fn exchange_apple_code(code: &str, redirect_uri: &str) -> Result<String, String> {
     let client_id = apple_client_id()?;
     let client_secret = generate_apple_client_secret()?;
@@ -252,8 +261,15 @@ fn generate_oauth_state() -> String {
         .collect()
 }
 
-/// callback에서 auth code 추출 + state 검증 (2분 타임아웃)
-fn wait_for_auth_code(listener: &TcpListener, expected_state: &str) -> Result<String, String> {
+/// callback에서 값 추출 + state 검증 (2분 타임아웃).
+///
+/// `code_param`은 추출할 쿼리 파라미터명 — Kakao는 `"code"`(authorization code),
+/// Apple은 `"exchangeCode"`(서버 발급 1회용 코드)를 넘긴다.
+fn wait_for_auth_code(
+    listener: &TcpListener,
+    expected_state: &str,
+    code_param: &str,
+) -> Result<String, String> {
     listener
         .set_nonblocking(true)
         .map_err(|e| format!("소켓 설정 실패: {e}"))?;
@@ -288,9 +304,9 @@ fn wait_for_auth_code(listener: &TcpListener, expected_state: &str) -> Result<St
                     return Err(format!("OAuth 제공자 오류: {error}"));
                 }
 
-                let Some(code) = extract_query_param(&request, "code") else {
+                let Some(code) = extract_query_param(&request, code_param) else {
                     write_failed_oauth_response(&mut stream);
-                    return Err("callback에서 auth code를 찾을 수 없습니다".to_string());
+                    return Err(format!("callback에서 {code_param}를 찾을 수 없습니다"));
                 };
 
                 write_success_oauth_response(&mut stream);
@@ -386,23 +402,32 @@ fn extract_query_param(request: &str, key: &str) -> Option<String> {
 #[specta::specta]
 pub async fn social_login(app: AppHandle, provider: AuthProvider) -> Result<LoginResult, String> {
     SOCIAL_LOGIN_CANCELLED.store(false, Ordering::Relaxed);
-    let (listener, redirect_uri) = start_oauth_callback_server()?;
+    let (listener, local_redirect_uri) = start_oauth_callback_server()?;
     let state = generate_oauth_state();
 
-    // provider별 authorize URL 생성
+    let base_url = std::env::var("MOA_API_BASE_URL")
+        .unwrap_or_else(|_| "https://www.moa-official.kr".to_string());
+    let api = ApiClient::new(&base_url);
+
+    // provider별 authorize URL 생성.
+    // - Kakao: redirect_uri = 로컬 콜백. 앱이 code→id_token 직접 교환.
+    // - Apple: redirect_uri = 서버 HTTPS 콜백. 서버가 code→id_token 교환 후
+    //   1회용 exchangeCode를 로컬 콜백으로 302 handoff (RFC 8252 §8.5: p8 서명을 서버로).
+    //   로컬 리스너는 그대로 유지 — 서버가 최종적으로 로컬로 리다이렉트하기 때문.
     let authorize_url = match &provider {
         AuthProvider::Kakao => {
             let client_id = kakao_rest_api_key()?;
             format!(
                 "https://kauth.kakao.com/oauth/authorize?client_id={}&redirect_uri={}&response_type=code&scope=openid&prompt=login&state={}",
                 client_id,
-                urlencoded(&redirect_uri),
+                urlencoded(&local_redirect_uri),
                 state,
             )
         }
         AuthProvider::Apple => {
             let client_id = apple_client_id()?;
-            build_apple_authorize_url(&client_id, &redirect_uri, &state)
+            let server_redirect_uri = format!("{base_url}/api/v1/auth/apple/desktop/callback");
+            build_apple_authorize_url(&client_id, &server_redirect_uri, &state)
         }
     };
 
@@ -417,30 +442,40 @@ pub async fn social_login(app: AppHandle, provider: AuthProvider) -> Result<Logi
     .await
     .map_err(|e| format!("브라우저 열기 실패: {e}"))?;
 
-    // callback 대기 (blocking) — state 검증 포함
-    let code = tauri::async_runtime::spawn_blocking(move || wait_for_auth_code(&listener, &state))
-        .await
-        .map_err(|e| format!("콜백 대기 실패: {e}"))??;
-
-    log::info!("OAuth code 수신 완료 (code 길이: {})", code.len());
-
-    // code → id_token 교환
-    log::info!("{} 토큰 교환 시작...", provider.as_str());
-    let id_token = match &provider {
-        AuthProvider::Kakao => exchange_kakao_code(&code, &redirect_uri).await?,
-        AuthProvider::Apple => exchange_apple_code(&code, &redirect_uri).await?,
+    // 로컬 콜백에서 받는 파라미터명이 provider마다 다르다.
+    // - Kakao: Apple/Kakao authorization `code`
+    // - Apple: 서버가 발급한 1회용 `exchangeCode`
+    let callback_param = match &provider {
+        AuthProvider::Kakao => "code",
+        AuthProvider::Apple => "exchangeCode",
     };
-    log::info!("{} id_token 획득 완료", provider.as_str());
 
-    // MOA 서버에 id_token 전송 → accessToken 발급
-    let base_url = std::env::var("MOA_API_BASE_URL")
-        .unwrap_or_else(|_| "https://www.moa-official.kr".to_string());
-    let api = ApiClient::new(&base_url);
+    // callback 대기 (blocking) — state 검증 포함
+    let callback_value = {
+        let param = callback_param.to_string();
+        tauri::async_runtime::spawn_blocking(move || wait_for_auth_code(&listener, &state, &param))
+            .await
+            .map_err(|e| format!("콜백 대기 실패: {e}"))??
+    };
 
-    log::info!("MOA 서버 로그인 시작 ({})", base_url);
-    let tokens = login_to_moa_server(&api, &provider, &id_token)
-        .await
-        .map_err(|e| format!("서버 로그인 실패: {e}"))?;
+    log::info!("OAuth 콜백 수신 완료 (값 길이: {})", callback_value.len());
+
+    // provider별 accessToken 발급 경로.
+    // - Kakao: code→id_token 직접 교환 → POST /api/v1/auth/kakao
+    // - Apple: exchangeCode → POST /api/v1/auth/apple/desktop/complete (서버가 교환 완료)
+    log::info!("{} 서버 로그인 시작 ({base_url})", provider.as_str());
+    let tokens = match &provider {
+        AuthProvider::Kakao => {
+            let id_token = exchange_kakao_code(&callback_value, &local_redirect_uri).await?;
+            login_to_moa_server(&api, &provider, &id_token)
+                .await
+                .map_err(|e| format!("서버 로그인 실패: {e}"))?
+        }
+        AuthProvider::Apple => api
+            .auth_apple_desktop_complete(&callback_value)
+            .await
+            .map_err(|e| format!("서버 로그인 실패: {e}"))?,
+    };
 
     // 토큰 저장 — refresh 우선 저장 + 검증(R1) 후 access 저장.
     // access-only 응답이면 이전 사용자의 stale refresh를 반드시 제거한다
@@ -1039,10 +1074,14 @@ mod tests {
         (listener, port)
     }
 
-    fn wait_for_auth_code_async(listener: TcpListener) -> mpsc::Receiver<Result<String, String>> {
+    fn wait_for_auth_code_async(
+        listener: TcpListener,
+        code_param: &'static str,
+    ) -> mpsc::Receiver<Result<String, String>> {
         let (tx, rx) = mpsc::channel();
         std::thread::spawn(move || {
-            tx.send(wait_for_auth_code(&listener, "expected")).unwrap();
+            tx.send(wait_for_auth_code(&listener, "expected", code_param))
+                .unwrap();
         });
         rx
     }
@@ -1073,7 +1112,7 @@ mod tests {
         let _guard = CALLBACK_TEST_LOCK.lock().unwrap();
         SOCIAL_LOGIN_CANCELLED.store(false, Ordering::Relaxed);
         let (listener, port) = callback_listener();
-        let rx = wait_for_auth_code_async(listener);
+        let rx = wait_for_auth_code_async(listener, "code");
 
         let response = send_callback(port, "code=valid-code&state=expected");
         assert!(response.contains("로그인 완료"));
@@ -1083,11 +1122,26 @@ mod tests {
     }
 
     #[test]
+    fn wait_for_auth_code_extracts_exchange_code_param_for_apple() {
+        let _guard = CALLBACK_TEST_LOCK.lock().unwrap();
+        SOCIAL_LOGIN_CANCELLED.store(false, Ordering::Relaxed);
+        let (listener, port) = callback_listener();
+        let rx = wait_for_auth_code_async(listener, "exchangeCode");
+
+        // Apple 흐름: 서버가 exchangeCode로 302 handoff. `code` 파라미터는 무시된다.
+        let response = send_callback(port, "exchangeCode=one-time-xyz&state=expected");
+        assert!(response.contains("로그인 완료"));
+
+        let result = rx.recv_timeout(Duration::from_secs(1)).unwrap();
+        assert_eq!(result.unwrap(), "one-time-xyz");
+    }
+
+    #[test]
     fn wait_for_auth_code_ignores_stale_state_then_accepts_matching_state() {
         let _guard = CALLBACK_TEST_LOCK.lock().unwrap();
         SOCIAL_LOGIN_CANCELLED.store(false, Ordering::Relaxed);
         let (listener, port) = callback_listener();
-        let rx = wait_for_auth_code_async(listener);
+        let rx = wait_for_auth_code_async(listener, "code");
 
         let stale_response = send_callback(port, "code=stale-code&state=stale");
         assert!(stale_response.contains("로그인 시간 초과"));
@@ -1104,7 +1158,7 @@ mod tests {
         let _guard = CALLBACK_TEST_LOCK.lock().unwrap();
         SOCIAL_LOGIN_CANCELLED.store(false, Ordering::Relaxed);
         let (listener, port) = callback_listener();
-        let rx = wait_for_auth_code_async(listener);
+        let rx = wait_for_auth_code_async(listener, "code");
 
         let response = send_callback(port, "error=access_denied&state=expected");
         assert!(response.contains("로그인 실패"));
