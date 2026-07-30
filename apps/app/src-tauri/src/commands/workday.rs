@@ -268,33 +268,53 @@ async fn sync_dirty_workday_cache(
     date: &str,
     cache: &mut WorkdayCache,
 ) -> Result<(), String> {
-    let token = match auth::get_access_token(app) {
-        Some(t) => t,
-        None => {
-            log::info!("sync_dirty_workday_cache: 비로그인 ({date}) — 큐 적재");
-            enqueue_sync_failure(app, cache, "no-token")?;
-            return Ok(());
-        }
-    };
+    if auth::get_access_token(app).is_none() {
+        log::info!("sync_dirty_workday_cache: 비로그인 ({date}) — 큐 적재");
+        enqueue_sync_failure(app, cache, "no-token")?;
+        return Ok(());
+    }
 
     let base_url = std::env::var("MOA_API_BASE_URL")
         .unwrap_or_else(|_| "https://www.moa-official.kr".to_string());
-    let api = ApiClient::new(&base_url);
     let req = cache_to_upsert(cache);
 
-    match api.put_workday(&token, date, &req).await {
+    let put_result = auth::with_token_retry(app, {
+        let base_url = base_url.clone();
+        let date = date.to_string();
+        let req = req.clone();
+        move |token| {
+            let base_url = base_url.clone();
+            let date = date.clone();
+            let req = req.clone();
+            Box::pin(async move {
+                ApiClient::new(&base_url)
+                    .put_workday(&token, &date, &req)
+                    .await
+            })
+        }
+    })
+    .await;
+
+    match put_result {
         Ok(()) => {
             cache.is_dirty = false;
             save_workday_cache(app, cache)?;
             log::debug!("sync_dirty_workday_cache 성공 ({date})");
         }
         Err(ApiError::Unauthorized) => {
-            log::info!("sync_dirty_workday_cache: 401 ({date}) — 토큰 clear + 큐 적재");
-            auth::clear_auth_token(app);
+            // refresh 최종 실패 → finalize_expired가 이미 clear + emit. 큐 적재.
+            log::info!("sync_dirty_workday_cache: 세션 만료 ({date}) — 큐 적재");
             enqueue_sync_failure(app, cache, "unauthorized")?;
         }
         Err(ApiError::Server { status, message }) if !is_retryable_server_error(status) => {
             log::warn!("sync_dirty_workday_cache: 서버 4xx ({date}) — 서버 상태로 복원: {message}");
+            // refresh 후 갱신됐을 수 있으니 유효 토큰 재조회
+            let Some(token) = auth::get_access_token(app) else {
+                log::info!("sync_dirty_workday_cache: 4xx 복원 중 비로그인 — 큐 적재");
+                enqueue_sync_failure(app, cache, "unauthorized")?;
+                return Ok(());
+            };
+            let api = ApiClient::new(&base_url);
             match api.get_workday(&token, date).await {
                 Ok(response) => {
                     *cache = response_to_cache(response);
@@ -325,13 +345,10 @@ async fn sync_dirty_workday_cache(
 /// - 401 → 큐 보존, 다음 로그인 후 재시도
 /// - 최대 시도(`MAX_RETRIES`) 초과 → 큐에서 제거 (사용자 알림은 후속 PR)
 pub async fn flush_sync_queue(app: &AppHandle) -> Result<(), String> {
-    let token = match auth::get_access_token(app) {
-        Some(t) => t,
-        None => {
-            log::debug!("flush_sync_queue: 비로그인 — skip");
-            return Ok(());
-        }
-    };
+    if auth::get_access_token(app).is_none() {
+        log::debug!("flush_sync_queue: 비로그인 — skip");
+        return Ok(());
+    }
 
     let queue = load_sync_queue(app);
     if queue.is_empty() {
@@ -341,7 +358,6 @@ pub async fn flush_sync_queue(app: &AppHandle) -> Result<(), String> {
 
     let base_url = std::env::var("MOA_API_BASE_URL")
         .unwrap_or_else(|_| "https://www.moa-official.kr".to_string());
-    let api = ApiClient::new(&base_url);
 
     let mut remaining: Vec<SyncQueueEntry> = Vec::new();
     let mut auth_failure = false;
@@ -351,7 +367,24 @@ pub async fn flush_sync_queue(app: &AppHandle) -> Result<(), String> {
             continue;
         }
         let request = entry.payload.to_request();
-        match api.put_workday(&token, &entry.date, &request).await {
+        // 각 PUT을 래핑 — 첫 항목이 refresh하면 이후 항목은 갱신된 토큰 사용(refresh는 1회).
+        let put_result = auth::with_token_retry(app, {
+            let base_url = base_url.clone();
+            let date = entry.date.clone();
+            let request = request.clone();
+            move |token| {
+                let base_url = base_url.clone();
+                let date = date.clone();
+                let request = request.clone();
+                Box::pin(async move {
+                    ApiClient::new(&base_url)
+                        .put_workday(&token, &date, &request)
+                        .await
+                })
+            }
+        })
+        .await;
+        match put_result {
             Ok(()) => {
                 log::info!("flush_sync_queue: PUT {} 성공", entry.date);
                 if let Ok(Some(mut cache)) = load_workday_cache(app, &entry.date) {
@@ -360,8 +393,8 @@ pub async fn flush_sync_queue(app: &AppHandle) -> Result<(), String> {
                 }
             }
             Err(ApiError::Unauthorized) => {
-                log::info!("flush_sync_queue: 401 — 토큰 clear, 큐 보존");
-                auth::clear_auth_token(app);
+                // refresh 최종 실패 → finalize_expired가 이미 clear + emit. 나머지 큐 보존.
+                log::info!("flush_sync_queue: 세션 만료 — 큐 보존");
                 auth_failure = true;
                 remaining.push(entry);
             }
@@ -422,23 +455,30 @@ fn empty_cache(date: &str) -> WorkdayCache {
 #[tauri::command]
 #[specta::specta]
 pub async fn fetch_workday(app: AppHandle, date: String) -> Result<WorkdayCache, String> {
-    let token = match auth::get_access_token(&app) {
-        Some(t) => t,
-        None => {
-            log::debug!("fetch_workday: 비로그인 — 로컬 캐시만 사용 ({date})");
-            return Ok(load_workday_cache(&app, &date)?.unwrap_or_else(|| empty_cache(&date)));
-        }
-    };
+    if auth::get_access_token(&app).is_none() {
+        log::debug!("fetch_workday: 비로그인 — 로컬 캐시만 사용 ({date})");
+        return Ok(load_workday_cache(&app, &date)?.unwrap_or_else(|| empty_cache(&date)));
+    }
 
     let base_url = std::env::var("MOA_API_BASE_URL")
         .unwrap_or_else(|_| "https://www.moa-official.kr".to_string());
-    let api = ApiClient::new(&base_url);
 
-    let response = match api.get_workday(&token, &date).await {
+    let result = auth::with_token_retry(&app, {
+        let base_url = base_url.clone();
+        let date = date.clone();
+        move |token| {
+            let base_url = base_url.clone();
+            let date = date.clone();
+            Box::pin(async move { ApiClient::new(&base_url).get_workday(&token, &date).await })
+        }
+    })
+    .await;
+
+    let response = match result {
         Ok(r) => r,
         Err(ApiError::Unauthorized) => {
-            log::info!("fetch_workday: 401 — 토큰 clear + 로컬 캐시 fallback");
-            auth::clear_auth_token(&app);
+            // refresh 최종 실패 → finalize_expired가 이미 clear + emit 처리. 로컬 fallback.
+            log::info!("fetch_workday: 세션 만료 — 로컬 캐시 fallback");
             return Ok(load_workday_cache(&app, &date)?.unwrap_or_else(|| empty_cache(&date)));
         }
         Err(e) => {
