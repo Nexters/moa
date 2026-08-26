@@ -62,7 +62,7 @@ This updates 4 files:
 - `apps/app/package.json`
 - `apps/app/src-tauri/Cargo.toml`
 - `apps/app/src-tauri/tauri.conf.json`
-- `bun.lock` (via `bun install`)
+- `bun.lock` (the `@moa/app` workspace `version` field — `bun install` does not refresh it, so the script patches it directly)
 
 ### 5. Rust compilation check
 
